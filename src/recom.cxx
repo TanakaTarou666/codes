@@ -2936,6 +2936,8 @@ int Recom::nmf_pred_after_clustering(std::string dir, double K_percent, int step
     }
     std::cout <<"K:"<<K<<std::endl;
 
+    K = K_percent;
+
 
   //計算のためmatrixにデータを変換  
   Matrix IncompleteData(cluster_user_num,return_item_number(),0.0);

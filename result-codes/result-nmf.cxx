@@ -21,15 +21,15 @@ int pata_num = 4;
   int kesson_i = 0;
   
   std::string str, tmp;
-  std::string date = "0725";
+  std::string date = "80100-10-30-4-45";
   //出力ファイル名
   std::string filenameMAEout = "../../../RESULT/MAE/" + METHOD_NAME+ "_artificialityMAE" + "-" + date + ".txt";
   std::string filenameAUCout = "../../../RESULT/AUC/" + METHOD_NAME+ "_artificialityAUC" + "-" + date + ".txt";
 
-  for(int kesson = 500 ; kesson <= 5000 ; kesson += 1500){ 
+  for(int kesson = 4500 ; kesson <= 7500 ; kesson += 500){ 
     double mae_ave = 0;
     double auc_ave = 0;
-  for(int D = 3 ; D <= 5; D++){ //潜在次元数
+  for(int D = 2 ; D <= 8; D++){ //潜在次元数
   for(double beta = 0; beta < 0.5; beta += 0.5){
   for(double alpha = 0; alpha <= 0.002; alpha += 10){
   //入力ファイル名
@@ -42,9 +42,9 @@ int pata_num = 4;
     oss2 << std::setprecision(10) << alpha;
     std::string ALPHA(oss2.str());
 
-  std::string filenameMAE = "../../../RESULT/" + METHOD_NAME + "-80-100-0718/" + METHOD_NAME+ "_artificiality" + std::to_string(kesson) 
+  std::string filenameMAE = "../../../RESULT/" + METHOD_NAME + "-" + date + "/" + METHOD_NAME+ "_artificiality" + std::to_string(kesson) 
                             + "/" + std::to_string(D) + "_" + BETA + "_" + ALPHA + "/" + METHOD_NAME + "MAE.txt";
-  std::string filenameAUC = "../../../RESULT/" + METHOD_NAME + "-80-100-0718/" + METHOD_NAME+ "_artificiality" + std::to_string(kesson) 
+  std::string filenameAUC = "../../../RESULT/" + METHOD_NAME + "-" + date + "/" + METHOD_NAME+ "_artificiality" + std::to_string(kesson) 
                             + "/" + std::to_string(D) + "_" + BETA + "_" + ALPHA + "/" + METHOD_NAME + "AUC.txt";
   std::ifstream ifs(filenameMAE);
   if (!ifs)

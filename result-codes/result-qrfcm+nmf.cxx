@@ -20,7 +20,7 @@ int pata_num = 4;
   int j; //strの4列目を出力するためのカウント
   int kesson_i = 0;
   
-  std::string date = "0725";
+  std::string date = "80100-10-30-4-45";
 
   std::string str, tmp;
   //出力ファイル名
@@ -28,15 +28,15 @@ int pata_num = 4;
   std::string filenameAUCout = "../../../RESULT/AUC/" + METHOD_NAME+ "_artificialityAUC" + "-" + date + ".txt";
 
 
-  for(int kesson = 500 ; kesson <= 5000 ; kesson += 1500){ 
+  for(int kesson = 4500 ; kesson <= 7500 ; kesson += 500){ 
   for(int lam = 10 ; lam <= 1000 ; lam *= 10){
   for(double m=0.001;m<=0.1;m *= 10){
   for(int c_num=4 ; c_num <= 4; c_num++){
     double mae_ave = 0;
     double auc_ave = 0;
-  for(int D = 4 ; D <= 6; D++){ //潜在次元数
-  for(double beta = 0.01; beta < 1; beta += 10){
-  for(double alpha = 0.001; alpha < 1; alpha += 10){
+  for(int D = 2 ; D <= 8; D++){ //潜在次元数
+  for(double beta = 0; beta < 1; beta += 10){
+  for(double alpha = 0; alpha < 1; alpha += 10){
 
   //入力ファイル名
 

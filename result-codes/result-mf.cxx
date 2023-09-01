@@ -22,17 +22,17 @@ int pata_num = 4;
   
   std::string str, tmp;
 
-  std::string date = "80100-10-10-4";
+  std::string date = "80100-10-30-4-45";
   //出力ファイル名
   std::string filenameMAEout = "../../../RESULT/MFtest/MAE/" + METHOD_NAME+ "_artificialityMAE" + "-" + date + ".txt";
   std::string filenameAUCout = "../../../RESULT/MFtest/AUC/" + METHOD_NAME+ "_artificialityAUC" + "-" + date + ".txt";
 
-  for(int kesson = 500 ; kesson <= 6500 ; kesson += 1500){ 
+  for(int kesson = 4500 ; kesson <= 7500 ; kesson += 500){ 
     double mae_ave = 0;
     double auc_ave = 0;
   for(int D = 4 ; D <= 5; D++){ //潜在次元数
   //for(double beta = 0.03; beta <= 0.1; beta += 0.02){
-    for(double beta = 0.03; beta <= 0.1; beta += 0.02){
+    for(double beta = 0.01; beta <= 0.2; beta += 0.02){
       //if(beta = 0.013)
         //beta = 0.049;
   for(double alpha = 0.001; alpha <= 0.005; alpha += 0.006){

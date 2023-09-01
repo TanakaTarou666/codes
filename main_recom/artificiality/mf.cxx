@@ -15,8 +15,8 @@ const std::string METHOD_NAME="MF";
 int main(int argc, char *argv[]){
   double mf_K_distance = 1.0; //刻み%(+) 
 
-	double mf_beta_range[3] = {0.03, 0.1, 0.02}; //開始，終了，刻み  """"(+に変更中)""""""
-	double mf_alpha_range[3] = {0.001, 0.11, 1000}; //開始，終了，刻み(*)
+	double mf_beta_range[3] = {0.01, 0.2, 0.02}; //開始，終了，刻み  """"(+に変更中)""""""
+	double mf_alpha_range[3] = {0.001, 0.002, 2}; //開始，終了，刻み(*)
 
 
 	auto start2=std::chrono::system_clock::now();

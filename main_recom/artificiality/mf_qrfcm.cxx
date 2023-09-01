@@ -19,7 +19,7 @@ const std::string METHOD_NAME="QRFCM_MF";
 
 int main(int argc, char *argv[]){
 	double mf_K_distance = 1.0; //刻み%(+)
-	double mf_beta_range[3] = {0.01, 0.11, 0.1}; //開始，終了，刻み(+)
+	double mf_beta_range[3] = {0.01, 0.19, 0.02}; //開始，終了，刻み(+)
 	double mf_alpha_range[3] = {0.001, 0.002, 10}; //開始，終了，刻み(*)
 	auto start2=std::chrono::system_clock::now();
 
@@ -97,7 +97,7 @@ int main(int argc, char *argv[]){
 	//recom.setMAE_h();
 	//recom.setAUC_h();
     for(double m=0.001;m<=0.1;m*= 10){
-	  for(double lambda=10;lambda<=10;lambda*=10){
+	  for(double lambda=100;lambda<=1000;lambda*=10){
 
 	  //時間計測
 	  auto start=std::chrono::system_clock::now();

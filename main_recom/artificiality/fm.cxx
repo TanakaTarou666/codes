@@ -81,9 +81,9 @@ int main(int argc, char *argv[]){
   //MFのパラメータでループ
   for(double mf_k = din[0] ; mf_k <= din[1]; mf_k++){
 
-  for(double mf_beta = 0.001; mf_beta <=0.001; mf_beta *= 100){
+  for(double mf_beta = 0.01; mf_beta <=0.04; mf_beta += 0.04){
   //for(double mf_alpha = 0.001; mf_alpha >= 0.001; mf_alpha /= 10){
-  for(double mf_alpha = 0.001; mf_alpha < 0.0011; mf_alpha += 0.001){
+  for(double mf_alpha = 0.001; mf_alpha < 0.005; mf_alpha += 0.004){
     std::vector<double> para = {mf_k, mf_beta, mf_alpha};
     std::vector<std::string> dirs = MkdirMF({METHOD_NAME}, para, kesson);
 
@@ -121,8 +121,8 @@ int main(int argc, char *argv[]){
     //動作確認用
     //std::cout << "Initial Similarities:\n" << recom.similarity() << std::endl;
     //MF: 潜在次元, 正則化, 学習率, 更新回数上限(指定無いと2000)
-    //if(recom.fm_pred(dirs[0], mf_k, mf_beta, mf_alpha, 2000) == 1){
-    if(recom.fm_pred(dirs[0], 3, 0.00, 0.007, 7000) == 1){
+    if(recom.fm_pred(dirs[0], mf_k, mf_beta, mf_alpha, 5000) == 1){
+    //if(recom.fm_pred(dirs[0], 3, 0.00, 0.007, 7000) == 1){
       mf_nan = true;
       recom.SeedSet2();
       break;

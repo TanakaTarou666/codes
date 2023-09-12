@@ -82,7 +82,7 @@ int main(int argc, char *argv[]){
   //Mのループ
   for(int c=4;c<5;c++){
   for(double mf_k = din[0] ; mf_k <= din[1]; mf_k++){
-    for(double Em=0.9;Em<=1.0;Em+= 0.2){
+    for(double Em=0.001;Em<=0.1;Em*= 10){
 	  for(double Lam=1000;Lam<=1000;Lam*=10){
     //if(Lam==10000) Lam = DBL_MAX;
 

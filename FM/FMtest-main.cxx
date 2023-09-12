@@ -30,7 +30,7 @@ int main(){
     Vector sum(K,0,"all");
     Vector squareSum(K,0,"all");
     double prediction = 0.0 , linearTerm, w_0 = 1.0;
-    w = {1,1.1,1.5,1.7,1.9,1.1,1.3,1.5,1.7,1.9};
+    w = {1.0,1.1,1.5,1.7,1.9,1.1,1.3,1.5,1.7,1.9};
 	
   for(int line = 0; line < X.rows(); line++){
         //for(int j = 0; j < SparseIncompleteData[i].essencialSize(); j++){

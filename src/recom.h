@@ -33,9 +33,9 @@
 #elif defined ARTIFICIALITY // uekara 7500 500 500
 //#define KESSON 5
 //#define KESSON_BEGIN 5
-#define KESSON 7400//500//2
-#define KESSON_BEGIN 6500//52
-#define KIZAMI 100
+#define KESSON 7500//500//2
+#define KESSON_BEGIN 4500//52
+#define KIZAMI 500
 #elif defined JESTER
 #define KESSON 100000
 #define KESSON_BEGIN 100000

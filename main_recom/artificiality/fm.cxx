@@ -81,7 +81,7 @@ int main(int argc, char *argv[]){
   //MFのパラメータでループ
   for(double mf_k = din[0] ; mf_k <= din[1]; mf_k++){
 
-  for(double mf_beta = 0.01; mf_beta <=0.04; mf_beta += 0.04){
+  for(double mf_beta = 0.00; mf_beta <0.04; mf_beta += 0.04){
   //for(double mf_alpha = 0.001; mf_alpha >= 0.001; mf_alpha /= 10){
   for(double mf_alpha = 0.001; mf_alpha < 0.005; mf_alpha += 0.004){
     std::vector<double> para = {mf_k, mf_beta, mf_alpha};

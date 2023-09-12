@@ -3791,7 +3791,6 @@ int Recom::fm_pred(std::string dir, double K_percent, double beta, double alpha,
     K = std::round(return_user_number() * K_percent / 10);
   }
   K = K_percent;
-  std::cout << K << std::endl;
   if(steps < 50){
     std::cerr << "MF: \"step\" should be 50 or more.";
     return 1;
@@ -3799,9 +3798,9 @@ int Recom::fm_pred(std::string dir, double K_percent, double beta, double alpha,
   //データの成形 //人工
   Matrix X(return_user_number()*return_item_number(), return_user_number()+return_item_number(),0.0);
   Vector Y(X.rows(), 0.0, "all");
+  
   int line_num = 0;
   int count_n = 0;
-  int count_i = 0;
   for (int i=0; i < return_user_number(); i++){
     count_n = 0;
     for(int j = 0; j < SparseIncompleteData[i].essencialSize(); j++){
@@ -3857,26 +3856,6 @@ int Recom::fm_pred(std::string dir, double K_percent, double beta, double alpha,
       }
       //std::cout << "V:\n" << V << std::endl;
     }
-    //std::cout << "FM v: "<< V << std::endl;
-    /* //↓正解のv
-     V = {{0.363705,0.787761,0.158121,0.432216,0.268406,0.260643,0.825071,0.595871,0.431434,0.682668},
-      {0.135,0.0665437,0.124959,0.114106,0.57664,0.941527,0.0570628,0.4042,0.527303,0.089849},
-      {0.92168,0.612376,0.979481,0.894522,0.77165,0.213524,0.562141,0.693945,0.731995,0.725184}};
-      */
-    V = {{0.363705,0.787761,0.8,0.432216,0.268406,0.260643,0.825071,0.595871,0.431434,0.682668},
-      {0.135,0.0665437,0.124959,0.114106,0.57664,0.941527,0.0570628,0.4042,0.527303,0.089849},
-      {0.92168,0.612376,0.2,0.894522,0.77165,0.213524,0.562141,0.693945,0.731995,0.1}};
-  
-    //std::cout << "FM v: "<< V << std::endl;
-    /*
-    std::cout << "FM:k "<< K << std::endl;
-    std::cout << "FM:α "<< alpha << std::endl;
-    std::cout << "FM:X Y"<< std::endl;
-    for(int i =0;i<X.rows();i++){
-      std::cout << X[i] << " " << Y[i] << std::endl;
-    }
-    std::cout << "FM: initial setting end \n" << V << std::endl;
-    */
 
     double error = 0.0;
     double err = 0.0;
@@ -3891,11 +3870,8 @@ int Recom::fm_pred(std::string dir, double K_percent, double beta, double alpha,
     //double squareSum = 0.0;
     double prediction = 0.0 , linearTerm, w_0 = 0.0;
     double reg_v = beta , reg_w = beta;
-    // w = {1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9};
-
     for(int step = 0; step < steps; step++){
       //std::cout << "FM: step-count : " << step << std::endl;
-      double loss = 0.0;
       for(int line = 0; line < X.rows(); line++){
         //for(int j = 0; j < SparseIncompleteData[i].essencialSize(); j++){
           if(Y[line] != 0){
@@ -3905,8 +3881,6 @@ int Recom::fm_pred(std::string dir, double K_percent, double beta, double alpha,
             for (int i = 0; i < X.cols(); i++) {
                 linearTerm += w[i] * X[line][i];
             }
-            //std::cout << "FM: linearTerm end : " << step << std::endl;
-
             // 交互作用項の計算
             for (int factor = 0; factor < K; factor++) {
                 sum[factor] = 0.0;
@@ -3915,30 +3889,14 @@ int Recom::fm_pred(std::string dir, double K_percent, double beta, double alpha,
                     sum[factor] += V[factor][i] * X[line][i];
                     squareSum[factor] += V[factor][i] * V[factor][i] * X[line][i] * X[line][i];
                 }
-                //interactionTerms[factor] = 0.5 * (sum * sum - squareSum);
                 prediction += 0.5 * (sum[factor] * sum[factor] - squareSum[factor]);
             }
-            //std::cout << "FM: prediction end : " << step << std::endl;
 
             // 予測値と誤差の計算
             prediction += linearTerm;
             prediction += w_0;
-
-
-            
-            /*
-            for (int factor = 0; factor < K; factor++) {
-                prediction += interactionTerms[factor];
-            }
-            */
-            err = Y[line] - prediction;
-            //std::cout << "pre(" << line << "):" << prediction << " , " << linearTerm << " , " << w_0 << std::endl;
-            //std::cout << "err(" << line << "):" << err << std::endl;
-            // パラメータの更新
-            //w_0 -= alpha;
-            //loss += std::log(std::exp(Y[line] * prediction) + 1.0);
-            //double loss_gradient = err;//Y[line] / (std::exp(Y[line] * prediction) + 1.0);
-            //std::cout <<"loss_gradient"<< loss_gradient << std::endl;
+            err = (Y[line] - prediction);//abs(Y[line] - prediction);
+        
             w_0 += alpha * (err - reg_w * w_0) ;
             for (int i = 0; i < X.cols(); i++) {
                 w[i] += alpha * (X[line][i] * err - reg_w * w[i]);
@@ -3984,7 +3942,7 @@ int Recom::fm_pred(std::string dir, double K_percent, double beta, double alpha,
       //std::cout << "FM: w : " << w << std::endl;
       //w_0 -= alpha;
       //目的関数値計算
-      
+      /*
       double error = 0.0;
       double predict_error = 0.0;
       double linearerror = 0.0;
@@ -4012,17 +3970,60 @@ int Recom::fm_pred(std::string dir, double K_percent, double beta, double alpha,
                 //interactionTerms[factor] = 0.5 * (sum * sum - squareSum);
                 predict_error += 0.5 * (sum[factor] * sum[factor] - squareSum[factor]);
             }
-            //std::cout << "FM: prediction end : " << step << std::endl;
+            //
 
             // 予測値と誤差の計算
             predict_error += linearerror;
             predict_error += w_0;
-            error += pow(Y[line] - predict_error,2) ;
+            error += pow(Y[line] - predict_error,2);
             //std::cout << "Y[line] " << Y[line]  <<" predict_error"<< predict_error<< std::endl;
           }
-      } 
-      //Pre
-            Vector Pr(Y.size());
+      }  
+      */
+      
+      
+      //収束判定
+      //if(fabs(prev_error - error) < 1.0E-5){
+      //if(prev_error < error){
+      double diff_v = frobenius_norm(prev_V - V);
+      double diff_w = squared_norm(prev_w - w);
+      double diff = diff_v + diff_w;
+
+      //diff出力
+      std::cout << "diff_v:" << diff_v << " ";
+      std::cout << "diff_w:" << diff_w << " ";
+      std::cout << "diff:" << diff << " step" << step << std::endl;
+      
+      if(diff<0.011 && step >= 50){
+        break;
+      }
+      prev_V = V;
+      prev_w = w;
+
+      if(step == steps - 1){
+          std::cout<< "step = " << step << ", error = " << error 
+                    << ", K: " << K_percent << "%, beta = " << beta
+                    << ", alpha = " << alpha << std::endl;
+        //ParameterNaN = true;
+      }
+      //prev_error = error;
+    }//step end
+    if(ParameterNaN){
+      NaNcount++;
+      //初期値全部{NaN出た or step上限回更新して収束しなかった} => 1を返して終了
+      if(NaNcount == trialLimit){
+        return 1;
+      }
+    } else {
+      best_error = error;
+      /*
+      //計算済みのP, Qから評価値予測を実行
+      for(int index = 0; index < Missing; index++){
+        //欠損箇所だけ計算
+        Prediction[index] = P[KessonIndex[index][0]] * Q[KessonIndex[index][1]];
+        std::cout << " Prediction[index]" << Prediction[index] << std::endl;
+      }*/
+    Vector Pr(Y.size());
     for (int line = 0; line < X.rows(); line++) {
       prediction = 0.0;
       linearTerm = 0.0;
@@ -4057,123 +4058,17 @@ int Recom::fm_pred(std::string dir, double K_percent, double beta, double alpha,
               line_i++;
               //std::cout << "w[k]" << w[k] << std::endl;
         }
-      } 
-      double Gap=0;
+      }
+
       for(int index = 0; index < Missing; index++){
-       //std::cout <<"Prediction:"<<Pre[KessonIndex[index][0]][KessonIndex[index][1]]<< " SparseCorrectData:" << SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1]) <<std::endl;
-      Gap+=pow(Pre[KessonIndex[index][0]][KessonIndex[index][1]]
-            -SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1]),2);
-      }
-      //error += (beta/2.0) * (w_L2Norm + v_L2Norm + w_0*w_0);
-      std::cout << " step" << step << std::endl;
-      //収束判定
-      //if(fabs(prev_error - error) < 1.0E-5){
-      //if(prev_error < error){
-      double diff_v = frobenius_norm(prev_V - V);
-      double diff_w = squared_norm(prev_w - w);
-      double diff = diff_v + diff_w;
-
-      std::cout << "L1:" << error << " ";
-      error += (beta/2.0) * (w_L2Norm + v_L2Norm + w_0*w_0);
-      std::cout << "L2:" << error << " ";
-      std::cout<<"Gap:"<<Gap/(Missing)<< " ";
-      std::cout << "diff_v:" << diff_v << " ";
-      std::cout << "diff_w:" << diff_w << " ";
-      std::cout << "diff:" << diff << " step" << step << std::endl;
-      //diff出力
-      // std::ofstream ofs_diff(dir + "/diff/diff" + std::to_string(rand_mf_trial) + ".txt", std::ios::app);
-      // ofs_diff << step << "\t"
-      //           << std::fixed << std::setprecision(10) << diff << std::endl;
-      // ofs_diff.close();
-      //収束条件
-      // if(false){ //diff出力用
-      if((diff<0.0002 && step >= 100 ) || step >= 2000){
-        for(int index = 0; index < Missing; index++){
-          Prediction[index]=Pre[KessonIndex[index][0]][KessonIndex[index][1]];
-          std::cout <<"Prediction:"<<Pre[KessonIndex[index][0]][KessonIndex[index][1]]<< " SparseCorrectData:" << SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1]) <<std::endl;
-        }
-        std::cout << " pre \n" << Pre << std::endl;
-        std::cout << "w0 = " << w_0 << std::endl;
-        std::cout << "w = " << w << std::endl;
-      break;
-    }
-
-      //std::cout << "step = " << step << std::endl;
+        Prediction[index] = Pre[KessonIndex[index][0]][KessonIndex[index][1]];
+        std::cout <<"Prediction:"<<Prediction[index]<< " SparseCorrectData:" << SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1]) <<std::endl;
       
-
+      }
+      std::cout << "error < best_error" << std::endl;
+    }
+    
       
-      prev_V = V;
-      prev_w = w;
-      if(step == steps - 1){
-          std::cout<< "step = " << step << ", error = " << error 
-                    << ", K: " << K_percent << "%, beta = " << beta
-                    << ", alpha = " << alpha << std::endl;
-        //ParameterNaN = true;
-      }
-      //prev_error = error;
-    }//step end
-    if(ParameterNaN){
-      NaNcount++;
-      //初期値全部{NaN出た or step上限回更新して収束しなかった} => 1を返して終了
-      if(NaNcount == trialLimit){
-        return 1;
-      }
-    } else {
-      best_error = error;
-      /*
-      //計算済みのP, Qから評価値予測を実行
-      for(int index = 0; index < Missing; index++){
-        //欠損箇所だけ計算
-        Prediction[index] = P[KessonIndex[index][0]] * Q[KessonIndex[index][1]];
-        std::cout << " Prediction[index]" << Prediction[index] << std::endl;
-      }*/
-
-/*
-    Vector Pr(Y.size());
-    for (int line = 0; line < X.rows(); line++) {
-      prediction = 0.0;
-      linearTerm = 0.0;
-      // 線形項の計算
-      for (int i = 0; i < X.cols(); i++) {
-        linearTerm += w[i] * X[line][i];
-      }
-
-
-      // 交互作用項の計算
-      for (int factor = 0; factor < K; factor++) {
-        sum[factor] = 0.0;
-        squareSum[factor] = 0.0;
-        for (int i = 0; i < X.cols(); i++) {
-          sum[factor] += V[factor][i] * X[line][i];
-          squareSum[factor] += V[factor][i] * V[factor][i] * X[line][i] * X[line][i];
-        }
-        prediction += 0.5 * (sum[factor] * sum[factor] - squareSum[factor]);
-      }
-      // 予測値と誤差の計算
-      prediction += linearTerm;
-      Pr[line] = prediction + w_0;
-    }
-
-    std::cout << " Pr \n" << Pr << std::endl;
-              
-      Matrix Pre(return_user_number(), return_item_number());
-      int line_i = 0;
-      for(int i = 0; i < return_user_number(); i++){
-        for(int j = 0; j < return_item_number(); j++){
-              Pre[i][j] = Pr[line_i];
-              line_i++;
-              //std::cout << "w[k]" << w[k] << std::endl;
-        }
-      }
-      */
-      //std::cout << " pre \n" << Pre << std::endl;
-      std::cout << " SparseCorrectData\n" << SparseCorrectData<< std::endl;
-
-      /*for(int index = 0; index < Missing; index++){
-       std::cout <<"Prediction:"<<pre[KessonIndex[index][0]][KessonIndex[index][1]]<< " SparseCorrectData:" << SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1]) <<std::endl;
-      }*/
-      //std::cout << "error < best_error" << std::endl;
-    }
   } //初期値ループ
   //debug
   // int count_pred = 0;

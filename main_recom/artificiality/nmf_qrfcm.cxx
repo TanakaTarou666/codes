@@ -19,8 +19,8 @@ const std::string METHOD_NAME="QRFCM_NMF";
 
 int main(int argc, char *argv[]){
 	double mf_K_distance = 1.0; //刻み%(+)
-	double mf_beta_range[3] = {0, 0, 0.02}; //開始，終了，刻み(+)
-	double mf_alpha_range[3] = {0, 0, 10}; //開始，終了，刻み(*)
+	double mf_beta_range[3] = {0.01, 0.02, 0.02}; //開始，終了，刻み(+)
+	double mf_alpha_range[3] = {0.001, 0.001, 10}; //開始，終了，刻み(*)
 	auto start2=std::chrono::system_clock::now();
 
 

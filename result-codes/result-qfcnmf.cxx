@@ -28,13 +28,13 @@ int pata_num = 4;
   std::string filenameAUCout = "../../../RESULT/AUC/" + METHOD_NAME+ "_artificialityAUC" + "-" + date + ".txt";
 
 
-  for(int kesson = 4500 ; kesson <= 7500 ; kesson += 500){ 
+  for(int kesson = 7000 ; kesson <= 7000 ; kesson += 1500){ 
   for(int lam = 10 ; lam <= 1000 ; lam *= 10){
-  for(double m=0.01;m<=0.2;m*=10){
+  for(double m=0.9;m<=0.9;m+=0.2){
   for(int c_num=4 ; c_num <= 4; c_num++){
     double mae_ave = 0;
     double auc_ave = 0;
-  for(int D = 2 ; D <= 6; D++){ //潜在次元数
+  for(int D = 3 ; D <= 5; D++){ //潜在次元数
   //入力ファイル名
 
     std::ostringstream oss;
@@ -50,10 +50,10 @@ int pata_num = 4;
     oss3 << std::setprecision(10) << m+1;
     std::string EM(oss3.str());
 
-  std::string filenameMAE = "../../../RESULT/" + METHOD_NAME + "/" + METHOD_NAME+ "_artificiality" + std::to_string(kesson)
+  std::string filenameMAE = "../../../RESULT/" + METHOD_NAME + "-" + date + "/" + METHOD_NAME+ "_artificiality" + std::to_string(kesson)
                             + "/" + std::to_string(D) + "_" + std::to_string(c_num) + "_" + std::to_string(lam) + "_" + EM 
                             + "/" + METHOD_NAME + "MAE.txt";
-  std::string filenameAUC = "../../../RESULT/" + METHOD_NAME + "/" + METHOD_NAME+ "_artificiality" + std::to_string(kesson)
+  std::string filenameAUC = "../../../RESULT/" + METHOD_NAME + "-" + date + "/" + METHOD_NAME+ "_artificiality" + std::to_string(kesson)
                             + "/" + std::to_string(D) + "_" + std::to_string(c_num) + "_" + std::to_string(lam) + "_" + EM 
                             + "/" + METHOD_NAME + "AUC.txt";
   std::ifstream ifs(filenameMAE);

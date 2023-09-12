@@ -20,7 +20,7 @@ int pata_num = 4;
   int j; //strの4列目を出力するためのカウント
   int kesson_i = 0;
   
-  std::string date = "0911";
+  std::string date = "80100-10-30-4-45";
 
   std::string str, tmp;
   //出力ファイル名

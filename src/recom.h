@@ -33,8 +33,8 @@
 #elif defined ARTIFICIALITY // uekara 7500 500 500
 //#define KESSON 5
 //#define KESSON_BEGIN 5
-#define KESSON 7000//500//2
-#define KESSON_BEGIN 7000//52
+#define KESSON 7500//500//2
+#define KESSON_BEGIN 4500//52
 #define KIZAMI 500
 #elif defined JESTER
 #define KESSON 100000
@@ -219,6 +219,7 @@ protected:
   int mpbmf_pred(std::string dir, int K, int Scale, double D, double beta, double alpha = 1.0E-2, int steps = 2000);
   //予測値計算:FM
   int fm_pred(std::string dir, double K, double beta, double alpha = 1.0E-2, int steps = 2000);
+  int fm_test_pred(std::string dir, double K, double beta, double alpha = 1.0E-2, int steps = 2000);
   //予測値計算:Ubukata
   void Ubukata(int clusters_number);
   //予測値計算:Ubukata(球面データ用)

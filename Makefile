@@ -214,20 +214,92 @@ artificiality_qfcnmf.out : $(objects) src/recom.cxx \
 main_recom/artificiality/qfcnmf.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
 	-DARTIFICIALITY $(FS) -o $@		
+artificiality_qfcnmf-2.out : $(objects) src/recom.cxx \
+main_recom/artificiality/qfcnmf.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@		
+artificiality_qfcnmf-3.out : $(objects) src/recom.cxx \
+main_recom/artificiality/qfcnmf.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@		
+artificiality_qfcnmf-4.out : $(objects) src/recom.cxx \
+main_recom/artificiality/qfcnmf.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@		
 artificiality_qfcmf.out : $(objects) src/recom.cxx \
 main_recom/artificiality/qfcmf.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
 	-DARTIFICIALITY $(FS) -o $@		
-artificiality_qfcmf2.out : $(objects) src/recom.cxx \
+artificiality_qfcmf-2.out : $(objects) src/recom.cxx \
 main_recom/artificiality/qfcmf.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
-	-DARTIFICIALITY $(FS) -o $@			
+	-DARTIFICIALITY $(FS) -o $@
+artificiality_qfcmf-3.out : $(objects) src/recom.cxx \
+main_recom/artificiality/qfcmf.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@
+artificiality_qfcmf-4.out : $(objects) src/recom.cxx \
+main_recom/artificiality/qfcmf.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@
+artificiality_qfcmf-5.out : $(objects) src/recom.cxx \
+main_recom/artificiality/qfcmf.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@
+artificiality_qfcmf-6.out : $(objects) src/recom.cxx \
+main_recom/artificiality/qfcmf.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@
+artificiality_qfcmf-7.out : $(objects) src/recom.cxx \
+main_recom/artificiality/qfcmf.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@
+artificiality_qfcmf-8.out : $(objects) src/recom.cxx \
+main_recom/artificiality/qfcmf.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@
+artificiality_qfcmf-2-1.out : $(objects) src/recom.cxx \
+main_recom/artificiality/qfcmf-2.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@		
+artificiality_qfcmf-2-2.out : $(objects) src/recom.cxx \
+main_recom/artificiality/qfcmf-2.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@
+artificiality_qfcmf-2-3.out : $(objects) src/recom.cxx \
+main_recom/artificiality/qfcmf-2.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@
+artificiality_qfcmf-2-4.out : $(objects) src/recom.cxx \
+main_recom/artificiality/qfcmf-2.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@
+artificiality_qfcmf-2-5.out : $(objects) src/recom.cxx \
+main_recom/artificiality/qfcmf-2.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@
+artificiality_qfcmf-2-6.out : $(objects) src/recom.cxx \
+main_recom/artificiality/qfcmf-2.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@
+artificiality_qfcmf-2-7.out : $(objects) src/recom.cxx \
+main_recom/artificiality/qfcmf-2.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@
+artificiality_qfcmf-2-8.out : $(objects) src/recom.cxx \
+main_recom/artificiality/qfcmf-2.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@	
 artificiality_mpbmf.out : $(mpbmf) src/recom.cxx \
 main_recom/artificiality/mpbmf.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
 	-DARTIFICIALITY $(FS) -o $@
 artificiality_fm.out : $(objects) src/recom.cxx \
 main_recom/artificiality/fm.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@
+artificiality_fm_test.out : $(objects) src/recom.cxx \
+main_recom/artificiality/fm-test.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
 	-DARTIFICIALITY $(FS) -o $@
 artificiality_qfcm.out : $(qfcm) src/recom.cxx \

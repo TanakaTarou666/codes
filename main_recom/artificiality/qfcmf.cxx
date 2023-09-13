@@ -94,12 +94,11 @@ int main(int argc, char *argv[]){
     for(int kesson = KESSON_BEGIN; kesson <= KESSON; kesson += KIZAMI){
   */
 
-
-  for(int c=2;c<3;c+=1){
-  for(double Lam=10000;Lam<=10000;Lam*=10){
-  for(double Em=0.901;Em<=1.001;Em+=0.3){
-  for(double mf_beta = 0.0; mf_beta < 0.000001; mf_beta += 0.01){
-  for(double mf_alpha = 0.049; mf_alpha < 0.05; mf_alpha *=7 ){
+  for(double mf_alpha = 0.001; mf_alpha < 0.050; mf_alpha *=5 ){
+  for(double mf_beta = 0.01; mf_beta < 0.21; mf_beta += 0.02){
+  for(double Lam=10;Lam<=1000;Lam*=10){
+  for(double Em=0.001;Em<=0.1;Em*=10){
+  for(int c=2;c<6;c+=1){ 
     for(double mf_k = din[0] ; mf_k <= din[1]; mf_k++){
     for(int kesson = KESSON_BEGIN; kesson <= KESSON; kesson += KIZAMI){
     

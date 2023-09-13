@@ -10,10 +10,11 @@ const std::string data_name=return_data_name();
 const std::string InputDataName="data/sparse_"+data_name
   +"_"+std::to_string(user_number)
   +"_"+std::to_string(item_number)+".txt";
-const std::string METHOD_NAME="QFCNMF";
+const std::string METHOD_NAME="FM";
 
 int main(int argc, char *argv[]){
 	auto start2=std::chrono::system_clock::now();
+
   if(argc != 5){
 	std::cerr << "コマンドライン引数を正しく指定してください\n開始欠損パターン数, 終了欠損パターン数, 開始潜在次元%, 終了潜在次元%\n"
 			  << "例: xxx.out 1 5 5.5 12" << std::endl;
@@ -73,20 +74,17 @@ int main(int argc, char *argv[]){
     exit(1);
   }
 	
+
   std::vector<int> firstKESSONSeed_main(0); //recomクラスのものをmain関数で保持する用
   //欠損数ループ
   for(int kesson = KESSON_BEGIN; kesson <= KESSON; kesson += KIZAMI){
   //MFのパラメータでループ
-  //クラスタ数のループ
-  //λのループ
-  //Mのループ
-  for(int c=2;c<6;c++){
   for(double mf_k = din[0] ; mf_k <= din[1]; mf_k++){
-    for(double Em=0.001;Em<=0.1;Em*= 10){
-	  for(double Lam=1000;Lam<=1000;Lam*=10){
-    //if(Lam==10000) Lam = DBL_MAX;
 
-    std::vector<double> para = {mf_k, (double)c, Lam,Em+1.0};
+  for(double mf_beta = 0.00; mf_beta <0.04; mf_beta += 0.04){
+  //for(double mf_alpha = 0.001; mf_alpha >= 0.001; mf_alpha /= 10){
+  for(double mf_alpha = 0.001; mf_alpha < 0.005; mf_alpha += 0.004){
+    std::vector<double> para = {mf_k, mf_beta, mf_alpha};
     std::vector<std::string> dirs = MkdirMF({METHOD_NAME}, para, kesson);
 
   //Recomクラスの生成
@@ -98,7 +96,7 @@ int main(int argc, char *argv[]){
   if(cin[0] > 0){
     if(recom.loadSEEDandAverage(dirs[0]) == 1){ //前の実験でNaNが出ていたら1が返され，そのパラメータはスキップ
       recom.saveSEEDandAverage(dirs[0], "skipped", true);
-      std::cout << "K: " << mf_k  << " is skipped." << std::endl;
+      std::cout << "K: " << mf_k << "%, beta = " << mf_beta << ", alpha = " << mf_alpha << " is skipped." << std::endl;
       break;
     }
   }
@@ -122,8 +120,9 @@ int main(int argc, char *argv[]){
     recom.reset2();
     //動作確認用
     //std::cout << "Initial Similarities:\n" << recom.similarity() << std::endl;
-    //QFCNMF: 潜在次元, 更新回数上限(指定無いと2000),クラスタ数, ファジィ化パラメータ, ファジィ化パラメータ
-    if(recom.qfcnmf_pred(dirs[0], mf_k, 2000,c,Lam,Em+1.0) == 1){
+    //MF: 潜在次元, 正則化, 学習率, 更新回数上限(指定無いと2000)
+    if(recom.fm_test_pred(dirs[0], mf_k, mf_beta, mf_alpha, 100000) == 1){
+    //if(recom.fm_test_pred(dirs[0], 3, 0.00, 0.007, 7000) == 1){
       mf_nan = true;
       recom.SeedSet2();
       break;
@@ -159,12 +158,11 @@ int main(int argc, char *argv[]){
     */
   recom.saveSEEDandAverage(dirs[0], time, mf_nan);
   firstKESSONSeed_main = recom.FIRST_KESSON_SEED();
-  std::cout << "K = " << mf_k <<  " is done." << std::endl;
+  std::cout << "K = " << mf_k << ", beta = " << mf_beta << ", alpha = " << mf_alpha << " is done." << std::endl;
   // if(!mf_nan)
   //   break; //最大のalphaのみで実験するためのbreak
-  }
-  }
-  }
+  }//mf_alpha
+  }//mf_beta
   }//mf_k
   }//kesson
 
@@ -179,3 +177,4 @@ int main(int argc, char *argv[]){
 		<< "s" << std::endl;
   return 0;
 }
+

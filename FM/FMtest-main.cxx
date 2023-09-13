@@ -30,7 +30,7 @@ int main(){
     Vector sum(K,0,"all");
     Vector squareSum(K,0,"all");
     double prediction = 0.0 , linearTerm, w_0 = 1.0;
-    w = {1.0,1.1,1.5,1.7,1.9,1.1,1.3,1.5,1.7,1.9};
+    w = {1.1,1.3,1.5,1.7,1.9,2.1,2.3,2.5,2.7,2.9};
 	
   for(int line = 0; line < X.rows(); line++){
         //for(int j = 0; j < SparseIncompleteData[i].essencialSize(); j++){
@@ -53,7 +53,7 @@ int main(){
                 //interactionTerms[factor] = 0.5 * (sum * sum - squareSum);
                 prediction += 0.5 * (sum[factor] * sum[factor] - squareSum[factor]);
             }
-            //std::cout << "FM: prediction end : " << step << std::endl;
+            std::cout << "t1[" << line << "]=" << prediction << ";" << std::endl;
 
             // 予測値と誤差の計算
             prediction += linearTerm;
@@ -68,9 +68,10 @@ int main(){
 
 
     for(int i=0;i<userNum;i++){
-      std::cout << itemNum << " ";
+      //std::cout << itemNum << " ";
         for(int k=0;k<itemNum;k++){
-            std::cout << k << " " << Y[line] << " " ;
+            //std::cout << k << " " << Y[line] << " " ;
+            std::cout << "t[" << line << "]=" << Y[line] << ";" << std::endl;
             line++;
         }
       std::cout << std::endl;

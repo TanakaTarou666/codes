@@ -2550,15 +2550,27 @@ int Recom::qfcmf_pred(std::string dir, double K_percent, int steps, int C,double
     }
     
     for(int k=0;k<return_user_number();k++){
-      Membership[C-1][k]=1.0;
+      double tmp_Mem[C];
+      tmp_Mem[C-1]=1.0;
       for(int i=0;i<C-1;i++){
-        
-      mt.seed(mf_seed);    
+      mt.seed(mf_seed);
       std::uniform_real_distribution<>rand_p(0.01, 1.0/(double)C);
-      Membership[i][k]=rand_p(mt);
-      Membership[C-1][k]-=Membership[i][k];
+      tmp_Mem[i]=rand_p(mt);
+      tmp_Mem[C-1]-=tmp_Mem[i];
       mf_seed++;
-      
+      }
+            // [0, 99] 範囲の一様乱数
+      for (int i = 0; i < C; i++) {
+        mt.seed(mf_seed);
+        std::uniform_int_distribution<> rand100(0, 99);
+        int r = rand100(mt) % (1+i);
+        double tmp = tmp_Mem[i];
+        tmp_Mem[i] = tmp_Mem[r];
+        tmp_Mem[r] = tmp;
+        mf_seed++;
+    }
+      for(int i=0;i<C;i++){
+        Membership[i][k]=tmp_Mem[i];
       }
     }
     
@@ -3203,16 +3215,28 @@ int Recom::qfcnmf_pred(std::string dir, double K_percent, int steps, int C,doubl
     }
     
     for(int k=0;k<return_user_number();k++){
-      Membership[C-1][k]=1.0;
+      double tmp_Mem[C];
+      tmp_Mem[C-1]=1.0;
       for(int i=0;i<C-1;i++){
-        
-      mt.seed(mf_seed);    
+      mt.seed(mf_seed);
       std::uniform_real_distribution<>rand_p(0.01, 1.0/(double)C);
-      Membership[i][k]=rand_p(mt);
-      Membership[C-1][k]-=Membership[i][k];
+      tmp_Mem[i]=rand_p(mt);
+      tmp_Mem[C-1]-=tmp_Mem[i];
       mf_seed++;
-      
+      }
+            // [0, 99] 範囲の一様乱数
+      for (int i = 0; i < C; i++) {
+        mt.seed(mf_seed);
+        std::uniform_int_distribution<> rand100(0, 99);
+        int r = rand100(mt) % (1+i);
+        double tmp = tmp_Mem[i];
+        tmp_Mem[i] = tmp_Mem[r];
+        tmp_Mem[r] = tmp;
+        mf_seed++;
     }
+      for(int i=0;i<C;i++){
+        Membership[i][k]=tmp_Mem[i];
+      }
     }
     
     Vector3d prev_W(W.height(), W.rows(), W.cols(), 0.0);
@@ -3857,6 +3881,9 @@ int Recom::fm_pred(std::string dir, double K_percent, double beta, double alpha,
       //std::cout << "V:\n" << V << std::endl;
     }
 
+    prev_V = V;
+    
+
     double error = 0.0;
     double err = 0.0;
     //double prev_error = DBL_MAX; \\debug
@@ -3868,7 +3895,7 @@ int Recom::fm_pred(std::string dir, double K_percent, double beta, double alpha,
     Vector squareSum(K,0,"all");
     //double sum = 0.0;
     //double squareSum = 0.0;
-    double prediction = 0.0 , linearTerm, w_0 = 0.0;
+    double prediction = 0.0 , linearTerm, w_0 = 0.0,prev_w_0 = 0.0;
     double reg_v = beta , reg_w = beta;
     for(int step = 0; step < steps; step++){
       //std::cout << "FM: step-count : " << step << std::endl;
@@ -3985,13 +4012,16 @@ int Recom::fm_pred(std::string dir, double K_percent, double beta, double alpha,
       //収束判定
       //if(fabs(prev_error - error) < 1.0E-5){
       //if(prev_error < error){
+
       double diff_v = frobenius_norm(prev_V - V);
       double diff_w = squared_norm(prev_w - w);
-      double diff = diff_v + diff_w;
+      double diff_w_0 = abs(prev_w_0 - w_0);
+      double diff = diff_v + diff_w + diff_w_0;
 
       //diff出力
       std::cout << "diff_v:" << diff_v << " ";
       std::cout << "diff_w:" << diff_w << " ";
+      std::cout << "diff_w_0:" << diff_w_0 << " ";
       std::cout << "diff:" << diff << " step" << step << std::endl;
       
       if(diff<0.011 && step >= 50){
@@ -3999,6 +4029,7 @@ int Recom::fm_pred(std::string dir, double K_percent, double beta, double alpha,
       }
       prev_V = V;
       prev_w = w;
+      prev_w_0 = w_0;
 
       if(step == steps - 1){
           std::cout<< "step = " << step << ", error = " << error 
@@ -4066,6 +4097,341 @@ int Recom::fm_pred(std::string dir, double K_percent, double beta, double alpha,
       
       }
       std::cout << "error < best_error" << std::endl;
+    }
+    
+      
+  } //初期値ループ
+  //debug
+  // int count_pred = 0;
+  // for(int index = 0; index < Missing; index++){
+  //   if(Prediction[index] > 10.0){
+  //     count_pred++;
+  //   }
+  // }
+  // std::cout << "Prediction over 10: " << count_pred << std::endl;
+  return 0;
+}
+
+int Recom::fm_test_pred(std::string dir, double K_percent, double beta, double alpha, int steps) //K以外は初期値有なので指定無しでも可
+{
+  int K;
+  if(return_user_number() > return_item_number()){
+    K = std::round(return_item_number() * K_percent / 10);
+  } else {
+    K = std::round(return_user_number() * K_percent / 10);
+  }
+  K = K_percent;
+  if(steps < 50){
+    std::cerr << "MF: \"step\" should be 50 or more.";
+    return 1;
+  }
+  //データの成形 //人工
+  //Matrix X(return_user_number()*return_item_number(), return_user_number()+return_item_number(),0.0);
+  //Vector Y(X.rows(), 0.0, "all");
+  Matrix X(10, 2,0.0);
+  Vector Y(X.rows(), 0.0, "all");
+  
+  int line_num = 0;
+  int count_n = 0;
+  /*
+  for (int i=0; i < return_user_number(); i++){
+    count_n = 0;
+    for(int j = 0; j < SparseIncompleteData[i].essencialSize(); j++){
+      X[line_num][i] = 1.0;//
+      X[line_num][return_user_number()+SparseIncompleteData[i].indexIndex(j)] = 1.0;//
+      count_n ++;
+      if(SparseIncompleteData[i].elementIndex(j) != 0){
+        Y[line_num] = SparseIncompleteData[i].elementIndex(j);
+      }
+      line_num++;
+    }
+  }
+  */
+X[0][0]=8.401877e-01; X[0][1]=3.943829e-01; Y[0]=3.863524e+00;
+X[1][0]=7.830992e-01; X[1][1]=7.984400e-01; Y[1]=4.961519e+00;
+X[2][0]=9.116474e-01; X[2][1]=1.975514e-01; Y[2]=3.415949e+00;
+X[3][0]=3.352228e-01; X[3][1]=7.682296e-01; Y[3]=3.975134e+00;
+X[4][0]=2.777747e-01; X[4][1]=5.539700e-01; Y[4]=3.217459e+00;
+X[5][0]=4.773971e-01; X[5][1]=6.288709e-01; Y[5]=3.841407e+00;
+X[6][0]=3.647845e-01; X[6][1]=5.134009e-01; Y[6]=3.269772e+00;
+X[7][0]=9.522297e-01; X[7][1]=9.161951e-01; Y[7]=5.653045e+00;
+X[8][0]=6.357117e-01; X[8][1]=7.172969e-01; Y[8]=4.423314e+00;
+X[9][0]=1.416026e-01; X[9][1]=6.069689e-01; Y[9]=3.104112e+00;
+
+  //std::cout << "count_n:" << count_n << std::endl;
+  //std::cout << "X:" << X << std::endl;
+  //std::cout << Y << std::endl;
+  //exit(1);
+  
+  //ここまでok
+  Matrix V(K,X.cols());
+  Matrix prev_V(K,X.cols(),0.0);
+  double best_error = DBL_MAX;
+  int NaNcount = 0;
+  int trialLimit = CLUSTERINGTRIALS;
+  int mf_seed = 0;
+   //trialLimit = 1; //debug
+      /*
+      以下gdbコマンド
+
+      make artificiality_fm.out
+      gdb ./artificiality_fm.out 
+
+      b recom.cxx:3890
+      run 1 1 5 5 
+      c
+
+      以降cまたはenterで "b recom.cxx:n" のn行目まで実行
+      */
+  for(int rand_mf_trial = 0; rand_mf_trial < trialLimit; rand_mf_trial++){
+    std::cout << "FM: initial setting " << rand_mf_trial << std::endl;
+    //P, Qの初期値を乱数で決定
+    std::mt19937_64 mt;
+    for(int k_i = 0; k_i < K; k_i++){
+      for(int i = 0; i < X.cols(); i++){
+        mt.seed(mf_seed);
+        std::uniform_real_distribution<>
+            rand_p(0.0, 1.0);
+        //ランダムに値生成
+        //V[k_i][i] = rand_p(mt);
+        V[k_i][i] = 0.0;
+        //V[k_i][i] = 1.0;
+        mf_seed++;
+      }
+      //std::cout << "V:\n" << V << std::endl;
+    }
+    /*
+    V = {{0.363705,0.787761,0.158121,0.432216,0.268406,0.260643,0.825071,0.595871,0.431434,0.682668},
+      {0.135,0.0665437,0.124959,0.114106,0.57664,0.941527,0.0570628,0.4042,0.527303,0.089849},
+      {0.92168,0.612376,0.979481,0.894522,0.77165,0.213524,0.562141,0.693945,0.731995,0.725184}};
+    */
+    prev_V = V;
+    
+
+    double error = 0.0;
+    double err = 0.0;
+    //double prev_error = DBL_MAX; \\debug
+    double omomi = 1 / X.cols();
+    Vector w(X.cols(),omomi,"all");
+    Vector prev_w(X.cols(),omomi,"all");
+    bool ParameterNaN = false;
+    Vector sum(K,0,"all");
+    Vector squareSum(K,0,"all");
+    //double sum = 0.0;
+    //double squareSum = 0.0;
+    double prediction = 0.0 , linearTerm, w_0 = 0.0, prev_w_0 = 0.0;
+    double reg_v = beta , reg_w = beta;
+   //正解
+   /*
+    w_0 = 4.0;
+    w[0] = 8.0;
+    w[1] = -11.0;
+    */
+    for(int step = 0; step < steps; step++){
+      //std::cout << "FM: step-count : " << step << std::endl;
+      for(int line = 0; line < X.rows(); line++){
+        //for(int j = 0; j < SparseIncompleteData[i].essencialSize(); j++){
+          if(Y[line] != 0){
+            prediction = 0.0;
+            linearTerm = 0.0;
+            // 線形項の計算
+            for (int i = 0; i < X.cols(); i++) {
+                linearTerm += w[i] * X[line][i];
+            }
+            // 交互作用項の計算
+            for (int factor = 0; factor < K; factor++) {
+                sum[factor] = 0.0;
+                squareSum[factor] = 0.0;
+                for (int i = 0; i < X.cols(); i++) {
+                    sum[factor] += V[factor][i] * X[line][i];
+                    squareSum[factor] += V[factor][i] * V[factor][i] * X[line][i] * X[line][i];
+                }
+                prediction += 0.5 * (sum[factor] * sum[factor] - squareSum[factor]);
+            }
+
+            // 予測値と誤差の計算
+            prediction += linearTerm;
+            prediction += w_0;
+            err = (Y[line] - prediction);//abs(Y[line] - prediction);
+            //std::cout << "err: " << err << std::endl;
+            
+            w_0 += alpha * (err - reg_w * w_0) ;
+            for (int i = 0; i < X.cols(); i++) {
+                w[i] += alpha * (X[line][i] * err - reg_w * w[i]);
+                //std::cout << "alpha * X[line][i] * err: " << alpha * X[line][i] * err << std::endl;
+                if(!isfinite(w[i])){
+                std::cerr << "w[" << i << "] is not finite. step = " << step
+                          << ", err = " << err 
+                          << ", error = " << error 
+                          << ", K = " << K 
+                          << ", beta = " << beta 
+                          << ", alpha = " << alpha 
+                          << std::endl;
+                ParameterNaN = true;
+                break;
+              }
+                for (int factor = 0; factor < K; factor++) {
+                  //V[factor][i] += alpha * (err * (X[line][i] * sum[factor]  - V[factor][i] * X[line][i] * X[line][i] ) - reg_v*V[factor][i]);
+                  if(!isfinite(V[factor][i])){
+                std::cerr << "V[" << i << "][" << factor << "] is not finite. step = " << step
+                          << ", err = " << err
+                          << ", error = " << error 
+                          << ", K = " << K 
+                          << ", beta = " << beta 
+                          << ", alpha = " << alpha 
+                          << std::endl;
+                ParameterNaN = true;
+                break;
+                }
+                }
+            }
+            if(ParameterNaN)
+              break;
+            //std::cout << "v:" << V << std::endl;
+          }//!= 0
+          if(ParameterNaN)
+            break;
+      }//line end
+      if(ParameterNaN)
+        break;
+      //loss /= X.rows();
+
+      
+      //std::cout << "FM: line end : " << step << std::endl;
+      //std::cout << "FM: w : " << w << std::endl;
+      //w_0 -= alpha;
+      //目的関数値計算
+      /*
+      double error = 0.0;
+      double predict_error = 0.0;
+      double linearerror = 0.0;
+      double w_L2Norm = 0.0, v_L2Norm = 0.0;
+      for (int line = 0; line < X.rows(); line++) {
+          if(Y[line] != 0){
+            predict_error = 0.0;
+            linearerror = 0.0;
+
+            // 線形項の計算
+            for (int i = 0; i < X.cols(); i++) {
+                linearerror += w[i] * X[line][i];
+                w_L2Norm += w[i] * w[i];
+            }
+
+            // 交互作用項の計算
+            for (int factor = 0; factor < K; factor++) {
+                sum[factor] = 0.0;
+                squareSum[factor] = 0.0;
+                for (int i = 0; i < X.cols(); i++) {
+                    sum[factor] += V[factor][i] * X[line][i];
+                    squareSum[factor] += V[factor][i] * V[factor][i] * X[line][i] * X[line][i];
+                }
+                v_L2Norm += V[factor] * V[factor];
+                //interactionTerms[factor] = 0.5 * (sum * sum - squareSum);
+                predict_error += 0.5 * (sum[factor] * sum[factor] - squareSum[factor]);
+            }
+            //
+
+            // 予測値と誤差の計算
+            predict_error += linearerror;
+            predict_error += w_0;
+            error += pow(Y[line] - predict_error,2);
+            //std::cout << "Y[line] " << Y[line]  <<" predict_error"<< predict_error<< std::endl;
+          }
+      }  
+      */
+      
+      
+      //収束判定
+      //if(fabs(prev_error - error) < 1.0E-5){
+      //if(prev_error < error){
+      double diff_v = frobenius_norm(prev_V - V);
+      double diff_w = squared_norm(prev_w - w);
+      double diff_w_0 = abs(prev_w_0 - w_0);
+      double diff = diff_v + diff_w + diff_w_0;
+
+      //diff出力
+      std::cout << "diff_v:" << diff_v << " ";
+      std::cout << "diff_w:" << diff_w << " ";
+      std::cout << "diff_w_0:" << diff_w_0 << " ";
+      std::cout << "diff:" << diff << " step" << step << std::endl;
+      
+      if(diff<1e-6 && step >= 50){
+        break;
+      }
+      prev_V = V;
+      prev_w = w;
+      prev_w_0 = w_0;
+
+      if(step == steps - 1){
+          std::cout<< "step = " << step << ", error = " << error 
+                    << ", K: " << K_percent << "%, beta = " << beta
+                    << ", alpha = " << alpha << std::endl;
+        //ParameterNaN = true;
+      }
+      //prev_error = error;
+    }//step end
+    if(ParameterNaN){
+      NaNcount++;
+      //初期値全部{NaN出た or step上限回更新して収束しなかった} => 1を返して終了
+      if(NaNcount == trialLimit){
+        return 1;
+      }
+    } else {
+      best_error = error;
+      /*
+      //計算済みのP, Qから評価値予測を実行
+      for(int index = 0; index < Missing; index++){
+        //欠損箇所だけ計算
+        Prediction[index] = P[KessonIndex[index][0]] * Q[KessonIndex[index][1]];
+        std::cout << " Prediction[index]" << Prediction[index] << std::endl;
+      }*/
+      Vector Pr(Y.size());
+      for (int line = 0; line < X.rows(); line++) {
+      prediction = 0.0;
+      linearTerm = 0.0;
+      // 線形項の計算
+      for (int i = 0; i < X.cols(); i++) {
+        linearTerm += w[i] * X[line][i];
+      }
+
+
+      // 交互作用項の計算
+      for (int factor = 0; factor < K; factor++) {
+        sum[factor] = 0.0;
+        squareSum[factor] = 0.0;
+        for (int i = 0; i < X.cols(); i++) {
+          sum[factor] += V[factor][i] * X[line][i];
+          squareSum[factor] += V[factor][i] * V[factor][i] * X[line][i] * X[line][i];
+        }
+        prediction += 0.5 * (sum[factor] * sum[factor] - squareSum[factor]);
+      }
+      // 予測値と誤差の計算
+      prediction += linearTerm;
+      Pr[line] = prediction + w_0;
+      }
+
+      std::cout << " Pr \n" << Pr << std::endl;
+      std::cout << " w_0 = " << w_0 << std::endl;
+      std::cout << " w = " << w << std::endl;
+
+      /*       
+      Matrix Pre(return_user_number(), return_item_number());
+      int line_i = 0;
+      for(int i = 0; i < return_user_number(); i++){
+        for(int j = 0; j < return_item_number(); j++){
+              Pre[i][j] = Pr[line_i];
+              line_i++;
+              //std::cout << "w[k]" << w[k] << std::endl;
+        }
+      }
+
+      for(int index = 0; index < Missing; index++){
+        Prediction[index] = Pre[KessonIndex[index][0]][KessonIndex[index][1]];
+        std::cout <<"Prediction:"<<Prediction[index]<< " SparseCorrectData:" << SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1]) <<std::endl;
+      
+      }
+      std::cout << "error < best_error" << std::endl;
+      */
     }
     
       
@@ -4743,7 +5109,7 @@ double return_threshold()
 #elif defined SUSHI_450I_7U
   return 3.5;
 #elif defined ARTIFICIALITY //人工
-  return 4.5;//4.7;//0.7;//
+  return 2.8;//4.7;//0.7;//
 #elif defined TEST // 動作確認用テストデータ
   return 3.0;
 #elif defined SAMPLE
@@ -4855,7 +5221,7 @@ double return_median()
 #elif defined SUSHI_450I_7U
   return 3.5;
 #elif defined ARTIFICIALITY //人工
-  return 4.0;//4.5;//0.7;//
+  return 2.5;//4.5;//0.7;//
 #elif defined TEST // 動作確認用テストデータ
   return 3.0;
 #elif defined SAMPLE

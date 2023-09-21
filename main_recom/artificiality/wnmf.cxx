@@ -10,15 +10,9 @@ const std::string data_name=return_data_name();
 const std::string InputDataName="data/sparse_"+data_name
   +"_"+std::to_string(user_number)
   +"_"+std::to_string(item_number)+".txt";
-const std::string METHOD_NAME="MF";
+const std::string METHOD_NAME="WNMF";
 
 int main(int argc, char *argv[]){
-  double mf_K_distance = 1.0; //刻み%(+) 
-
-	double mf_beta_range[3] = {0.01, 0.1, 0.02}; //開始，終了，刻み  """"(+に変更中)""""""
-	double mf_alpha_range[3] = {0.005, 0.025, 5}; //開始，終了，刻み(*)
-
-
 	auto start2=std::chrono::system_clock::now();
 
   if(argc != 5){
@@ -85,17 +79,8 @@ int main(int argc, char *argv[]){
   //欠損数ループ
   for(int kesson = KESSON_BEGIN; kesson <= KESSON; kesson += KIZAMI){
   //MFのパラメータでループ
-  //MFのパラメータでループ
-		for(double mf_k = din[0] ; mf_k < din[1] + mf_K_distance; mf_k += mf_K_distance){
-		for(double mf_beta = mf_beta_range[0]; mf_beta < mf_beta_range[1]; mf_beta += mf_beta_range[2]){
-		for(double mf_alpha = mf_alpha_range[0]; mf_alpha < mf_alpha_range[1]; mf_alpha *= mf_alpha_range[2]){
-      /*
   for(double mf_k = din[0] ; mf_k <= din[1]; mf_k++){
-  for(double  = 0.05; mf_beta < 0.11; mf_beta += 0.1){
-  //for(double mf_alpha = 0.001; mf_alpha >= 0.001; mf_alpha /= 10){
-  for(double mf_alpha = 0.001; mf_alpha < 0.002; mf_alpha += 0.001){
-    */
-    std::vector<double> para = {mf_k, mf_beta, mf_alpha};
+    std::vector<double> para = {mf_k, 0, 0};
     std::vector<std::string> dirs = MkdirMF({METHOD_NAME}, para, kesson);
 
   //Recomクラスの生成
@@ -107,7 +92,7 @@ int main(int argc, char *argv[]){
   if(cin[0] > 0){
     if(recom.loadSEEDandAverage(dirs[0]) == 1){ //前の実験でNaNが出ていたら1が返され，そのパラメータはスキップ
       recom.saveSEEDandAverage(dirs[0], "skipped", true);
-      std::cout << "K: " << mf_k << "%, beta = " << mf_beta << ", alpha = " << mf_alpha << " is skipped." << std::endl;
+      std::cout << "K: " << mf_k  << " is skipped." << std::endl;
       break;
     }
   }
@@ -132,7 +117,8 @@ int main(int argc, char *argv[]){
     //動作確認用
     //std::cout << "Initial Similarities:\n" << recom.similarity() << std::endl;
     //MF: 潜在次元, 正則化, 学習率, 更新回数上限(指定無いと2000)
-    if(recom.mf_pred(dirs[0], mf_k, mf_beta, mf_alpha, 4000) == 1){
+         
+    if(recom.wnmf_pred(dirs[0], mf_k, 4000) == 1){
       mf_nan = true;
       recom.SeedSet2();
       break;
@@ -168,11 +154,9 @@ int main(int argc, char *argv[]){
     */
   recom.saveSEEDandAverage(dirs[0], time, mf_nan);
   firstKESSONSeed_main = recom.FIRST_KESSON_SEED();
-  std::cout << "K = " << mf_k << ", beta = " << mf_beta << ", alpha = " << mf_alpha << " is done." << std::endl;
+  std::cout << "K = " << mf_k <<  " is done." << std::endl;
   // if(!mf_nan)
   //   break; //最大のalphaのみで実験するためのbreak
-  }//mf_alpha
-  }//mf_beta
   }//mf_k
   }//kesson
 

@@ -202,6 +202,10 @@ artificiality_nmf.out : $(objects) src/recom.cxx \
 main_recom/artificiality/nmf.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
 	-DARTIFICIALITY $(FS) -o $@
+artificiality_wnmf.out : $(objects) src/recom.cxx \
+main_recom/artificiality/wnmf.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@
 artificiality_nmf_qrfcm.out : $(qrfcm) src/recom.cxx \
 main_recom/artificiality/nmf_qrfcm.cxx
 	$(CXX) $(CXXFLAGS)  $^ \

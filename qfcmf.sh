@@ -5,7 +5,7 @@
 # make artificiality_qfcmf-3.out #
 # nohup ./artificiality_qfcmf-3.out 1 4 4 4 > log/qfcmf-3.log & #
 # make artificiality_qfcmf-4.out #
-# nohup ./artificiality_qfcmf.out-4 1 4 5 5 > log/qfcmf-4.log & #
+# nohup ./artificiality_qfcmf-4.out 1 4 5 5 > log/qfcmf-4.log & #
 # make artificiality_qfcmf-5.out #
 # nohup ./artificiality_qfcmf-5.out 1 4 6 6 > log/qfcmf-5.log & #
 # make artificiality_qfcmf-6.out #
@@ -22,7 +22,7 @@ nohup ./artificiality_qfcmf-2-2.out 1 4 3 3 > log/qfcmf-2-2.log & #
 make artificiality_qfcmf-2-3.out #
 nohup ./artificiality_qfcmf-2-3.out 1 4 4 4 > log/qfcmf-2-3.log & #
 make artificiality_qfcmf-2-4.out #
-nohup ./artificiality_qfcmf.out-2-4 1 4 5 5 > log/qfcmf-2-4.log & #
+nohup ./artificiality_qfcmf-2-4.out 1 4 5 5 > log/qfcmf-2-4.log & #
 make artificiality_qfcmf-2-5.out #
 nohup ./artificiality_qfcmf-2-5.out 1 4 6 6 > log/qfcmf-2-5.log & #
 make artificiality_qfcmf-2-6.out #

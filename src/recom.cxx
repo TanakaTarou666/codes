@@ -2907,6 +2907,166 @@ int Recom::nmf_pred(std::string dir, double K_percent, int steps)
   return 0;
 }
 
+int Recom::wnmf_pred(std::string dir, double K_percent, int steps) 
+{//K以外は初期値有なので指定無しでも可 betaは熱田先輩のやつでいうγ　alphaは学習率　kは潜在次元数？ 　dirも謎
+ int K;
+  if(return_user_number() > return_item_number()){
+    K = std::round(return_item_number() * K_percent / 100);
+  } else {
+    K = std::round(return_user_number() * K_percent / 100);
+  }
+  if(steps < 50){
+    std::cerr << "WNMF: \"step\" should be 50 or more.";
+    return 1;
+  }
+
+  K = K_percent;  // 人工用
+
+  Matrix IncompleteData(return_user_number(),return_item_number(),0.0);
+  //Matrix test_x(return_user_number(),return_item_number(),1.0);
+  //std::cout<< Hadamard(SparseIncompleteData,test_x) <<std::endl;
+  
+  //std::cout<< SparseIncompleteData <<std::endl;
+
+  Matrix Sij(return_user_number(), return_item_number(), 1.0);
+
+  //欠損場所をSijに与える
+  for(int i=0;i<SparseIncompleteData.rows();i++){
+    for(int j=0;j<return_item_number();j++){
+      if(SparseIncompleteData[i].elementIndex(j) == 0)
+        Sij[i][j] = 0.0;
+    }
+    
+  }
+  //std::cout<< Sij <<std::endl;
+
+
+  Matrix P(return_user_number(), K), Q(return_item_number(), K);
+  double best_error = DBL_MAX;
+  int NaNcount = 0;
+  int trialLimit = CLUSTERINGTRIALS;
+  int mf_seed = 0;
+  // trialLimit = 1; //debug
+  for(int rand_mf_trial  = 0; rand_mf_trial < trialLimit; rand_mf_trial++){
+    std::cout << "NMF: initial setting " << rand_mf_trial << std::endl;
+    //P, Qの初期値を乱数で決定
+    std::mt19937_64 mt;
+    for(int k_i = 0; k_i < K; k_i++){
+      for(int i = 0; i < P.rows(); i++){
+        mt.seed(mf_seed);
+        std::uniform_real_distribution<>
+            rand_p(0.001, 1.0);
+        //ランダムに値生成
+        P[i][k_i] = rand_p(mt);
+        mf_seed++;
+        P[i][k_i] = 1.0;
+      }
+      for(int j = 0; j < Q.rows(); j++){
+        mt.seed(mf_seed);
+        std::uniform_real_distribution<>
+            rand_q(0.001, 1.0);
+        //ランダムに値生成
+        //Q[j][k_i] = rand_q(mt);
+        mf_seed++;
+        Q[j][k_i] = 2.0;
+      }
+      //std::cout << "P:\n" << P << "\nQ:\n" << Q << std::endl;
+    }
+
+    double error = 0.0;
+      Matrix prev_P(P.rows(), P.cols(), 0.0);
+      Matrix prev_Q(Q.rows(), Q.cols(), 0.0);
+      bool ParameterNaN = false;
+    for(int step = 0; step < steps; step++){
+    //ここから変更 データの変数名がわからん。仮置きとしてDataとしてる
+    //transposeがmatrix.cxxにない可能性あり。
+    
+    //更新式W
+    Matrix P_numerator;
+    Matrix P_denominator;
+      P_numerator=Hadamard(SparseIncompleteData,Sij)*Q;
+      P_denominator=M_Hadamard(P*transpose(Q),Sij)*Q;
+      std::cout<< "P_n:\n" << P_numerator <<std::endl;
+      std::cout<< "P_S:\n" << M_Hadamard(P*transpose(Q),Sij) <<std::endl;
+      std::cout<< "P_d:\n" << P_denominator <<std::endl;
+      for(int row=0;row<P.rows();row++){
+        for(int col=0;col<P.cols();col++){
+          if(P[row][col]>0.000000001){
+          P[row][col]*=(P_numerator[row][col]/P_denominator[row][col]);
+
+          }
+      }
+    }
+  std::cout<< "P:\n" << P <<std::endl;
+
+    //更新式H
+    Matrix Q_numerator;
+    Matrix Q_denominator;
+    Q_numerator=transpose(P)*Hadamard(SparseIncompleteData,Sij);
+    Q_denominator=transpose(P)*M_Hadamard(P*transpose(Q),Sij);
+
+    for(int row=0;row<Q.rows();row++){
+      for(int col=0;col<Q.cols();col++){
+        if(Q_denominator[col][row]>0.000000001) {
+          Q[row][col]*=(Q_numerator[col][row]/Q_denominator[col][row]);
+          }
+        }
+    }
+    //std::cout<< Q <<std::endl;
+    break;
+    
+    if(ParameterNaN)
+        break;
+      //目的関数値計算
+      
+      for(int i = 0; i < P.rows(); i++){
+        for(int j = 0; j < SparseIncompleteData[i].essencialSize(); j++){
+          if(SparseIncompleteData[i].elementIndex(j) != 0){
+          error += pow(SparseIncompleteData[i].elementIndex(j)
+                    - (P[i] * Q[SparseIncompleteData[i].indexIndex(j)])
+                    , 2);
+          }
+        }
+      }
+
+      //error += (beta/2.0) * (P_L2Norm + Q_L2Norm);
+
+      double diff = frobenius_norm(prev_P - P) + frobenius_norm(prev_Q - Q);
+
+      // if(false){ //diff出力用
+        if(diff < 0.011 && step >= 50){
+        break;
+      }
+
+      prev_P = P;
+      prev_Q = Q;
+      if(step == steps - 1){
+          std::cout<< "step = " << step << ", error = " << error 
+                    << ", K: " << K_percent  << std::endl;
+        ParameterNaN = true;
+      }
+    }//stepのループ
+    
+     
+    if(ParameterNaN){
+      NaNcount++;
+      //初期値全部{NaN出た or step上限回更新して収束しなかった} => 1を返して終了
+      if(NaNcount == trialLimit){
+        return 1;
+      }
+    } else if(error < best_error){
+      best_error = error;
+      //計算済みのP, Qから評価値予測を実行
+      for(int index = 0; index < Missing; index++){
+        //欠損箇所だけ計算
+        Prediction[index] = P[KessonIndex[index][0]] * Q[KessonIndex[index][1]];
+       //std::cout <<"Prediction:"<<Prediction[index]<< " SparseCorrectData:" << SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1]) <<std::endl;
+      }
+    }
+  }
+  return 0;
+}
+
 int Recom::nmf_pred_after_clustering(std::string dir, double K_percent, int steps) //K以外は初期値有なので指定無しでも可
 {
   for(int cluster_index = 0; cluster_index < Mem.rows(); cluster_index++){
@@ -4350,11 +4510,12 @@ X[9][0]=1.416026e-01; X[9][1]=6.069689e-01; Y[9]=3.104112e+00;
       double diff = diff_v + diff_w + diff_w_0;
 
       //diff出力
+      /*
       std::cout << "diff_v:" << diff_v << " ";
       std::cout << "diff_w:" << diff_w << " ";
       std::cout << "diff_w_0:" << diff_w_0 << " ";
       std::cout << "diff:" << diff << " step" << step << std::endl;
-      
+      */
       if(diff<1e-6 && step >= 50){
         break;
       }
@@ -5014,8 +5175,8 @@ int return_user_number()
   return 3007;
 #elif defined SUSHI_450I_7U
   return 2978;
-#elif defined ARTIFICIALITY //人工
-  return 80;//4;//80
+#elif defined ARTIFICIALITY //人工設定
+  return 5;//4;//80
 #elif defined TEST // 動作確認用テストデータ
   return 6;
 #elif defined SAMPLE
@@ -5061,8 +5222,8 @@ int return_item_number()
   return 52;
 #elif defined SUSHI_450I_7U
   return 31;
-#elif defined ARTIFICIALITY //人工
-  return 100;//5;//20
+#elif defined ARTIFICIALITY //人工設定
+  return 5;//5;//20
 #elif defined TEST // 動作確認用テストデータ
   return 4;
 #elif defined SAMPLE

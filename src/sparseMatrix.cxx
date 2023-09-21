@@ -1,5 +1,6 @@
 #include"sparseVector.h"
 #include"sparseMatrix.h"
+#include"matrix.h"
 
 //コンストラクタ
 SparseMatrix::SparseMatrix(int rows, int cols) try :
@@ -127,4 +128,27 @@ double frobenius_norm(const SparseMatrix &arg){
     result+=norm_square(arg[i]);
   }
   return sqrt(result);
+}
+
+//注意：本来のアダマール積と異なり、値が０の部分は計算していない
+Matrix Hadamard(const SparseMatrix &lhs, const Matrix &rhs){
+  Matrix result(rhs.rows(), rhs.cols(),0.0);
+  for(int i=0;i<result.rows();i++){
+    for(int j=0;j<result.cols();j++){
+        if(lhs[i].elementIndex(j) != 0)
+  	      result[i][j]=lhs[i].elementIndex(j)*rhs[i][j];
+    }
+  }
+  return result;
+}
+
+Matrix M_Hadamard(const Matrix &lhs, const Matrix &rhs){
+  Matrix result(rhs.rows(), rhs.cols(),0.0);
+  for(int i=0;i<result.rows();i++){
+    for(int j=0;j<result.cols();j++){
+        if(lhs[i][j] != 0)
+  	      result[i][j]=lhs[i][j]*rhs[i][j];
+    }
+  }
+  return result;
 }

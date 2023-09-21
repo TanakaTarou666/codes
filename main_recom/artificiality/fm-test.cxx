@@ -83,7 +83,7 @@ int main(int argc, char *argv[]){
 
   for(double mf_beta = 0.00; mf_beta <0.04; mf_beta += 0.04){
   //for(double mf_alpha = 0.001; mf_alpha >= 0.001; mf_alpha /= 10){
-  for(double mf_alpha = 0.001; mf_alpha < 0.005; mf_alpha += 0.004){
+  for(double mf_alpha = 0.001; mf_alpha < 0.006; mf_alpha += 0.004){
     std::vector<double> para = {mf_k, mf_beta, mf_alpha};
     std::vector<std::string> dirs = MkdirMF({METHOD_NAME}, para, kesson);
 

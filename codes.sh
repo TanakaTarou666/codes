@@ -1,2 +1,2 @@
-make artificiality_fm.out #
-nohup ./artificiality_fm.out 1 1 3 3 > log/fm.log & #
+make artificiality_mf.out #
+nohup ./artificiality_mf.out 1 4 2 9 > log/mf-0919.log & #

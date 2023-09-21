@@ -1,4 +1,5 @@
 #include"sparseVector.h"
+#include"matrix.h"
 
 #ifndef __SPARSEMATRIX__
 #define __SPARSEMATRIX__
@@ -34,5 +35,7 @@ class SparseMatrix{
 std::ostream &operator<<(std::ostream &os, const SparseMatrix &rhs);
 bool operator==(const SparseMatrix &lhs, const SparseMatrix &rhs);
 double frobenius_norm(const SparseMatrix &arg);
+Matrix Hadamard(const SparseMatrix &lhs, const Matrix &rhs);
+Matrix M_Hadamard(const Matrix &lhs, const Matrix &rhs);
 
 #endif

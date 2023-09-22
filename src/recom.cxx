@@ -4126,46 +4126,47 @@ int Recom::fm_test_pred(std::string dir, double K_percent, double beta, double a
     return 1;
   }
   //データの成形 //人工
-  //Matrix X(return_user_number()*return_item_number(), return_user_number()+return_item_number(),0.0);
-  //Vector Y(X.rows(), 0.0, "all");
-  Matrix X(10, 2,0.0);
-  Vector Y(X.rows(), 0.0, "all");
+  // Matrix X(return_user_number()*return_item_number(), return_user_number()+return_item_number(),0.0);
+  // Vector Y(X.rows(), 0.0, "all");
   
-  int line_num = 0;
-  int count_n = 0;
-  /*
-  for (int i=0; i < return_user_number(); i++){
-    count_n = 0;
-    for(int j = 0; j < SparseIncompleteData[i].essencialSize(); j++){
-      X[line_num][i] = 1.0;//
-      X[line_num][return_user_number()+SparseIncompleteData[i].indexIndex(j)] = 1.0;//
-      count_n ++;
-      if(SparseIncompleteData[i].elementIndex(j) != 0){
-        Y[line_num] = SparseIncompleteData[i].elementIndex(j);
-      }
-      line_num++;
-    }
-  }
-  */
-X[0][0]=8.401877e-01; X[0][1]=3.943829e-01; Y[0]=3.863524e+00;
-X[1][0]=7.830992e-01; X[1][1]=7.984400e-01; Y[1]=4.961519e+00;
-X[2][0]=9.116474e-01; X[2][1]=1.975514e-01; Y[2]=3.415949e+00;
-X[3][0]=3.352228e-01; X[3][1]=7.682296e-01; Y[3]=3.975134e+00;
-X[4][0]=2.777747e-01; X[4][1]=5.539700e-01; Y[4]=3.217459e+00;
-X[5][0]=4.773971e-01; X[5][1]=6.288709e-01; Y[5]=3.841407e+00;
-X[6][0]=3.647845e-01; X[6][1]=5.134009e-01; Y[6]=3.269772e+00;
-X[7][0]=9.522297e-01; X[7][1]=9.161951e-01; Y[7]=5.653045e+00;
-X[8][0]=6.357117e-01; X[8][1]=7.172969e-01; Y[8]=4.423314e+00;
-X[9][0]=1.416026e-01; X[9][1]=6.069689e-01; Y[9]=3.104112e+00;
+  // int line_num = 0;
+  // int count_n = 0;
+  // for (int i=0; i < return_user_number(); i++){
+  //   count_n = 0;
+  //   for(int j = 0; j < SparseIncompleteData[i].essencialSize(); j++){
+  //     //X[line_num][i] = X_u[i];//1.0;//
+  //     //X[line_num][return_user_number()+SparseIncompleteData[i].indexIndex(j)] = X_i[count_n];//1.0;//
+  //     X[line_num][i] = 1.0;//
+  //     X[line_num][return_user_number()+SparseIncompleteData[i].indexIndex(j)] = 1.0;//
+  //     count_n ++;
+  //     if(SparseIncompleteData[i].elementIndex(j) != 0){
+  //       Y[line_num] = SparseIncompleteData[i].elementIndex(j);
+  //     }
+  //     line_num++;
+  //   }
+  // }
+  
+  
+  Matrix X(5, 2,0.0);
+  Vector Y(X.rows(), 0.0, "all");
+  X={{1.0, 1.0},
+      {2.0, 2.0},
+      {3.0, 3.0},
+      {4.0, 3.5},
+      {5.0, 4.5}};
+  Y={1,2,3,4,5};    
 
   //std::cout << "count_n:" << count_n << std::endl;
-  //std::cout << "X:" << X << std::endl;
-  //std::cout << Y << std::endl;
+  std::cout << "X:" << X << std::endl;
+  std::cout << Y << std::endl;
   //exit(1);
   
   //ここまでok
   Matrix V(K,X.cols());
   Matrix prev_V(K,X.cols(),0.0);
+  double omomi = 1 / X.cols();
+  Vector w(X.cols(),omomi,"all");
+  Vector prev_w(X.cols(),omomi,"all");
   double best_error = DBL_MAX;
   int NaNcount = 0;
   int trialLimit = CLUSTERINGTRIALS;
@@ -4191,9 +4192,10 @@ X[9][0]=1.416026e-01; X[9][1]=6.069689e-01; Y[9]=3.104112e+00;
       for(int i = 0; i < X.cols(); i++){
         mt.seed(mf_seed);
         std::uniform_real_distribution<>
-            rand_p(0.0, 1.0);
+            rand_p(-10.0, 10.0);
         //ランダムに値生成
         //V[k_i][i] = rand_p(mt);
+        w[i]=rand_p(mt);
         V[k_i][i] = 0.0;
         //V[k_i][i] = 1.0;
         mf_seed++;
@@ -4211,9 +4213,8 @@ X[9][0]=1.416026e-01; X[9][1]=6.069689e-01; Y[9]=3.104112e+00;
     double error = 0.0;
     double err = 0.0;
     //double prev_error = DBL_MAX; \\debug
-    double omomi = 1 / X.cols();
-    Vector w(X.cols(),omomi,"all");
-    Vector prev_w(X.cols(),omomi,"all");
+    
+    
     bool ParameterNaN = false;
     Vector sum(K,0,"all");
     Vector squareSum(K,0,"all");
@@ -4222,12 +4223,19 @@ X[9][0]=1.416026e-01; X[9][1]=6.069689e-01; Y[9]=3.104112e+00;
     double prediction = 0.0 , linearTerm, w_0 = 0.0, prev_w_0 = 0.0;
     double reg_v = beta , reg_w = beta;
    //正解
-   /*
-    w_0 = 4.0;
-    w[0] = 8.0;
-    w[1] = -11.0;
-    */
+   
+    w_0 = 0.0;
+    w[0] = 0.0547134;
+    w[1] = -0.22227885;
+    V = {{-0.0119128, -0.03903315},
+          {-0.06241425, -0.14882501}};
+    
+    
     for(int step = 0; step < steps; step++){
+      std::cout << "step: " << step << std::endl;
+      std::cout << "w_0:\n" << w_0 << std::endl;
+      std::cout << "w:\n" << w << std::endl;
+      std::cout << "V:\n" << V << std::endl;
       //std::cout << "FM: step-count : " << step << std::endl;
       for(int line = 0; line < X.rows(); line++){
         //for(int j = 0; j < SparseIncompleteData[i].essencialSize(); j++){
@@ -4252,10 +4260,10 @@ X[9][0]=1.416026e-01; X[9][1]=6.069689e-01; Y[9]=3.104112e+00;
             // 予測値と誤差の計算
             prediction += linearTerm;
             prediction += w_0;
-            err = (Y[line] - prediction);//abs(Y[line] - prediction);
+            err =(Y[line] - prediction);//abs(Y[line] - prediction);
             //std::cout << "err: " << err << std::endl;
             
-            w_0 += alpha * (err - reg_w * w_0) ;
+            w_0 += alpha * (err - reg_w * w_0);
             for (int i = 0; i < X.cols(); i++) {
                 w[i] += alpha * (X[line][i] * err - reg_w * w[i]);
                 //std::cout << "alpha * X[line][i] * err: " << alpha * X[line][i] * err << std::endl;
@@ -4271,7 +4279,7 @@ X[9][0]=1.416026e-01; X[9][1]=6.069689e-01; Y[9]=3.104112e+00;
                 break;
               }
                 for (int factor = 0; factor < K; factor++) {
-                  //V[factor][i] += alpha * (err * (X[line][i] * sum[factor]  - V[factor][i] * X[line][i] * X[line][i] ) - reg_v*V[factor][i]);
+                  V[factor][i] += alpha * (err * (X[line][i] * sum[factor]  - V[factor][i] * X[line][i] * X[line][i] ) - reg_v*V[factor][i]);
                   if(!isfinite(V[factor][i])){
                 std::cerr << "V[" << i << "][" << factor << "] is not finite. step = " << step
                           << ", err = " << err
@@ -4340,7 +4348,6 @@ X[9][0]=1.416026e-01; X[9][1]=6.069689e-01; Y[9]=3.104112e+00;
       }  
       */
       
-      
       //収束判定
       //if(fabs(prev_error - error) < 1.0E-5){
       //if(prev_error < error){
@@ -4350,12 +4357,14 @@ X[9][0]=1.416026e-01; X[9][1]=6.069689e-01; Y[9]=3.104112e+00;
       double diff = diff_v + diff_w + diff_w_0;
 
       //diff出力
+      /*
       std::cout << "diff_v:" << diff_v << " ";
       std::cout << "diff_w:" << diff_w << " ";
       std::cout << "diff_w_0:" << diff_w_0 << " ";
       std::cout << "diff:" << diff << " step" << step << std::endl;
+      */
       
-      if(diff<1e-6 && step >= 50){
+      if( step >= 10){
         break;
       }
       prev_V = V;
@@ -5015,7 +5024,7 @@ int return_user_number()
 #elif defined SUSHI_450I_7U
   return 2978;
 #elif defined ARTIFICIALITY //人工
-  return 80;//4;//80
+  return 5;//4;//80
 #elif defined TEST // 動作確認用テストデータ
   return 6;
 #elif defined SAMPLE
@@ -5062,7 +5071,7 @@ int return_item_number()
 #elif defined SUSHI_450I_7U
   return 31;
 #elif defined ARTIFICIALITY //人工
-  return 100;//5;//20
+  return 5;//5;//20
 #elif defined TEST // 動作確認用テストデータ
   return 4;
 #elif defined SAMPLE

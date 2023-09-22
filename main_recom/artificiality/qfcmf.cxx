@@ -94,7 +94,7 @@ int main(int argc, char *argv[]){
     for(int kesson = KESSON_BEGIN; kesson <= KESSON; kesson += KIZAMI){
   */
 
-  for(double mf_alpha = 0.001; mf_alpha < 0.050; mf_alpha *=5 ){
+  for(double mf_alpha = 0.005; mf_alpha < 0.025; mf_alpha *=5 ){
   for(double mf_beta = 0.01; mf_beta < 0.21; mf_beta += 0.02){
   for(double Lam=10;Lam<=1000;Lam*=10){
   for(double Em=0.001;Em<=0.1;Em*=10){
@@ -109,7 +109,6 @@ int main(int argc, char *argv[]){
     std::vector<std::string> dirs = MkdirMF({METHOD_NAME}, para, kesson);
 
     //std::cout <<dirs << std::endl;
-
   //Recomクラスの生成
   Recom recom(user_number, item_number, 0, 0, kesson, cin[0], cin[1]);
   recom.method_name() = METHOD_NAME;

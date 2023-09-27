@@ -20,7 +20,7 @@ int pata_num = 4;
   int j; //strの4列目を出力するためのカウント
   int kesson_i = 0;
   
-  std::string date = "80100-10-30-4-45";
+  std::string date = "0927";
 
   std::string str, tmp;
   //出力ファイル名
@@ -30,12 +30,12 @@ int pata_num = 4;
 
   for(int kesson = 4500 ; kesson <= 7500 ; kesson += 500){ 
   for(int lam = 10 ; lam <= 1000 ; lam *= 10){
-  for(double m=0.001;m<=0.1;m*=10){
+  for(double m=0.1;m<=1.0;m+=0.1){
 
   for(int c_num=4 ; c_num <= 4; c_num++){
     double mae_ave = 0;
     double auc_ave = 0;
-  for(int D = 3 ; D <= 8; D++){ //潜在次元数
+  for(int D = 2 ; D <= 9; D++){ //潜在次元数
   for(double beta = 0.01; beta < 0.22; beta += 0.02){
   for(double alpha = 0.001; alpha <= 0.002; alpha *= 10){
   //入力ファイル名

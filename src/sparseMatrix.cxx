@@ -101,6 +101,26 @@ SparseMatrix SparseMatrix::operator-(void) const{
   return result;
 }
 
+Matrix operator*(const SparseMatrix &lhs, const Matrix &rhs){
+  if(lhs.rows()<1 || rhs.cols()<1 || lhs.cols()!=rhs.rows()){
+    std::cout << "Can't calculate innerproduct";
+    std::cout << "for 0-sized vector";
+    std::cout << "or for different sized vector";
+    std::cout << std::endl;
+    exit(1);
+  }
+  Matrix result(lhs.rows(), rhs.cols());
+  for(int i=0;i<result.rows();i++){
+    for(int j=0;j<result.cols();j++){
+      result[i][j]=0.0;
+      for(int k=0;k<lhs[i].essencialSize();k++){
+	      result[i][j]+=lhs[i].elementIndex(k)*rhs[k][j];
+      }
+    }
+  }
+  return result;
+}
+
 std::ostream &operator<<(std::ostream &os, const SparseMatrix &rhs){
   os << "(";
   if(rhs.rows()>0){

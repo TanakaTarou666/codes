@@ -2750,6 +2750,319 @@ int Recom::qfcmf_pred(std::string dir, double K_percent, int steps, int C,double
   return 0;
 }
 
+int Recom::qfcmf_a_pred(std::string dir, double K_percent, int steps, int C,double Lambda, double FuzzifierEm, double beta, double alpha) 
+{//はクラスタ数
+
+ int K;
+ 
+  if(return_user_number() > return_item_number()){
+    K = std::round(return_item_number() * K_percent / 100);
+  } else {
+    K = std::round(return_user_number() * K_percent / 100);
+  }
+  if(K == 0){
+      K = 1;
+  }
+  K = K_percent;  // 人工用
+
+  if(steps < 50){
+    std::cerr << "MF: \"step\" should be 50 or more.";
+    return 1;
+  }
+
+  Matrix IncompleteData(return_user_number(),return_item_number(),0.0);
+
+  for(int i=0;i<SparseIncompleteData.rows();i++){
+    for(int j=0;j<return_item_number();j++){
+      IncompleteData[i][j]=SparseIncompleteData[i].elementIndex(j);
+      //std::cout<<IncompleteData[i][j] <<" ";
+    }
+    //std::cout<<std::endl;
+  }
+
+  Matrix Membership(C,return_user_number(),1.0/(double)C);
+  Matrix Dissimilarities(C,return_user_number(),0);
+  Matrix prev_Membership(C,return_user_number(),1/(double)C);
+  Vector3d P(C,return_user_number(), K), Q(C,return_item_number(), K);
+  Vector clusters_size(C,1.0/C,"all");
+  Vector prev_clusters_size(C,0.0,"all");
+
+  double best_error = DBL_MAX;
+  int NaNcount = 0;
+  int trialLimit = CLUSTERINGTRIALS;
+  int mf_seed = 0;
+  // trialLimit = 1; //debug
+  for(int rand_mf_trial = 0; rand_mf_trial < trialLimit; rand_mf_trial++){
+    std::cout << "QFCMF_a: initial setting " << rand_mf_trial << std::endl;
+    //P, Qの初期値を乱数で決定
+    //疑問:k次元の初期値の設定の仕方は同じでいいのか。
+    std::mt19937_64 mt;
+    for(int c = 0; c < C; c++){
+      for(int k = 0; k < K; k++){
+        for(int i = 0; i < return_user_number(); i++){
+          mt.seed(mf_seed);
+          std::uniform_real_distribution<>
+              rand_p(0.001, 1.0);
+          //ランダムに値生成
+          //W[c][i][k] = rand_p(mt);
+          P[c][i][k] = rand_p(mt);
+          mf_seed++;
+        }
+        for(int j = 0; j < return_item_number(); j++){
+          mt.seed(mf_seed);
+          std::uniform_real_distribution<>
+              rand_q(0.001, 1.0);
+          //ランダムに値生成
+          //H[c][k][j] = rand_q(mt);
+          Q[c][j][k] = rand_q(mt);
+          mf_seed++;
+        }
+        //std::cout << "P:\n" << P << "\nQ:\n" << Q << std::endl;
+      }
+    }
+    
+    for(int k=0;k<return_user_number();k++){
+      double tmp_Mem[C];
+      tmp_Mem[C-1]=1.0;
+      for(int i=0;i<C-1;i++){
+      mt.seed(mf_seed);
+      std::uniform_real_distribution<>rand_p(0.01, 1.0/(double)C);
+      tmp_Mem[i]=rand_p(mt);
+      tmp_Mem[C-1]-=tmp_Mem[i];
+      mf_seed++;
+      }
+            // [0, 99] 範囲の一様乱数
+      for (int i = 0; i < C; i++) {
+        mt.seed(mf_seed);
+        std::uniform_int_distribution<> rand100(0, 99);
+        int r = rand100(mt) % (1+i);
+        double tmp = tmp_Mem[i];
+        tmp_Mem[i] = tmp_Mem[r];
+        tmp_Mem[r] = tmp;
+        mf_seed++;
+    }
+      for(int i=0;i<C;i++){
+        Membership[i][k]=tmp_Mem[i];
+      }
+    }
+    
+    Vector3d prev_P(P.height(), P.rows(), P.cols(), 0.0);
+    Vector3d prev_Q(Q.height(), Q.rows(), Q.cols(), 0.0);
+
+    double error = 0.0;
+    bool ParameterNaN = false;
+
+    //初期値確認
+    /*
+    
+    std::cout << "alpha:\n" << alpha << std::endl;
+    std::cout << "FuzzifierEm:\n" << FuzzifierEm << std::endl;
+    std::cout << "beta:\n" << beta << std::endl; 
+    std::cout << "Missng:\n" << Missing << std::endl;
+    
+    std::cout << "x:\n" << IncompleteData << std::endl;
+    std::cout << "u:\n" << Membership << std::endl;
+    std::cout << "p:\n" << P << std::endl;
+    std::cout << "q:\n" << Q << std::endl;
+    */
+
+
+    for(int step = 0; step < steps; step++){
+      Vector3d K_PQ(C,return_user_number(), return_item_number(),0.0);
+      //ここから更新
+      prev_Q=Q;
+      prev_P=P;
+      Matrix K_P(C,K,0.0);
+      Matrix K_Q(C,K,0.0);
+      double P_L2Norm = 0.0, Q_L2Norm = 0.0;
+
+      for(int c=0;c<C;c++){
+        //i...Nでループ
+        for(int i = 0; i < P[c].rows();i++){ //i
+            for(int j=0; j < Q[c].rows();j++){ //j
+                if(IncompleteData[i][j] != 0){
+                  double err = IncompleteData[i][j] - P[c][i]*Q[c][j];
+                  //std::cout << "err:" << err << " P[c][i]*Q[c][j]" << P[c][i]*Q[c][j] << " P[c][i]" << P[c][i] << " Q[c][j]" << Q[c][j] << std::endl;
+                  for(int k = 0; k < K; k++){
+                    //if(Membership[c][i] > 0){
+                          P[c][i][k] -=alpha*(pow(clusters_size[i],FuzzifierEm)*pow(Membership[c][i],FuzzifierEm)*(-2.0*Q[c][j][k]*err + 1.0*beta*P[c][i][k]));
+                          Q[c][j][k] -=alpha*(pow(clusters_size[i],FuzzifierEm)*pow(Membership[c][i],FuzzifierEm)*(-2.0*P[c][i][k]*err + 1.0*beta*Q[c][j][k]));
+                          //}
+                  }//k
+                }//not data
+              //std::cout << "QFCMF: j end" << j << std::endl;
+            }//j
+            //std::cout << "QFCMF: i end" << i << std::endl;
+        }//i
+
+           P_L2Norm = 0.0, Q_L2Norm = 0.0;
+          for(int i = 0; i < return_user_number(); i++){
+            P_L2Norm +=P[c][i] * P[c][i];
+          }
+          for(int j = 0; j < Q.rows(); j++){
+            Q_L2Norm += Q[c][j] * Q[c][j];
+         }
+
+        for(int i=0;i<return_user_number();i++){
+            Dissimilarities[c][i]=0.0;
+            for(int j=0;j<return_item_number();j++){
+              if(IncompleteData[i][j]!=0){
+              double tmp=0.0;
+              for(int k=0;k<K;k++){
+                tmp+=P[c][i][k]*Q[c][j][k];
+              }
+              Dissimilarities[c][i]+=(IncompleteData[i][j]-tmp)*(IncompleteData[i][j]-tmp) + beta*P_L2Norm + beta*Q_L2Norm;
+            }
+            }
+          }
+      }//C
+
+      //ここからuの更新
+      prev_Membership=Membership;
+      for(int c=0;c<C;c++){
+      for(int i=0;i<return_user_number();i++){
+          if(Dissimilarities[c][i]!=0.0){
+          double denominator=0.0;
+          for(int j=0;j<C;j++){
+            denominator+=pow((1-Lambda*(1-FuzzifierEm)*Dissimilarities[c][i])/(1-Lambda*(1-FuzzifierEm)*Dissimilarities[j][i]),1.0/(FuzzifierEm-1));    
+            Membership[c][i]=1.0/(denominator);
+            }
+          }
+        }
+      }
+
+      //ここからaの更新
+    prev_clusters_size=clusters_size;
+    for(int k=0;k<return_user_number();k++){
+        for(int i=0;i<C;i++){
+          if((Dissimilarities[i][k]!=0.0) && (Membership[i][k]!=0.0)){
+            double denominator=0.0;
+            for(int j=0;j<C;j++){
+              denominator+= pow(pow(Membership[j][k],FuzzifierEm)*(1-Lambda*(1-FuzzifierEm)*Dissimilarities[j][k])
+                                /pow(Membership[i][k],FuzzifierEm)*(1-Lambda*(1-FuzzifierEm)*Dissimilarities[i][k]), 1.0/(FuzzifierEm));
+            }
+          clusters_size[i]=1.0/denominator;
+          }
+        }
+    }//k  
+
+      double diff_u=frobenius_norm(prev_Membership-Membership);
+      double diff_a=norm_square(prev_clusters_size-clusters_size);
+      double diff_p=frobenius_norm(prev_P-P);
+      double diff_q=frobenius_norm(prev_Q-Q);
+      double diff=diff_u+diff_p+diff_q+diff_a;
+
+ /*
+      std::cout << "p:\n" << P << std::endl;
+      std::cout << "q:\n" << Q << std::endl;
+      std::cout << "d:\n" << Dissimilarities << std::endl;
+      std::cout << "u:\n" << Membership << std::endl;
+
+      std::cout<< "step = " << step <<std::endl;
+
+ 
+      std::cout << "prev_P-P:\n" << prev_P-P << std::endl;
+
+      */
+
+      std::cout << "#diff:" << diff << "\t";
+      std::cout << "#diff_u:" << diff_u << "\t";
+      std::cout << "#diff_p:" << diff_p << "\t";
+      std::cout << "#diff_q:" << diff_q << "\t";
+      std::cout << "#diff_a:" << diff_a << "\n"; // << step << "\n";
+      
+      /*
+      std::cout<< "step = " << step << ", error = " << error;
+        std::cout <<  "\n";
+        */
+      
+        /*
+      以下gdbコマンド
+
+      make artificiality_qfcmf.out
+      gdb ./artificiality_qfcmf.out 
+
+      b recom.cxx:2681
+      run 1 1 2 2 
+      c
+
+      以降cまたはenterでb recom.cxx:n のn行目まで実行
+      */
+
+      
+
+      //diff==NaNなら強制終了
+      if(!isfinite(diff)){
+      
+
+        std::cout <<"エラー"<<std::endl;
+        break;
+      }
+
+      Matrix Pre(80,100,0.0);
+
+      if(diff < 0.011&&step >= 50){      
+        //std::cout << "u:\n" << Membership << "\n step:" << step << std::endl;
+        for(int p=0;p<K;p++){
+        for(int i=0;i<C;i++){
+          for(int u=0;u<80;u++){
+            for(int j=0;j<100;j++){
+              Pre[u][j] += pow(clusters_size[i],FuzzifierEm)*Membership[i][u]*P[i][u][p] * Q[i][j][p];
+            }
+          }
+        }
+        }
+        //std::cout <<"Prediction:\n"<< Pre <<std::endl;
+        std::cout <<"step:"<< step << "," << error <<std::endl;
+        break;
+      }
+
+      error = 0.0;
+      P_L2Norm = 0.0, Q_L2Norm = 0.0;
+      for(int i = 0; i < C; i++){
+        for(int j = 0; j < return_user_number(); j++){
+            error += pow(clusters_size[i],1-FuzzifierEm)*pow(Membership[i][j],FuzzifierEm)*Dissimilarities[i][j]+1/(Lambda*(FuzzifierEm-1))*(pow(clusters_size[i],FuzzifierEm)*pow(Membership[i][j],FuzzifierEm)-Membership[i][j]);
+          }
+          for(int k = 0; k < return_user_number(); k++){
+            P_L2Norm +=P[i][k] * P[i][k];
+          }
+          for(int j = 0; j < Q.rows(); j++){
+            Q_L2Norm += Q[i][j] * Q[i][j];
+         }
+        }
+
+         error += beta*(P_L2Norm + Q_L2Norm);
+      std::cout <<"#f:"<< error <<std::endl;
+      if(step == steps - 1){
+            std::cout<< "step = " << step << ", error = " << error 
+                      << ", K: " << K_percent  << std::endl;
+          ParameterNaN = true;
+      }
+    }
+
+    
+    if(ParameterNaN){
+      NaNcount++;
+      //初期値全部{NaN出た or step上限回更新して収束しなかった} => 1を返して終了
+      if(NaNcount == trialLimit){
+        return 1;
+      }
+      } else if(error < best_error){
+      best_error = error;
+      for(int index = 0; index < Missing; index++){
+        Prediction[index]=0.0;
+        for(int p=0;p<K;p++){
+        for(int i=0;i<C;i++){
+        Prediction[index] += pow(clusters_size[i],FuzzifierEm)*Membership[i][KessonIndex[index][0]]*P[i][KessonIndex[index][0]][p] * Q[i][KessonIndex[index][1]][p];
+        }
+        }
+        //std::cout <<"Prediction:"<<Prediction[index]<< " SparseCorrectData:" << SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1]) <<std::endl;
+      }
+      }
+  }
+  return 0;
+}
+
 int Recom::nmf_pred(std::string dir, double K_percent, int steps) 
 {//K以外は初期値有なので指定無しでも可 betaは熱田先輩のやつでいうγ　alphaは学習率　kは潜在次元数？ 　dirも謎
  int K;
@@ -3120,7 +3433,7 @@ int Recom::nmf_pred_after_clustering(std::string dir, double K_percent, int step
 
     K = K_percent;
 
-//ユーザーの平均値計算
+  //ユーザーの平均値計算
   double user_average ;
   double user_average_num;
 
@@ -3291,6 +3604,651 @@ int Recom::nmf_pred_after_clustering(std::string dir, double K_percent, int step
     } //初期値ループ
   } //cluster_index
   // std::cout << "Prediction: " << Prediction << std::endl;
+  return 0;
+}
+
+int Recom::qfcnmf_a_pred(std::string dir, double K_percent, int steps, int C,double Lambda, double FuzzifierEm) 
+{//はクラスタ数
+
+ int K;
+ 
+  if(return_user_number() > return_item_number()){
+    K = std::round(return_item_number() * K_percent / 100);
+  } else {
+    K = std::round(return_user_number() * K_percent / 100);
+  }
+  if(K == 0){
+      K = 1;
+    }
+  if(steps < 50){
+    std::cerr << "QFCNMF_a: \"step\" should be 50 or more.";
+    return 1;
+  }
+
+    K = K_percent;  // 人工用
+
+  Matrix IncompleteData(return_user_number(),return_item_number(),0.0);
+
+  //ユーザーの平均値計算
+  double user_average ;
+  double user_average_num;
+  for(int i=0;i<SparseIncompleteData.rows();i++){
+    user_average = 0.0;
+    user_average_num = 0.0;
+    for(int j=0;j<return_item_number();j++){
+      user_average += SparseIncompleteData[i].elementIndex(j);
+      if(SparseIncompleteData[i].elementIndex(j) != 0) user_average_num ++;
+    }
+    user_average /=  user_average_num;
+    for(int j=0;j<return_item_number();j++){
+      IncompleteData[i][j]=SparseIncompleteData[i].elementIndex(j);
+      if(IncompleteData[i][j]==0) IncompleteData[i][j]=user_average; //欠損値の初期値
+      //std::cout<<IncompleteData[i][j] <<" ";
+    }
+    //std::cout<< user_average <<std::endl;
+  }
+  //std::cout<< IncompleteData <<std::endl;
+  //std::cout<< user_average_num <<std::endl;
+
+  Matrix Membership(C,return_user_number(),1.0/(double)C);
+  Matrix Dissimilarities(C,return_user_number(),0);
+  Matrix prev_Membership(C,return_user_number(),1/(double)C);
+  Vector3d W(C,return_user_number(), K), H(C,K,return_item_number());
+  Vector clusters_size(C,1.0/C,"all");
+  Vector prev_clusters_size(C,0.0,"all");
+
+  double best_error = DBL_MAX;
+  int NaNcount = 0;
+  int trialLimit = CLUSTERINGTRIALS;
+  int mf_seed = 0;
+  // trialLimit = 1; //debug
+  for(int rand_mf_trial = 0; rand_mf_trial < trialLimit; rand_mf_trial++){
+    std::cout << "QFCNMF_a: initial setting " << rand_mf_trial << std::endl;
+    //P, Qの初期値を乱数で決定
+    //疑問:k次元の初期値の設定の仕方は同じでいいのか。
+    std::mt19937_64 mt;
+    for(int c = 0; c < C; c++){
+      for(int k = 0; k < K; k++){
+        for(int i = 0; i < return_user_number(); i++){
+          mt.seed(mf_seed);
+          std::uniform_real_distribution<>
+              rand_p(0.001, 1.0);
+          //ランダムに値生成
+          W[c][i][k] = rand_p(mt);
+          mf_seed++;
+        }
+        for(int j = 0; j < return_item_number(); j++){
+          mt.seed(mf_seed);
+          std::uniform_real_distribution<>
+              rand_q(0.001, 1.0);
+          //ランダムに値生成
+          H[c][k][j] = rand_q(mt);
+          mf_seed++;
+        }
+        //std::cout << "P:\n" << P << "\nQ:\n" << Q << std::endl;
+      }
+    }
+    
+    for(int k=0;k<return_user_number();k++){
+      double tmp_Mem[C];
+      tmp_Mem[C-1]=1.0;
+      for(int i=0;i<C-1;i++){
+      mt.seed(mf_seed);
+      std::uniform_real_distribution<>rand_p(0.01, 1.0/(double)C);
+      tmp_Mem[i]=rand_p(mt);
+      tmp_Mem[C-1]-=tmp_Mem[i];
+      mf_seed++;
+      }
+            // [0, 99] 範囲の一様乱数
+      for (int i = 0; i < C; i++) {
+        mt.seed(mf_seed);
+        std::uniform_int_distribution<> rand100(0, 99);
+        int r = rand100(mt) % (1+i);
+        double tmp = tmp_Mem[i];
+        tmp_Mem[i] = tmp_Mem[r];
+        tmp_Mem[r] = tmp;
+        mf_seed++;
+    }
+      for(int i=0;i<C;i++){
+        Membership[i][k]=tmp_Mem[i];
+      }
+    }
+    
+    Vector3d prev_W(W.height(), W.rows(), W.cols(), 0.0);
+    Vector3d prev_H(H.height(), H.rows(), H.cols(), 0.0);
+
+    double error = 0.0;
+    bool ParameterNaN = false;
+
+ /*
+ //初期値確認
+    std::cout << "x:\n" << IncompleteData << std::endl;
+    std::cout << "u:\n" << Membership << std::endl;
+    std::cout << "h:\n" << H << std::endl;
+    std::cout << "w:\n" << W << std::endl;
+    */
+
+    for(int step = 0; step < steps; step++){
+ //ここからHの更新
+    prev_H=H;
+    for(int i=0;i<C;i++){
+      Matrix H_numerator;
+      Matrix H_denominator;
+      Vector tmp(return_user_number(), 0.0, "all");
+      for(int k=0;k<return_user_number();k++){
+        tmp[k]=pow(Membership[i][k],FuzzifierEm);
+      }
+
+      //std::cout << "QFCNMF:" << rand_mf_trial << std::endl;
+
+      H_numerator=transpose(W[i])*Matrix(tmp,"diag")*IncompleteData;
+      H_denominator=transpose(W[i])*Matrix(tmp,"diag")*W[i]*H[i] ;
+      /*std::cout << "H_numerator" << i << ":\n" << H_numerator << std::endl;
+        std::cout << "H_denominator" << i << ":\n" << H_denominator << std::endl;*/
+
+        //std::cout << "QFCNMF:" << rand_mf_trial << std::endl;
+
+      for(int row=0;row<H[i].rows();row++){
+        for(int col=0;col<H[i].cols();col++){
+        if(H_numerator[row][col]!=0 && H_denominator[row][col]!=0 && H[i][row][col]!=0.0){
+          H[i][row][col]*=(H_numerator[row][col]/H_denominator[row][col]);
+      //std::cout <<"H_denominator[row][col]:"<<H_denominator[row][col] << " H_numerator[row][col]:"<< H_numerator[row][col] <<std::endl;
+      //std::cout <<"Data:"<<IncompleteData[row][col] << " H:"<< H[i][row][col] << " W:"<< W[i][row][col] <<std::endl;
+        }
+        }
+      }
+    }//C
+
+    //std::cout << "QFCNMF:  :" << rand_mf_trial << std::endl;
+
+    //std::cout << "h:\n" << H << std::endl;
+ //ここからWの更新
+    prev_W=W;
+    Matrix W_numerator;
+    Matrix W_denominator;
+    for(int i=0;i<C;i++){
+      W_numerator=IncompleteData*transpose(H[i]);
+      W_denominator=W[i]*H[i]*transpose(H[i]);
+      for(int row=0;row<W[i].rows();row++){
+        for(int col=0;col<W[i].cols();col++){
+    if(W_numerator[row][col]!=0 && W_denominator[row][col]!=0 && W[i][row][col]!=0.0){
+      W[i][row][col]*=(W_numerator[row][col]/W_denominator[row][col]);
+ 
+    }
+        }
+      }
+  }
+   // std::cout << "w:\n" << W << std::endl;
+
+ //ここからdの更新
+    for(int i=0;i<C;i++){
+        for(int k=0;k<return_user_number();k++){
+          Dissimilarities[i][k]=0.0;
+          for(int j=0;j<return_item_number();j++){
+            if(IncompleteData[k][j]!=0){
+      double tmp=0.0;
+      for(int p=0;p<K;p++){
+        tmp+=W[i][k][p]*H[i][p][j];
+      }
+      Dissimilarities[i][k]+=(IncompleteData[k][j]-tmp)*(IncompleteData[k][j]-tmp);
+          }
+          }
+        }
+      }
+       //std::cout << "d:\n" << Dissimilarities << std::endl;
+
+ //ここからuの更新
+   prev_Membership=Membership;
+  for(int k=0;k<return_user_number();k++){
+      for(int i=0;i<C;i++){
+        if(Dissimilarities[i][k]!=0.0){
+	        double denominator=0.0;
+          for(int j=0;j<C;j++){
+            denominator += (clusters_size[j] / clusters_size[i])*pow((1.0-Lambda*(1-FuzzifierEm)*Dissimilarities[j][k])/(1.0-Lambda*(1-FuzzifierEm)*Dissimilarities[i][k]), 1.0/(1.0-FuzzifierEm));
+          }
+	      Membership[i][k]=1.0/denominator;
+        }
+      }
+  }//k      
+  std::cout << "u:\n" << Membership << std::endl;
+
+  //ここからaの更新
+   prev_clusters_size=clusters_size;
+  for(int k=0;k<return_user_number();k++){
+      for(int i=0;i<C;i++){
+        if((Dissimilarities[i][k]!=0.0) && (Membership[i][k]!=0.0)){
+	        double denominator=0.0;
+          for(int j=0;j<C;j++){
+            denominator+= pow(pow(Membership[j][k],FuzzifierEm)*(1.0-Lambda*(1.0-FuzzifierEm)*Dissimilarities[j][k])
+                              /pow(Membership[i][k],FuzzifierEm)*(1.0-Lambda*(1.0-FuzzifierEm)*Dissimilarities[i][k]), 1.0/(FuzzifierEm));
+          }
+	      clusters_size[i]=1.0/denominator;
+        //std::cout << "d:" << denominator << std::endl;
+        }
+      }
+  }//k   
+    std::cout << "a:\n" << clusters_size << std::endl;
+
+    std::string filename = dir + "/";
+  filename += "_Membership.txt";
+  std::ofstream ofs(filename, std::ios::app);
+  if (!ofs)
+  {
+    std::cerr << "ファイルopen失敗(Membership): " << filename << std::endl;
+  }
+  else
+  {
+      ofs << Membership << std::endl;
+    ofs.close();
+  }
+
+
+   Vector3d a =prev_H-H;
+
+    double diff_u=frobenius_norm(prev_Membership-Membership);
+    double diff_a=norm_square(prev_clusters_size-clusters_size);
+    double diff_h=frobenius_norm(prev_H-H);
+    double diff_w=frobenius_norm(prev_W-W);
+    double diff=diff_u+diff_h+diff_w+diff_a;
+    //diff==NaNなら強制終了
+    if(!isfinite(diff)){
+      break;
+    }
+
+        for(int index = 0; index < Missing; index++){
+          Prediction[index]=0.0;
+        for(int p=0;p<K;p++){
+        for(int i=0;i<C;i++){
+        Prediction[index] += Membership[i][KessonIndex[index][0]]*W[i][KessonIndex[index][0]][p] * H[i][p][KessonIndex[index][1]];
+        }
+        }
+        //std::cout <<"Prediction:"<<Prediction[index]<< " SparseCorrectData:" << SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1]) <<std::endl;
+      }
+
+    /*
+    std::cout << "#diff:" << diff << "\t";
+    std::cout << "#diff_u:" << diff_u << "\t";
+    std::cout << "#diff_h:" << diff_h << "\t";
+    std::cout << "#diff_w:" << diff_w << "\n";
+    */
+    
+  Matrix Pre(return_user_number(),return_item_number(),0.0);
+    if(diff<0.011 && step >= 50){
+     //std::cout <<  <<std::endl;
+     for(int p=0;p<K;p++){
+        for(int i=0;i<C;i++){
+          for(int u=0;u<80;u++){
+            for(int j=0;j<100;j++){
+              Pre[u][j] += Membership[i][u]*W[i][u][p] * H[i][p][j];
+            }
+          }
+        }
+        }
+        std::cout <<"Prediction:\n"<<Pre <<std::endl;
+        std::cout <<"step:"<< step << "," << error <<std::endl;
+        
+      break;
+    }
+    if(step >= 2000){
+      break;
+    }
+
+    error = 0.0;
+    for(int i = 0; i < C; i++){
+      for(int j = 0; j < return_user_number(); j++){
+          error += pow(clusters_size[i],1-FuzzifierEm)*pow(Membership[i][j],FuzzifierEm)*Dissimilarities[i][j]+1.0/(Lambda*(FuzzifierEm-1))*(pow(clusters_size[i],1-FuzzifierEm)*pow(Membership[i][j],FuzzifierEm)-Membership[i][j]);
+        }
+      }
+        std::cout << "#f:" << error << ":step:" << step << "\n";
+    if(step == steps - 1){
+          std::cout<< "step = " << step << ", error = " << error 
+                    << ", K: " << K_percent  << std::endl;
+        ParameterNaN = true;
+      }
+    }
+
+
+      if(ParameterNaN){
+      NaNcount++;
+      //初期値全部{NaN出た or step上限回更新して収束しなかった} => 1を返して終了
+      if(NaNcount == trialLimit){
+        return 1;
+      }
+    } else if(error < best_error){
+      best_error = error;
+      //計算済みのP, Qから評価値予測を実行
+      /*
+      for(int index = 0; index < Missing; index++){
+        Prediction[index]=0.0;
+        //欠損箇所だけ計算
+        for(int p=0;p<K;p++){
+        for(int i=0;i<C;i++){
+        Prediction[index] += Membership[i][KessonIndex[index][0]]*W[i][KessonIndex[index][0]][p] * H[i][p][KessonIndex[index][1]];
+        }
+        }
+        std::cout <<"Prediction:"<<Prediction[index]<< " SparseCorrectData:" << SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1]) <<std::endl;
+      }
+      */
+    }
+    
+  }
+  return 0;
+}
+
+int Recom::qfcwnmf_a_pred(std::string dir, double K_percent, int steps, int C,double Lambda, double FuzzifierEm) 
+{//はクラスタ数
+
+ int K;
+ 
+  if(return_user_number() > return_item_number()){
+    K = std::round(return_item_number() * K_percent / 100);
+  } else {
+    K = std::round(return_user_number() * K_percent / 100);
+  }
+  if(K == 0){
+      K = 1;
+    }
+  if(steps < 50){
+    std::cerr << "QFCWNMF_a: \"step\" should be 50 or more.";
+    return 1;
+  }
+
+    K = K_percent;  // 人工用
+
+  Matrix Sij(return_user_number(), return_item_number(), 1.0);
+
+  //欠損場所をSijに与える
+  for(int i=0;i<SparseIncompleteData.rows();i++){
+    for(int j=0;j<return_item_number();j++){
+      if(SparseIncompleteData[i].elementIndex(j) == 0)
+        Sij[i][j] = 0.0;
+    }
+    
+  }
+
+  Matrix Membership(C,return_user_number(),1.0/(double)C);
+  Matrix Dissimilarities(C,return_user_number(),0);
+  Matrix prev_Membership(C,return_user_number(),1/(double)C);
+  Vector3d W(C,return_user_number(), K), H(C,K,return_item_number());
+  Vector clusters_size(C,1.0/C,"all");
+  Vector prev_clusters_size(C,0.0,"all");
+
+  double best_error = DBL_MAX;
+  int NaNcount = 0;
+  int trialLimit = CLUSTERINGTRIALS;
+  int mf_seed = 0;
+  // trialLimit = 1; //debug
+  for(int rand_mf_trial = 0; rand_mf_trial < trialLimit; rand_mf_trial++){
+    std::cout << "QFCWNMF_a: initial setting " << rand_mf_trial << std::endl;
+    //P, Qの初期値を乱数で決定
+    //疑問:k次元の初期値の設定の仕方は同じでいいのか。
+    std::mt19937_64 mt;
+    for(int c = 0; c < C; c++){
+      for(int k = 0; k < K; k++){
+        for(int i = 0; i < return_user_number(); i++){
+          mt.seed(mf_seed);
+          std::uniform_real_distribution<>
+              rand_p(0.001, 1.0);
+          //ランダムに値生成
+          W[c][i][k] = rand_p(mt);
+          mf_seed++;
+        }
+        for(int j = 0; j < return_item_number(); j++){
+          mt.seed(mf_seed);
+          std::uniform_real_distribution<>
+              rand_q(0.001, 1.0);
+          //ランダムに値生成
+          H[c][k][j] = rand_q(mt);
+          mf_seed++;
+        }
+        //std::cout << "P:\n" << P << "\nQ:\n" << Q << std::endl;
+      }
+    }
+    
+    for(int k=0;k<return_user_number();k++){
+      double tmp_Mem[C];
+      tmp_Mem[C-1]=1.0;
+      for(int i=0;i<C-1;i++){
+      mt.seed(mf_seed);
+      std::uniform_real_distribution<>rand_p(0.01, 1.0/(double)C);
+      tmp_Mem[i]=rand_p(mt);
+      tmp_Mem[C-1]-=tmp_Mem[i];
+      mf_seed++;
+      }
+            // [0, 99] 範囲の一様乱数
+      for (int i = 0; i < C; i++) {
+        mt.seed(mf_seed);
+        std::uniform_int_distribution<> rand100(0, 99);
+        int r = rand100(mt) % (1+i);
+        double tmp = tmp_Mem[i];
+        tmp_Mem[i] = tmp_Mem[r];
+        tmp_Mem[r] = tmp;
+        mf_seed++;
+    }
+      for(int i=0;i<C;i++){
+        Membership[i][k]=tmp_Mem[i];
+      }
+    }
+    
+    Vector3d prev_W(W.height(), W.rows(), W.cols(), 0.0);
+    Vector3d prev_H(H.height(), H.rows(), H.cols(), 0.0);
+
+    double error = 0.0;
+    bool ParameterNaN = false;
+
+ /*
+ //初期値確認
+    std::cout << "x:\n" << IncompleteData << std::endl;
+    std::cout << "u:\n" << Membership << std::endl;
+    std::cout << "h:\n" << H << std::endl;
+    std::cout << "w:\n" << W << std::endl;
+    */
+
+    for(int step = 0; step < steps; step++){
+ //ここからHの更新
+    prev_H=H;
+    for(int i=0;i<C;i++){
+      Matrix H_numerator;
+      Matrix H_denominator;
+      Vector tmp(return_user_number(), 0.0, "all");
+      for(int k=0;k<return_user_number();k++){
+        tmp[k]=pow(Membership[i][k],FuzzifierEm);
+      }
+
+      //std::cout << "QFCNMF:" << rand_mf_trial << std::endl;
+
+      H_numerator=transpose(W[i])*Matrix(tmp,"diag")*Hadamard(SparseIncompleteData,Sij);
+      H_denominator=transpose(W[i])*Matrix(tmp,"diag")*M_Hadamard(W[i]*H[i],Sij);
+      /*std::cout << "H_numerator" << i << ":\n" << H_numerator << std::endl;
+        std::cout << "H_denominator" << i << ":\n" << H_denominator << std::endl;*/
+
+        //std::cout << "QFCNMF:" << rand_mf_trial << std::endl;
+
+      for(int row=0;row<H[i].rows();row++){
+        for(int col=0;col<H[i].cols();col++){
+        if(H_numerator[row][col]!=0 && H_denominator[row][col]!=0 && H[i][row][col]!=0.0){
+          H[i][row][col]*=(H_numerator[row][col]/H_denominator[row][col]);
+      //std::cout <<"H_denominator[row][col]:"<<H_denominator[row][col] << " H_numerator[row][col]:"<< H_numerator[row][col] <<std::endl;
+      //std::cout <<"Data:"<<IncompleteData[row][col] << " H:"<< H[i][row][col] << " W:"<< W[i][row][col] <<std::endl;
+        }
+        }
+      }
+    }//C
+
+    //std::cout << "QFCNMF:  :" << rand_mf_trial << std::endl;
+
+    //std::cout << "h:\n" << H << std::endl;
+ //ここからWの更新
+    prev_W=W;
+    Matrix W_numerator;
+    Matrix W_denominator;
+    for(int i=0;i<C;i++){
+      W_numerator=Hadamard(SparseIncompleteData,Sij)*transpose(H[i]);
+      W_denominator=M_Hadamard(W[i]*H[i],Sij)*transpose(H[i]);
+      for(int row=0;row<W[i].rows();row++){
+        for(int col=0;col<W[i].cols();col++){
+    if(W_numerator[row][col]!=0 && W_denominator[row][col]!=0 && W[i][row][col]!=0.0){
+      W[i][row][col]*=(W_numerator[row][col]/W_denominator[row][col]);
+ 
+    }
+        }
+      }
+  }
+   // std::cout << "w:\n" << W << std::endl;
+
+  //ここからdの更新
+      for(int i=0;i<C;i++){
+        for(int k=0;k<return_user_number();k++){
+          Dissimilarities[i][k]=0.0;
+          for(int j=0;j<return_item_number();j++){
+            if(SparseIncompleteData[k].elementIndex(j)!=0){
+              double tmp=0.0;
+              for(int p=0;p<K;p++){
+                tmp+=W[i][k][p]*H[i][p][j];
+              }
+              Dissimilarities[i][k]+=Sij[k][j]*(SparseIncompleteData[k].elementIndex(j)-tmp)
+                                        *(SparseIncompleteData[k].elementIndex(j)-tmp);
+            }
+            //std::cout << "IncompleteData[k][j]:" << SparseIncompleteData[k].elementIndex(j) << "| Sij:" << Sij[k][j] << std::endl;
+          }
+        }
+      }
+       //std::cout << "d:\n" << Dissimilarities << std::endl;
+
+ //ここからuの更新
+   prev_Membership=Membership;
+  for(int k=0;k<return_user_number();k++){
+      for(int i=0;i<C;i++){
+        if(Dissimilarities[i][k]!=0.0){
+	        double denominator=0.0;
+          for(int j=0;j<C;j++){
+            denominator+= clusters_size[j] / clusters_size[i]
+                *pow((1-Lambda*(1-FuzzifierEm)*Dissimilarities[j][k])/(1-Lambda*(1-FuzzifierEm)*Dissimilarities[i][k]), 1.0/(1-FuzzifierEm));
+          }
+	      Membership[i][k]=1.0/denominator;
+        }
+      }
+  }//k      
+  //std::cout << "u:\n" << Membership << std::endl;
+
+  //ここからaの更新
+   prev_clusters_size=clusters_size;
+  for(int k=0;k<return_user_number();k++){
+      for(int i=0;i<C;i++){
+        if((Dissimilarities[i][k]!=0.0) && (Membership[i][k]!=0.0)){
+	        double denominator=0.0;
+          for(int j=0;j<C;j++){
+            denominator+= pow(pow(Membership[j][k],FuzzifierEm)*(1-Lambda*(1-FuzzifierEm)*Dissimilarities[j][k])
+                              /pow(Membership[i][k],FuzzifierEm)*(1-Lambda*(1-FuzzifierEm)*Dissimilarities[i][k]), 1.0/(FuzzifierEm));
+          }
+	      clusters_size[i]=1.0/denominator;
+        }
+      }
+  }//k   
+
+    std::string filename = dir + "/";
+  filename += "_Membership.txt";
+  std::ofstream ofs(filename, std::ios::app);
+  if (!ofs)
+  {
+    std::cerr << "ファイルopen失敗(Membership): " << filename << std::endl;
+  }
+  else
+  {
+      ofs << Membership << std::endl;
+    ofs.close();
+  }
+
+
+   Vector3d a =prev_H-H;
+
+    double diff_u=frobenius_norm(prev_Membership-Membership);
+    double diff_a=norm_square(prev_clusters_size-clusters_size);
+    double diff_h=frobenius_norm(prev_H-H);
+    double diff_w=frobenius_norm(prev_W-W);
+    double diff=diff_u+diff_h+diff_w+diff_a;
+    //diff==NaNなら強制終了
+    if(!isfinite(diff)){
+      break;
+    }
+
+        for(int index = 0; index < Missing; index++){
+          Prediction[index]=0.0;
+        for(int p=0;p<K;p++){
+        for(int i=0;i<C;i++){
+        Prediction[index] += Membership[i][KessonIndex[index][0]]*W[i][KessonIndex[index][0]][p] * H[i][p][KessonIndex[index][1]];
+        }
+        }
+        std::cout <<"Prediction:"<<Prediction[index]<< " SparseCorrectData:" << SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1]) <<std::endl;
+      }
+
+    /*
+    std::cout << "#diff:" << diff << "\t";
+    std::cout << "#diff_u:" << diff_u << "\t";
+    std::cout << "#diff_h:" << diff_h << "\t";
+    std::cout << "#diff_w:" << diff_w << "\n";
+    */
+    
+  Matrix Pre(return_user_number(),return_item_number(),0.0);
+    if(diff<0.011 && step >= 50){
+     //std::cout <<  <<std::endl;
+     for(int p=0;p<K;p++){
+        for(int i=0;i<C;i++){
+          for(int u=0;u<80;u++){
+            for(int j=0;j<100;j++){
+              Pre[u][j] += Membership[i][u]*W[i][u][p] * H[i][p][j];
+            }
+          }
+        }
+        }
+        std::cout <<"Prediction:\n"<<Pre <<std::endl;
+        std::cout <<"step:"<< step << "," << error <<std::endl;
+        
+      break;
+    }
+    if(step >= 2000){
+      break;
+    }
+
+    error = 0.0;
+    for(int i = 0; i < C; i++){
+      for(int j = 0; j < return_user_number(); j++){
+          error += pow(clusters_size[i],1-FuzzifierEm)*pow(Membership[i][j],FuzzifierEm)*Dissimilarities[i][j]+1.0/(Lambda*(FuzzifierEm-1))*(pow(clusters_size[i],1-FuzzifierEm)*pow(Membership[i][j],FuzzifierEm)-Membership[i][j]);
+        }
+      }
+        std::cout << "#f:" << error << ":step:" << step << "\n";
+    if(step == steps - 1){
+          std::cout<< "step = " << step << ", error = " << error 
+                    << ", K: " << K_percent  << std::endl;
+        ParameterNaN = true;
+      }
+    }
+
+
+      if(ParameterNaN){
+      NaNcount++;
+      //初期値全部{NaN出た or step上限回更新して収束しなかった} => 1を返して終了
+      if(NaNcount == trialLimit){
+        return 1;
+      }
+    } else if(error < best_error){
+      best_error = error;
+      //計算済みのP, Qから評価値予測を実行
+      /*
+      for(int index = 0; index < Missing; index++){
+        Prediction[index]=0.0;
+        //欠損箇所だけ計算
+        for(int p=0;p<K;p++){
+        for(int i=0;i<C;i++){
+        Prediction[index] += Membership[i][KessonIndex[index][0]]*W[i][KessonIndex[index][0]][p] * H[i][p][KessonIndex[index][1]];
+        }
+        }
+        std::cout <<"Prediction:"<<Prediction[index]<< " SparseCorrectData:" << SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1]) <<std::endl;
+      }
+      */
+    }
+    
+  }
   return 0;
 }
 
@@ -3529,19 +4487,31 @@ int Recom::qfcnmf_pred(std::string dir, double K_percent, int steps, int C,doubl
         Prediction[index] += Membership[i][KessonIndex[index][0]]*W[i][KessonIndex[index][0]][p] * H[i][p][KessonIndex[index][1]];
         }
         }
-        //std::cout <<"Prediction:"<<Prediction[index]<< " SparseCorrectData:" << SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1]) <<std::endl;
+        std::cout <<"Prediction:"<<Prediction[index]<< " SparseCorrectData:" << SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1]) <<std::endl;
       }
 
-    
+    /*
     std::cout << "#diff:" << diff << "\t";
     std::cout << "#diff_u:" << diff_u << "\t";
     std::cout << "#diff_h:" << diff_h << "\t";
     std::cout << "#diff_w:" << diff_w << "\n";
+    */
     
-    
-
+  Matrix Pre(return_user_number(),return_item_number(),0.0);
     if(diff<0.011 && step >= 50){
      //std::cout <<  <<std::endl;
+     for(int p=0;p<K;p++){
+        for(int i=0;i<C;i++){
+          for(int u=0;u<80;u++){
+            for(int j=0;j<100;j++){
+              Pre[u][j] += Membership[i][u]*W[i][u][p] * H[i][p][j];
+            }
+          }
+        }
+        }
+        std::cout <<"Prediction:\n"<<Pre <<std::endl;
+        std::cout <<"step:"<< step << "," << error <<std::endl;
+        
       break;
     }
     if(step >= 2000){
@@ -3551,7 +4521,7 @@ int Recom::qfcnmf_pred(std::string dir, double K_percent, int steps, int C,doubl
     error = 0.0;
     for(int i = 0; i < C; i++){
       for(int j = 0; j < return_user_number(); j++){
-          error += pow(Membership[i][j],FuzzifierEm)*Dissimilarities[i][j]+1.0/(Lambda*(FuzzifierEm-1))*(pow(Membership[i][j],FuzzifierEm)-1);
+          error += pow(Membership[i][j],FuzzifierEm)*Dissimilarities[i][j]+1.0/(Lambda*(FuzzifierEm-1))*(pow(Membership[i][j],FuzzifierEm)-Membership[i][j]);
         }
       }
         std::cout << "#f:" << error << "\n";
@@ -3820,6 +4790,10 @@ int Recom::qfcwnmf_pred(std::string dir, double K_percent, int steps, int C,doub
         }
         //std::cout <<"Prediction:"<<Prediction[index]<< " SparseCorrectData:" << SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1]) <<std::endl;
       }
+      
+
+        
+
 
       /*
       std::cout << "#diff:" << diff << "\t";
@@ -3831,34 +4805,34 @@ int Recom::qfcwnmf_pred(std::string dir, double K_percent, int steps, int C,doub
 
       if(diff<0.011 && step >= 50){
       //std::cout <<  <<std::endl;
+        Matrix Pre(return_user_number(),return_item_number(),0);
+
+        for(int p=0;p<K;p++){
+        for(int i=0;i<C;i++){
+          for(int u=0;u<80;u++){
+            for(int j=0;j<100;j++){
+              Pre[u][j] += Membership[i][u]*W[i][u][p] * H[i][p][j];
+            }
+          }
+        }
+        }
+        std::cout <<"Prediction:\n"<<Pre <<std::endl;
+        std::cout <<"step:"<< step << "," << error <<std::endl;
+
         break;
       }
       if(step >= 2000){
         break;
       }
 
-      double error_1 = 0.0;
-      double error_2 = 0.0;
-      double error_3 = 0.0;
-      double error_4 = 0.0;
       error = 0.0;
       for(int i = 0; i < C; i++){
         for(int j = 0; j < return_user_number(); j++){
-          error += pow(Membership[i][j],FuzzifierEm)*Dissimilarities[i][j]+1.0/(Lambda*(FuzzifierEm-1))*(pow(Membership[i][j],FuzzifierEm)-1);
-          std::cout << "#f:" << error ;
-          std::cout << "#f1:" << pow(Membership[i][j],FuzzifierEm) ;
-          std::cout << "#f2:" << Dissimilarities[i][j] ;
-          std::cout << "#f3:" << 1.0/(Lambda*(FuzzifierEm-1)) ;
-          std::cout << "#f4:" << (pow(Membership[i][j],FuzzifierEm)-1) << std::endl;
+          error += pow(Membership[i][j],FuzzifierEm)*Dissimilarities[i][j]+1.0/(Lambda*(FuzzifierEm-1))*(pow(Membership[i][j],FuzzifierEm)-Membership[i][j]);
         }
       }
       std::cout << "#f:" << error ;
-      /*
-      std::cout << "#f-1:" << error-1 ;
-      std::cout << "#f-2:" << error-2 ;
-      std::cout << "#f-3:" << error-3 ;
-      std::cout << "#f-4:" << error-4 << std::endl;
-      */
+      
       if(step == steps - 1){
           std::cout<< "step = " << step << ", error = " << error 
                     << ", K: " << K_percent  << std::endl;

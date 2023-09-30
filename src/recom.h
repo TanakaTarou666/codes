@@ -33,8 +33,8 @@
 #elif defined ARTIFICIALITY // uekara 7500 500 500
 //#define KESSON 5
 //#define KESSON_BEGIN 5
-#define KESSON 7500//500//2
-#define KESSON_BEGIN 4500//52
+#define KESSON 501//500//2
+#define KESSON_BEGIN 500//52
 #define KIZAMI 500
 #elif defined JESTER
 #define KESSON 100000
@@ -214,9 +214,12 @@ protected:
   int nmf_pred_after_clustering(std::string dir, double K, int steps = 2000);
   //予測値計算:QFCMF
   int qfcmf_pred(std::string dir, double K, int steps=2000, int C=2,double Lambda=100, double FuzzifierEm=1.01, double beta = 0.05, double alpha = 1.0E-2);
+  int qfcmf_a_pred(std::string dir, double K, int steps=2000, int C=2,double Lambda=100, double FuzzifierEm=1.01, double beta = 0.05, double alpha = 1.0E-2);
   //予測値計算:QFCNMF
   int qfcnmf_pred(std::string dir, double K, int steps = 2000, int C=2,double Lambda=100, double FuzzifierEm=1.01);
   int qfcwnmf_pred(std::string dir, double K, int steps = 2000, int C=2,double Lambda=100, double FuzzifierEm=1.01);
+  int qfcnmf_a_pred(std::string dir, double K, int steps = 2000, int C=2,double Lambda=100, double FuzzifierEm=1.01);
+  int qfcwnmf_a_pred(std::string dir, double K, int steps = 2000, int C=2,double Lambda=100, double FuzzifierEm=1.01);
   //予測値計算:MPBMF
   int mpbmf_pred(std::string dir, int K, int Scale, double D, double beta, double alpha = 1.0E-2, int steps = 2000);
   //予測値計算:FM

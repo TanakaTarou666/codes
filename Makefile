@@ -213,7 +213,15 @@ main_recom/artificiality/nmf_qrfcm.cxx
 artificiality_bfcnmf.out : $(objects) src/recom.cxx \
 main_recom/artificiality/bfcnmf.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
-	-DARTIFICIALITY $(FS) -o $@			
+	-DARTIFICIALITY $(FS) -o $@
+artificiality_qfcnmf_a.out : $(objects) src/recom.cxx \
+main_recom/artificiality/qfcnmf_a.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@	
+artificiality_qfcwnmf_a.out : $(objects) src/recom.cxx \
+main_recom/artificiality/qfcwnmf_a.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@				
 artificiality_qfcnmf.out : $(objects) src/recom.cxx \
 main_recom/artificiality/qfcnmf.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
@@ -244,6 +252,10 @@ main_recom/artificiality/qfcwnmf.cxx
 	-DARTIFICIALITY $(FS) -o $@		
 artificiality_qfcwnmf-4.out : $(objects) src/recom.cxx \
 main_recom/artificiality/qfcwnmf.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@	
+artificiality_qfcmf_a.out : $(objects) src/recom.cxx \
+main_recom/artificiality/qfcmf_a.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
 	-DARTIFICIALITY $(FS) -o $@		
 artificiality_qfcmf.out : $(objects) src/recom.cxx \

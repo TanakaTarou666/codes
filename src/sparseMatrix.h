@@ -42,6 +42,6 @@ Matrix M_Hadamard(const Matrix &lhs, const Matrix &rhs);
 
 SparseMatrix S_Hadamard(const SparseMatrix &lhs, const Matrix &rhs);
 SparseMatrix S_Hadamard(const Matrix &lhs, const Matrix &rhs);
-SparseMatrix S_Hadamard(const Matrix &lhs, const Matrix &rhs,  const SparseMatrix &result);
+SparseMatrix S_Hadamard(const Matrix &lhs, const Matrix &rhs,SparseMatrix &result);
 
 #endif

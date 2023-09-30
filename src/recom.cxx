@@ -2995,7 +2995,6 @@ int Recom::wnmf_pred(std::string dir, double K_percent, int steps)
     Matrix transpose_Sij=transpose(Sij);
     SparseMatrix S_PQ = S_Hadamard(Sij,Sij);
     SparseMatrix transpose_S_PQ = S_Hadamard(transpose_Sij,transpose_Sij);
-    std::cout << transpose_S_PQ <<std::endl;
      std::cout << "step start" <<std::endl;
     for(int step = 0; step < steps; step++){
     
@@ -3005,11 +3004,11 @@ int Recom::wnmf_pred(std::string dir, double K_percent, int steps)
     Matrix PQ=rapid_mul(P,transpose(Q));
     //std::cout << "PQ"  << rapid_mul(P,transpose(Q))<<std::endl;
       P_numerator=SMData*Q;
-      std::cout << "P_numerator" <<std::endl;
-      SparseMatrix PQS=S_Hadamard(Sij,PQ);
+      std::cout << "rapid_mul(P,transpose(Q))" <<std::endl;
+      SparseMatrix PQS=S_Hadamard(Sij,PQ,S_PQ);
       std::cout << "S_Hadamard(PQ,Sij)" <<std::endl;
       P_denominator=PQS*Q;
-      std::cout << "P_denominator" <<std::endl;
+      std::cout << "PQS*Q" <<std::endl;
    for(int row=0;row<P.rows();row++){
         for(int col=0;col<P.cols();col++){
           if(P_denominator[row][col]>0.000000001){
@@ -3022,9 +3021,9 @@ int Recom::wnmf_pred(std::string dir, double K_percent, int steps)
     Matrix Q_numerator;
     Matrix Q_denominator;
     Q_numerator=rapid_mul(transpose(P),MData);
-    std::cout << "Q_numerator" <<std::endl;
-    Q_denominator=S_Hadamard(transpose_Sij,rapid_mul(Q,transpose(P)))*P;
-    std::cout << "Q_denominator" <<std::endl;
+    std::cout << "rapid_mul(transpose(P),MData)" <<std::endl;
+    Q_denominator=S_Hadamard(transpose_Sij,rapid_mul(Q,transpose(P)),transpose_S_PQ)*P;
+    std::cout << "S_Hadamard(transpose_Sij,rapid_mul(Q,transpose(P)),transpose_S_PQ)*P" <<std::endl;
     for(int row=0;row<Q.rows();row++){
       for(int col=0;col<Q.cols();col++){
         if(Q_denominator[row][col]>0.000000001) {
@@ -3035,7 +3034,17 @@ int Recom::wnmf_pred(std::string dir, double K_percent, int steps)
     std::cout << "Q" <<std::endl;
 
       double diff = frobenius_norm(prev_P - P) + frobenius_norm(prev_Q - Q);
-      std::cout << "step:"<<step<<" diff:"<< diff <<std::endl;
+      error = 0;
+      for(int i = 0; i < P.rows(); i++){
+        for(int j = 0; j < SparseIncompleteData[i].essencialSize(); j++){
+          if(SparseIncompleteData[i].elementIndex(j) != 0){
+          error += Sij[i][j]*pow(SparseIncompleteData[i].elementIndex(j)
+                    - (P[i] * Q[SparseIncompleteData[i].indexIndex(j)])
+                    , 2);
+          }
+        }
+      }
+      std::cout << "step:"<<step<<" diff:"<< diff << " error:" << error<<std::endl;
 
       prev_P = P;
       prev_Q = Q;
@@ -3044,14 +3053,14 @@ int Recom::wnmf_pred(std::string dir, double K_percent, int steps)
         break;
       }
 
-      //   if( step >= 100){
+      //   if( step >= 0){
       //   break;
       // }
-      // if(step == steps - 1){
-      //     std::cout<< "step = " << step << ", error = " << error 
-      //               << ", K: " << K_percent  << std::endl;
-      //   ParameterNaN = true;
-      // }
+      if(step == steps - 1){
+          std::cout<< "step = " << step << ", error = " << error 
+                    << ", K: " << K_percent  << std::endl;
+        ParameterNaN = true;
+      }
     }//stepのループ
 
     error = 0;

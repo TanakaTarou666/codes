@@ -11,7 +11,7 @@
 //#define CLUSTERINGTRIALS 1
 //pearson, eicf, co-clustering
 #define METHOD_NUMBER 2
-//#define BOOK
+#define BOOK
 //BookCrossingは10240欠損させる
 //他は20480欠損させる
 //BEGINは最初の欠損数，ENDは最大の欠損数

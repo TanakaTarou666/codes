@@ -215,19 +215,22 @@ SparseMatrix S_Hadamard(const Matrix &lhs, const Matrix &rhs){
   	    sv.modifyElement(a[1][j],a[0][j],lhs[i][j]*rhs[i][j]);
     }
     result[i] = sv;
+ 
   }
   
   return result;
 }
 
-SparseMatrix S_Hadamard(const Matrix &lhs, const Matrix &rhs,const SparseMatrix &result){
+SparseMatrix S_Hadamard(const Matrix &lhs, const Matrix &rhs,SparseMatrix &result){
   int n=rhs.rows(),m=rhs.cols();
   int lowsNum;
   for(int i=0;i<n;i++){
+    int k=0;
     for(int j=0;j<m;j++){
-      int k=0;
       if(lhs[i][j]!=0 && rhs[i][j]!=0){
   	    result[i].modifyElement(k,j,lhs[i][j]*rhs[i][j]);
+           //std::cout << result[i] << std::endl;
+           //std::cout << 10000*i+j*100+k << std::endl;
         k++;
       }
     }

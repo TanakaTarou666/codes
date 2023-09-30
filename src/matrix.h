@@ -91,4 +91,6 @@ Matrix max_fraction(const Matrix &);
 //行列の各ベクトルの要素の和で各ベクトルの要素を割る
 Matrix sum_fraction(const Matrix &);
 
+Matrix rapid_mul(const Matrix &lhs, const Matrix &rhs);
+
 #endif

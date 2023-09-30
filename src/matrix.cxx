@@ -477,3 +477,36 @@ Matrix sum_fraction(const Matrix &arg){
   }
   return result;
 }
+
+Matrix rapid_mul(const Matrix &lhs, const Matrix &rhs){
+  if(lhs.rows()<1 || rhs.cols()<1 || lhs.cols()!=rhs.rows()){
+    std::cout << "Can't calculate innerproduct";
+    std::cout << "for 0-sized vector";
+    std::cout << "or for different sized vector";
+    std::cout << std::endl;
+    exit(1);
+  }
+  boost::numeric::ublas::matrix<double> A(lhs.rows(), lhs.cols());
+  boost::numeric::ublas::matrix<double> B(rhs.rows(), rhs.cols());
+  boost::numeric::ublas::matrix<double> C;
+  for(int i=0;i<lhs.rows();i++){
+      for(int j=0;j<lhs.cols();j++){
+          A(i,j)=lhs[i][j];
+      }
+  }
+  for(int i=0;i<rhs.rows();i++){
+      for(int j=0;j<rhs.cols();j++){
+          B(i,j)=rhs[i][j];
+      }
+  }
+  C = boost::numeric::ublas::prod(A, B);
+  Matrix result(lhs.rows(), rhs.cols());
+
+      for(int i=0;i<result.rows();i++){
+        for(int j=0;j<result.cols();j++){
+            result[i][j]=C(i,j);
+        }
+    }
+
+  return result;
+}

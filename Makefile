@@ -319,7 +319,7 @@ main_recom/artificiality/fm.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
 	-DARTIFICIALITY $(FS) -o $@
 artificiality_fm_test.out : $(objects) src/recom.cxx \
-main_recom/artificiality/fm-test.cxx
+main_recom/artificiality/fm-test.cxx 
 	$(CXX) $(CXXFLAGS)  $^ \
 	-DARTIFICIALITY $(FS) -o $@
 artificiality_qfcm.out : $(qfcm) src/recom.cxx \
@@ -386,6 +386,12 @@ grouplens.out : $(objects) src/recom.cxx main_recom/grouplens.cxx
 mf.out : $(objects) src/recom.cxx main_recom/mf.cxx
 	$(CXX) $(CXXFLAGS) $^ \
 	$(DATASET) $(FS) -o $@
+nmf.out : $(objects) src/recom.cxx main_recom/nmf.cxx
+	$(CXX) $(CXXFLAGS) $^ \
+	$(DATASET) $(FS) -o $@	
+wnmf.out : $(objects) src/recom.cxx main_recom/wnmf.cxx
+	$(CXX) $(CXXFLAGS) $^ \
+	$(DATASET) $(FS) -o $@		
 mf_qfcs.out : $(qfcs) src/recom.cxx main_recom/mf_qfcs.cxx
 	$(CXX) $(CXXFLAGS) $^ \
 	$(DATASET) $(FS) -o $@

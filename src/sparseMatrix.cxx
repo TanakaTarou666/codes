@@ -114,7 +114,8 @@ Matrix operator*(const SparseMatrix &lhs, const Matrix &rhs){
     for(int j=0;j<result.cols();j++){
       result[i][j]=0.0;
       for(int k=0;k<lhs[i].essencialSize();k++){
-	      result[i][j]+=lhs[i].elementIndex(k)*rhs[k][j];
+	      result[i][j]+=lhs[i].elementIndex(k)*rhs[lhs[i].indexIndex(k)][j];
+        //std::cout<<i*10000+j*100+k<<std::endl;
       }
     }
   }
@@ -170,5 +171,67 @@ Matrix M_Hadamard(const Matrix &lhs, const Matrix &rhs){
   	      result[i][j]=lhs[i][j]*rhs[i][j];
     }
   }
+  return result;
+}
+
+SparseMatrix S_Hadamard(const SparseMatrix &lhs, const Matrix &rhs){
+  SparseMatrix result(rhs.rows(), rhs.cols());
+  int lowsNum;
+  for(int i=0;i<result.rows();i++){
+    lowsNum=0;
+    int a[lhs[i].essencialSize()+1];
+    a[0]=0; 
+    for(int j=0;j<lhs[i].essencialSize();j++){
+      if(lhs[i].elementIndex(j) != 0 && rhs[i][lhs[i].indexIndex(j)]!=0) lowsNum++;
+      a[j+1]=lowsNum;
+    }
+    SparseVector sv(rhs.cols(),lowsNum);
+    for(int j=0;j<lhs[i].essencialSize();j++){
+      if(a[j]!=a[j+1])
+  	    sv.modifyElement(a[j],lhs[i].indexIndex(j),lhs[i].elementIndex(j)*rhs[i][lhs[i].indexIndex(j)]);
+    }
+    result[i] = sv;
+  }
+  return result;
+}
+
+SparseMatrix S_Hadamard(const Matrix &lhs, const Matrix &rhs){
+  int n=rhs.rows(),m=rhs.cols();
+  SparseMatrix result(n, m);
+  int lowsNum;
+  for(int i=0;i<n;i++){
+    lowsNum=0;
+    int a[2][m+1];
+    a[0][0]=0;
+    a[1][0]=0;  
+    for(int j=0;j<m;j++){
+      a[0][j+1]=j+1;
+      if(lhs[i][j] != 0 && rhs[i][j]!=0) lowsNum++;
+      a[1][j+1]=lowsNum;
+    }
+    SparseVector sv(m,lowsNum);
+    for(int j=0;j<m;j++){
+      if(a[1][j]!=a[1][j+1])
+  	    sv.modifyElement(a[1][j],a[0][j],lhs[i][j]*rhs[i][j]);
+    }
+    result[i] = sv;
+  }
+  
+  return result;
+}
+
+SparseMatrix S_Hadamard(const Matrix &lhs, const Matrix &rhs,const SparseMatrix &result){
+  int n=rhs.rows(),m=rhs.cols();
+  int lowsNum;
+  for(int i=0;i<n;i++){
+    for(int j=0;j<m;j++){
+      int k=0;
+      if(lhs[i][j]!=0 && rhs[i][j]!=0){
+  	    result[i].modifyElement(k,j,lhs[i][j]*rhs[i][j]);
+        k++;
+      }
+    }
+  }
+  
   return result;
 }

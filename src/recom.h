@@ -11,16 +11,20 @@
 //#define CLUSTERINGTRIALS 1
 //pearson, eicf, co-clustering
 #define METHOD_NUMBER 2
+//#define BOOK
 //BookCrossingは10240欠損させる
 //他は20480欠損させる
 //BEGINは最初の欠損数，ENDは最大の欠損数
 #ifdef BOOK
-#define KESSON 20000
-#define KESSON_BEGIN 20000
+#define KESSON 15000
+#define KESSON_BEGIN 15000
 #define KIZAMI 5000
 #elif defined SUSHI
-#define KESSON 40000
-#define KESSON_BEGIN 40000
+// #define KESSON 40000
+// #define KESSON_BEGIN 40000
+// #define KIZAMI 50000
+#define KESSON 10000
+#define KESSON_BEGIN 10000
 #define KIZAMI 50000
 #elif defined SUSHI_NINE
 #define KESSON 25000
@@ -33,8 +37,8 @@
 #elif defined ARTIFICIALITY // uekara 7500 500 500
 //#define KESSON 5
 //#define KESSON_BEGIN 5
-#define KESSON 7500//500//2
-#define KESSON_BEGIN 4500//52
+#define KESSON 7000//500//2
+#define KESSON_BEGIN 7000//52
 #define KIZAMI 500
 #elif defined JESTER
 #define KESSON 100000

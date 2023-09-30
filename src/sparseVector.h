@@ -44,6 +44,7 @@ class SparseVector{
   SparseVector operator-(void) const;
   bool operator==(const SparseVector &rhs) const;
   bool operator!=(const SparseVector &rhs) const;
+  void modifyElement(int n,int index, double value); 
 };
 
 std::ostream &operator<<(std::ostream &os, const SparseVector &rhs);

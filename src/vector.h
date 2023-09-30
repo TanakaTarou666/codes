@@ -15,6 +15,8 @@
 #include<sys/stat.h>
 #include<experimental/filesystem>
 #include<boost/math/special_functions/binomial.hpp>
+#include <boost/numeric/ublas/matrix.hpp>
+#include <boost/numeric/ublas/io.hpp>
 using namespace std::experimental::filesystem::v1;
 /*
   ムーブとコピーの違い

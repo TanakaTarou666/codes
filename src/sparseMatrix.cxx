@@ -155,9 +155,9 @@ double frobenius_norm(const SparseMatrix &arg){
 Matrix Hadamard(const SparseMatrix &lhs, const Matrix &rhs){
   Matrix result(rhs.rows(), rhs.cols(),0.0);
   for(int i=0;i<result.rows();i++){
-    for(int j=0;j<result.cols();j++){
+    for(int j=0;j<lhs[i].essencialSize();j++){
         if(lhs[i].elementIndex(j) != 0)
-  	      result[i][j]=lhs[i].elementIndex(j)*rhs[i][j];
+  	      result[i][lhs[i].indexIndex(j)]=lhs[i].elementIndex(j)*rhs[i][lhs[i].indexIndex(j)];
     }
   }
   return result;

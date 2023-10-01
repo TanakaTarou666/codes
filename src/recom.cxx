@@ -2051,14 +2051,6 @@ int Recom::mf_pred(std::string dir, double K_percent, double beta, double alpha,
     std::cerr << "MF: \"step\" should be 50 or more.";
     return 1;
   }
-  K = K_percent;
-  /*
-      std::cout <<"K:"<<K<<std::endl;
-  std::cout << "MF: 0.essencialSize :" << SparseIncompleteData[0].essencialSize() << std::endl;
-  std::cout << "MF: 0.elementIndex.0 :" << SparseIncompleteData[0].elementIndex(2) << std::endl;
-  std::cout << "MF: 0.indexIndex.0 :" << SparseIncompleteData[0].indexIndex(2) << std::endl;
-  std::cout << "MF: \n" << SparseIncompleteData << std::endl;
-  */
 
   Matrix P(return_user_number(), K), Q(return_item_number(), K);
   double best_error = DBL_MAX;
@@ -2087,7 +2079,6 @@ int Recom::mf_pred(std::string dir, double K_percent, double beta, double alpha,
         Q[j][k_i] = rand_q(mt);
         mf_seed++;
       }
-      //std::cout << "P:\n" << P << "\nQ:\n" << Q << std::endl;
     }
     //近似式は R = P^T * Q (P:k×m行列, Q:k×n行列) だが，
     //プログラムの都合上 P:m×k行列, Q:n×k行列 と定義．
@@ -2098,14 +2089,6 @@ int Recom::mf_pred(std::string dir, double K_percent, double beta, double alpha,
     Matrix prev_Q(Q.rows(), Q.cols(), 0.0);
     bool ParameterNaN = false;
 
-    /*
-    std::cout << "x:\n" << SparseIncompleteData << std::endl;
-    std::cout << "p:\n" << P << std::endl;
-    std::cout << "q:\n" << Q << std::endl;
-    */
-
-    //std::cout << "SparseIncompleteData[i].essencialSize():\n" << SparseIncompleteData[0].essencialSize() << std::endl;
-
     for(int step = 0; step < steps; step++){
       prev_Q=Q;
       prev_P=P;
@@ -2114,8 +2097,7 @@ int Recom::mf_pred(std::string dir, double K_percent, double beta, double alpha,
           if(SparseIncompleteData[i].elementIndex(j) != 0){
             // e = r - p * q
             double err = SparseIncompleteData[i].elementIndex(j) - (P[i] * Q[SparseIncompleteData[i].indexIndex(j)]);
-            //std::cout << "err(" << i << "," << j  << "):" << err << "|" << P[i] * Q[SparseIncompleteData[i].indexIndex(j)] << std::endl;
-            //更新式で更新
+            //更新
             for(int k_i = 0; k_i < K; k_i++){
               P[i][k_i]
                 += alpha * (2 * err * Q[SparseIncompleteData[i].indexIndex(j)][k_i] - beta * P[i][k_i]);
@@ -2140,7 +2122,6 @@ int Recom::mf_pred(std::string dir, double K_percent, double beta, double alpha,
                           << ", beta = " << beta 
                           << ", alpha = " << alpha 
                           << std::endl;
-              //std::cout << "\nQ:\n" << Q << std::endl;
                 ParameterNaN = true;
                 break;
               }
@@ -2165,7 +2146,7 @@ int Recom::mf_pred(std::string dir, double K_percent, double beta, double alpha,
           error += pow(
                     SparseIncompleteData[i].elementIndex(j)
                     - (P[i] * Q[SparseIncompleteData[i].indexIndex(j)])
-                    , 2);
+                    , 2);    
           }
         }
         P_L2Norm += P[i] * P[i];
@@ -2173,57 +2154,22 @@ int Recom::mf_pred(std::string dir, double K_percent, double beta, double alpha,
       for(int j = 0; j < Q.rows(); j++){
         Q_L2Norm += Q[j] * Q[j];
       }
-      error += (beta/2.0) * (P_L2Norm + Q_L2Norm);
 
-      std::cout << "L:" << error << std::endl;
-
-      //収束判定
-      //if(fabs(prev_error - error) < 1.0E-5){
-      //if(prev_error < error){
-      
-      //double diff = frobenius_norm(prev_P - P) + frobenius_norm(prev_Q - Q);
       double diff = frobenius_norm(prev_P - P) + frobenius_norm(prev_Q - Q);
-      
- 
-      /*
-      std::cout << "p:\n" << P << std::endl;
-      std::cout << "q:\n" << Q << std::endl;
-      */
-     std::cout << "diff_p:"  << frobenius_norm(prev_P - P) << "diff_q:"  << frobenius_norm(prev_Q - Q)  << "diff:" << diff << "step" << step << std::endl;
-      
-      
+     std::cout << "diff_p:"  << frobenius_norm(prev_P - P) << " diff_q:"  << frobenius_norm(prev_Q - Q)  << " diff:" << diff << " step" << step << " L:" << error << std::endl;
+     error += (beta/2.0) * (P_L2Norm + Q_L2Norm);
 
-        /*
-      以下gdbコマンド
-
-      make artificiality_mf.out
-      gdb ./artificiality_mf.out 
-
-      b recom.cxx:2194
-      run 1 1 5 5 
-      c
-      */
-      //diff出力
-      // std::ofstream ofs_diff(dir + "/diff/diff" + std::to_string(rand_mf_trial) + ".txt", std::ios::app);
-      // ofs_diff << step << "\t"
-      //           << std::fixed << std::setprecision(10) << diff << std::endl;
-      // ofs_diff.close();
-      //収束条件
-      // if(false){ //diff出力用
-      if(diff < 0.011 && step >= 50){
+      if(diff < 0.7 && step >= 50){
          std::cout << "error = " << error << ", step = " << step << std::endl;
         break;
       }
 
-      //prev_P = P;
-      //prev_Q = Q;
       if(step == steps - 1){
           std::cout<< "step = " << step << ", error = " << error 
                     << ", K: " << K_percent << "%, beta = " << beta
                     << ", alpha = " << alpha << std::endl;
         ParameterNaN = true;
       }
-      //prev_error = error;
     }
     if(ParameterNaN){
       NaNcount++;
@@ -2237,27 +2183,9 @@ int Recom::mf_pred(std::string dir, double K_percent, double beta, double alpha,
       for(int index = 0; index < Missing; index++){
         //欠損箇所だけ計算
         Prediction[index] = P[KessonIndex[index][0]] * Q[KessonIndex[index][1]];
-        //std::cout <<"Prediction:"<<Prediction[index]<< " SparseCorrectData:" << SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1]) <<std::endl;
-        //std::cout << Prediction[index]- SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1])<<std::endl;
       }
-      Matrix Pre(return_user_number(), return_item_number());
-      for(int i = 0; i < return_user_number(); i++){
-        for(int j = 0; j < return_item_number(); j++){
-              Pre[i][j] += P[i] * Q[j];
-              //std::cout << "w[k]" << w[k] << std::endl;
-        }
-      }
-      //std::cout << " pre [" << Pre << std::endl;
     }
   } //初期値ループ
-  //debug
-  // int count_pred = 0;
-  // for(int index = 0; index < Missing; index++){
-  //   if(Prediction[index] > 10.0){
-  //     count_pred++;
-  //   }
-  // }
-  // std::cout << "Prediction over 10: " << count_pred << std::endl;
   return 0;
 }
 
@@ -2430,23 +2358,12 @@ int Recom::mf_pred_after_clustering(std::string dir, double K_percent, double be
         }
         error += (beta/2.0) * (P_L2Norm + Q_L2Norm);
 
-        //if(fabs(prev_error - error) < 1.0E-5){ //収束判定
-        //if(prev_error < error){
         double diff = frobenius_norm(prev_P - P) + frobenius_norm(prev_Q - Q);
-        //diff出力
-        // std::ofstream ofs_diff(dir + "/diff/diff" + std::to_string(rand_mf_trial) + ".txt", std::ios::app);
-        // ofs_diff << step << "\t"
-        //           << std::fixed << std::setprecision(10) << diff << std::endl;
-        // ofs_diff.close();
-        //収束条件
-      // if(false){ //diff出力用
-        if(diff < 0.011 && step >= 50){
-          // std::cout << "error = " << error << ", step = " << step << std::endl;
+
+        if(diff < 0.7 && step >= 50){
           break;
         }
-        if(step >= 2000){
-         break;
-        }
+
         prev_P = P;
         prev_Q = Q;
         if(step == steps - 1){
@@ -2914,185 +2831,185 @@ int Recom::nmf_pred(std::string dir, double K_percent, int steps)
   return 0;
 }
 
-int Recom::wnmf_pred(std::string dir, double K_percent, int steps) 
-{//K以外は初期値有なので指定無しでも可 betaは熱田先輩のやつでいうγ　alphaは学習率　kは潜在次元数？ 　dirも謎
- int K;
-  if(return_user_number() > return_item_number()){
-    K = std::round(return_item_number() * K_percent / 100);
-  } else {
-    K = std::round(return_user_number() * K_percent / 100);
-  }
-  if(steps < 50){
-    std::cerr << "WNMF: \"step\" should be 50 or more.";
-    return 1;
-  }
-
-
-  K = K_percent;  // 人工用
-
-  Matrix IncompleteData(return_user_number(),return_item_number(),0.0);
-  //Matrix test_x(return_user_number(),return_item_number(),1.0);
-  //std::cout<< Hadamard(SparseIncompleteData,test_x) <<std::endl;
-  
-  //std::cout<< SparseIncompleteData <<std::endl;
-
-  Matrix Sij(return_user_number(), return_item_number(), 0.0);
-
-  //欠損場所をSijに与える
-  for(int i=0;i<SparseIncompleteData.rows();i++){
-    for(int j=0;j<SparseIncompleteData[i].essencialSize();j++){
-      if(SparseIncompleteData[i].elementIndex(j) != 0)
-        Sij[i][SparseIncompleteData[i].indexIndex(j)] = 1.0;
+int Recom::wnmf_pred(std::string dir, double K_percent, int steps)
+{
+    // K以外は初期値有なので指定無しでも可 betaは熱田先輩のやつでいうγ alphaは学習率 kは潜在次元割合(％)
+    int K;
+    if (return_user_number() > return_item_number())
+    {
+        K = std::round(return_item_number() * K_percent / 100);
     }
-    
-  }
-  //std::cout<< Sij <<std::endl;
-
-
-  Matrix P(return_user_number(), K), Q(return_item_number(), K);
-  double best_error = DBL_MAX;
-  int NaNcount = 0;
-  int trialLimit = CLUSTERINGTRIALS;
-  int mf_seed = 0;
-  
-  // trialLimit = 1; //debug
-  for(int rand_mf_trial  = 0; rand_mf_trial < trialLimit; rand_mf_trial++){
-    std::cout << "WNMF: initial setting " << rand_mf_trial << std::endl;
-    //P, Qの初期値を乱数で決定
-    std::mt19937_64 mt;
-    for(int k_i = 0; k_i < K; k_i++){
-      for(int i = 0; i < P.rows(); i++){
-        mt.seed(mf_seed);
-        std::uniform_real_distribution<>
-            rand_p(0.001, 1.0);
-        //ランダムに値生成
-        P[i][k_i] = rand_p(mt);
-        mf_seed++;
-      }
-      for(int j = 0; j < Q.rows(); j++){
-        mt.seed(mf_seed);
-        std::uniform_real_distribution<>
-            rand_q(0.001, 1.0);
-        //ランダムに値生成
-        Q[j][k_i] = rand_q(mt);
-        mf_seed++;
-      }
-      //std::cout << "P:\n" << P << "\nQ:\n" << Q << std::endl;
+    else
+    {
+        K = std::round(return_user_number() * K_percent / 100);
     }
-
-    double error = 0.0;
-      Matrix prev_P(P.rows(), P.cols(), 0.0);
-      Matrix prev_Q(Q.rows(), Q.cols(), 0.0);
-      bool ParameterNaN = false;
-      
-      Matrix MData=Hadamard(SparseIncompleteData,Sij);
-      SparseMatrix SMData=S_Hadamard(SparseIncompleteData,Sij);
-      
-      //SparseMatrix SMData=S_Hadamard(SparseIncompleteData,Sij);
-      prev_P = P;
-    prev_Q = Q;
-    
-    Matrix transpose_Sij=transpose(Sij);
-    SparseMatrix S_PQ = S_Hadamard(Sij,Sij);
-    SparseMatrix transpose_S_PQ = S_Hadamard(transpose_Sij,transpose_Sij);
-     std::cout << "step start" <<std::endl;
-    for(int step = 0; step < steps; step++){
-    
-    //更新式W
-    Matrix P_numerator;
-    Matrix P_denominator;
-    Matrix PQ=rapid_mul(P,transpose(Q));
-    //std::cout << "PQ"  << rapid_mul(P,transpose(Q))<<std::endl;
-      P_numerator=SMData*Q;
-      std::cout << "rapid_mul(P,transpose(Q))" <<std::endl;
-      SparseMatrix PQS=S_Hadamard(Sij,PQ,S_PQ);
-      std::cout << "S_Hadamard(PQ,Sij)" <<std::endl;
-      P_denominator=PQS*Q;
-      std::cout << "PQS*Q" <<std::endl;
-   for(int row=0;row<P.rows();row++){
-        for(int col=0;col<P.cols();col++){
-          if(P_denominator[row][col]>0.000000001){
-          P[row][col]*=(P_numerator[row][col]/P_denominator[row][col]);
-          }
-      }
-    }
-   std::cout << "P" <<std::endl;
-    //更新式H
-    Matrix Q_numerator;
-    Matrix Q_denominator;
-    Q_numerator=rapid_mul(transpose(P),MData);
-    std::cout << "rapid_mul(transpose(P),MData)" <<std::endl;
-    Q_denominator=S_Hadamard(transpose_Sij,rapid_mul(Q,transpose(P)),transpose_S_PQ)*P;
-    std::cout << "S_Hadamard(transpose_Sij,rapid_mul(Q,transpose(P)),transpose_S_PQ)*P" <<std::endl;
-    for(int row=0;row<Q.rows();row++){
-      for(int col=0;col<Q.cols();col++){
-        if(Q_denominator[row][col]>0.000000001) {
-          Q[row][col]*=(Q_numerator[col][row]/Q_denominator[row][col]);
-          }
-        }
-    }
-    std::cout << "Q" <<std::endl;
-
-      double diff = frobenius_norm(prev_P - P) + frobenius_norm(prev_Q - Q);
-      error = 0;
-      for(int i = 0; i < P.rows(); i++){
-        for(int j = 0; j < SparseIncompleteData[i].essencialSize(); j++){
-          if(SparseIncompleteData[i].elementIndex(j) != 0){
-          error += Sij[i][j]*pow(SparseIncompleteData[i].elementIndex(j)
-                    - (P[i] * Q[SparseIncompleteData[i].indexIndex(j)])
-                    , 2);
-          }
-        }
-      }
-      std::cout << "step:"<<step<<" diff:"<< diff << " error:" << error<<std::endl;
-
-      prev_P = P;
-      prev_Q = Q;
-
-        if(diff < 0.011 && step >= 50){
-        break;
-      }
-
-      //   if( step >= 0){
-      //   break;
-      // }
-      if(step == steps - 1){
-          std::cout<< "step = " << step << ", error = " << error 
-                    << ", K: " << K_percent  << std::endl;
-        ParameterNaN = true;
-      }
-    }//stepのループ
-
-    error = 0;
-      for(int i = 0; i < P.rows(); i++){
-        for(int j = 0; j < SparseIncompleteData[i].essencialSize(); j++){
-          if(SparseIncompleteData[i].elementIndex(j) != 0){
-          error += Sij[i][j]*pow(SparseIncompleteData[i].elementIndex(j)
-                    - (P[i] * Q[SparseIncompleteData[i].indexIndex(j)])
-                    , 2);
-          }
-        }
-      }
-    
-     
-    if(ParameterNaN){
-      NaNcount++;
-      //初期値全部{NaN出た or step上限回更新して収束しなかった} => 1を返して終了
-      if(NaNcount == trialLimit){
+    if (steps < 50)
+    {
+        std::cerr << "WNMF: \"step\" should be 50 or more.";
         return 1;
-      }
-    } else if(error < best_error){
-      best_error = error;
-      //計算済みのP, Qから評価値予測を実行
-      for(int index = 0; index < Missing; index++){
-        //欠損箇所だけ計算
-        Prediction[index] = P[KessonIndex[index][0]] * Q[KessonIndex[index][1]];
-       //std::cout <<"Prediction:"<<Prediction[index]<< " SparseCorrectData:" << SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1]) <<std::endl;
-      }
     }
-  }
-  return 0;
+
+    // K = K_percent;  // 人工用
+
+    Matrix IncompleteData(return_user_number(), return_item_number(), 0.0);
+    Matrix Sij(return_user_number(), return_item_number(), 0.0);
+
+    // 欠損場所をSijに与える
+    for (int i = 0; i < SparseIncompleteData.rows(); i++)
+    {
+        for (int j = 0; j < SparseIncompleteData[i].essencialSize(); j++)
+        {
+            if (SparseIncompleteData[i].elementIndex(j) != 0)
+                Sij[i][SparseIncompleteData[i].indexIndex(j)] = 1.0;
+        }
+    }
+
+    Matrix P(return_user_number(), K), Q(return_item_number(), K);
+    double best_error = DBL_MAX;
+    int NaNcount = 0;
+    int trialLimit = CLUSTERINGTRIALS;
+    int mf_seed = 0;
+
+    // trialLimit = 1; //debug
+    for (int rand_mf_trial = 0; rand_mf_trial < trialLimit; rand_mf_trial++)
+    {
+        std::cout << "WNMF: initial setting " << rand_mf_trial << std::endl;
+        // P, Qの初期値を乱数で決定
+        std::mt19937_64 mt;
+        for (int k_i = 0; k_i < K; k_i++)
+        {
+            for (int i = 0; i < P.rows(); i++)
+            {
+                mt.seed(mf_seed);
+                std::uniform_real_distribution<> rand_p(0.001, 1.0);
+                // ランダムに値生成
+                P[i][k_i] = rand_p(mt);
+                mf_seed++;
+            }
+            for (int j = 0; j < Q.rows(); j++)
+            {
+                mt.seed(mf_seed);
+                std::uniform_real_distribution<> rand_q(0.001, 1.0);
+                // ランダムに値生成
+                Q[j][k_i] = rand_q(mt);
+                mf_seed++;
+            }
+        }
+
+        double error = 0.0;
+        Matrix prev_P(P.rows(), P.cols(), 0.0);
+        Matrix prev_Q(Q.rows(), Q.cols(), 0.0);
+        bool ParameterNaN = false;
+
+        Matrix MData = Hadamard(SparseIncompleteData, Sij);
+        SparseMatrix SMData = S_Hadamard(SparseIncompleteData, Sij);
+
+        prev_P = P;
+        prev_Q = Q;
+
+        Matrix transpose_Sij = transpose(Sij);
+        SparseMatrix S_PQ = S_Hadamard(Sij, Sij);
+        SparseMatrix transpose_S_PQ = S_Hadamard(transpose_Sij, transpose_Sij);
+
+        for (int step = 0; step < steps; step++)
+        {
+            // 更新式W
+            Matrix P_numerator;
+            Matrix P_denominator;
+            Matrix PQ = rapid_mul(P, transpose(Q));
+            P_numerator = SMData * Q;
+            SparseMatrix PQS = S_Hadamard(Sij, PQ, S_PQ);
+            P_denominator = PQS * Q;
+            for (int row = 0; row < P.rows(); row++)
+            {
+                for (int col = 0; col < P.cols(); col++)
+                {
+                    if (P_denominator[row][col] == 0.0)
+                        P_denominator[row][col] = 1.0e-07;
+                    P[row][col] *= (P_numerator[row][col] / P_denominator[row][col]);
+                }
+            }
+            // 更新式H
+            Matrix Q_numerator;
+            Matrix Q_denominator;
+            Q_numerator = rapid_mul(transpose(P), MData);
+            Q_denominator = S_Hadamard(transpose_Sij, rapid_mul(Q, transpose(P)), transpose_S_PQ) * P;
+            for (int row = 0; row < Q.rows(); row++)
+            {
+                for (int col = 0; col < Q.cols(); col++)
+                {
+                    if (Q_denominator[row][col] == 0.0)
+                        Q_denominator[row][col] = 1.0e-07;
+                    Q[row][col] *= (Q_numerator[col][row] / Q_denominator[row][col]);
+                }
+            }
+
+            double err_num = 0;
+            error = 0;
+            for (int i = 0; i < P.rows(); i++)
+            {
+                for (int j = 0; j < SparseIncompleteData[i].essencialSize(); j++)
+                {
+                    if (SparseIncompleteData[i].elementIndex(j) != 0)
+                    {
+                        err_num++;
+                        error += pow(SparseIncompleteData[i].elementIndex(j) - (P[i] * Q[SparseIncompleteData[i].indexIndex(j)]), 2);
+                    }
+                }
+            }
+
+            double diff = frobenius_norm(prev_P - P) + frobenius_norm(prev_Q - Q);
+            std::cout << "step:" << step << " diff:" << diff << " error:" << error << " error_ave:" << error / err_num << std::endl;
+            prev_P = P;
+            prev_Q = Q;
+
+            if (diff < 0.7 && step >= 50)
+            {
+                break;
+            }
+
+            if (step == steps - 1)
+            {
+                std::cout << "step = " << step << ", error = " << error << ", K: " << K_percent << std::endl;
+                ParameterNaN = true;
+            }
+        } // stepのループ
+
+        error = 0;
+        for (int i = 0; i < P.rows(); i++)
+        {
+            for (int j = 0; j < SparseIncompleteData[i].essencialSize(); j++)
+            {
+                if (SparseIncompleteData[i].elementIndex(j) != 0)
+                {
+                    error += pow(SparseIncompleteData[i].elementIndex(j) - (P[i] * Q[SparseIncompleteData[i].indexIndex(j)]), 2);
+                }
+            }
+        }
+
+        if (ParameterNaN)
+        {
+            NaNcount++;
+            // 初期値全部{NaN出た or step上限回更新して収束しなかった} => 1を返して終了
+            if (NaNcount == trialLimit)
+            {
+                return 1;
+            }
+        }
+        else if (error < best_error)
+        {
+            best_error = error;
+            // 計算済みのP, Qから評価値予測を実行
+            for (int index = 0; index < Missing; index++)
+            {
+                // 欠損箇所だけ計算
+                Prediction[index] = P[KessonIndex[index][0]] * Q[KessonIndex[index][1]];
+            }
+        }
+    }
+    return 0;
 }
+
 
 int Recom::nmf_pred_after_clustering(std::string dir, double K_percent, int steps) //K以外は初期値有なので指定無しでも可
 {
@@ -3147,7 +3064,7 @@ int Recom::nmf_pred_after_clustering(std::string dir, double K_percent, int step
 
     K = K_percent;
 
-//ユーザーの平均値計算
+ //ユーザーの平均値計算
   double user_average ;
   double user_average_num;
 
@@ -5928,8 +5845,8 @@ Mkdir(std::vector<std::string> methods, int kesson)
 std::vector<std::string>
 MkdirMF(std::vector<std::string> methods, std::vector<double> para, int kesson)
 {
-  //if(return_user_number() > return_item_number()){ //実データ
-  if(return_user_number() < return_item_number()){ //人工
+  if(return_user_number() > return_item_number()){ //実データ
+  //if(return_user_number() < return_item_number()){ //人工
     para[0] = std::round(return_item_number() * para[0] / 100);
   } else {
     para[0] = std::round(return_user_number() * para[0] / 100);

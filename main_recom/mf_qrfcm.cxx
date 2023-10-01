@@ -19,7 +19,7 @@ const std::string InputDataName="data/sparse_"+data_name
 const std::string METHOD_NAME="QRFCM_MF";
 
 int main(int argc, char *argv[]){
-	double mf_K_distance = 2.0; //刻み(+)
+	double mf_K_distance = 1.0; //刻み(+)
 	double mf_beta_range[3] = {0.01, 0.13, 0.03}; //開始，終了，刻み(+)
 	double mf_alpha_range[3] = {0.001, 0.001, 10}; //開始，終了，刻み(*)
 	auto start2=std::chrono::system_clock::now();
@@ -293,7 +293,7 @@ int main(int argc, char *argv[]){
 		K_index = 0;
 		recom.current() = tmp_current;
 		//MFのパラメータでループ
-		for(double mf_K = din[0] ; mf_K < din[1] + mf_K_distance; mf_K += mf_K_distance){
+		for(double mf_K = din[0] ; mf_K < din[1]; mf_K += mf_K_distance){
 		for(double mf_beta = mf_beta_range[0]; mf_beta < mf_beta_range[1] + mf_beta_range[2]; mf_beta += mf_beta_range[2]){
 		for(double mf_alpha = mf_alpha_range[0]; mf_alpha <= mf_alpha_range[1]; mf_alpha *= mf_alpha_range[2]){
 			mf_para = {mf_K, mf_beta, mf_alpha};
@@ -313,7 +313,7 @@ int main(int argc, char *argv[]){
 		min_object_clustering = DBL_MAX;
 		} //欠損パターン
 		//MFのパラメータでループ
-		for(double mf_K = din[0] ; mf_K < din[1] + mf_K_distance; mf_K += mf_K_distance){
+		for(double mf_K = din[0] ; mf_K < din[1]; mf_K += mf_K_distance){
 		for(double mf_beta = mf_beta_range[0]; mf_beta < mf_beta_range[1] + mf_beta_range[2]; mf_beta += mf_beta_range[2]){
 		for(double mf_alpha = mf_alpha_range[0]; mf_alpha <= mf_alpha_range[1]; mf_alpha *= mf_alpha_range[2]){
 			mf_para = {mf_K, mf_beta, mf_alpha};

@@ -15,7 +15,7 @@ const std::string METHOD_NAME="MF";
 int main(int argc, char *argv[]){
   double mf_K_distance = 1.0; //刻み%(+) 
 
-	double mf_beta_range[3] = {0.01, 0.1, 0.02}; //開始，終了，刻み  """"(+に変更中)""""""
+	double mf_beta_range[3] = {0.01, 0.2, 0.02}; //開始，終了，刻み  """"(+に変更中)""""""
 	double mf_alpha_range[3] = {0.005, 0.025, 5}; //開始，終了，刻み(*)
 
 
@@ -127,7 +127,7 @@ int main(int argc, char *argv[]){
     //初期化
     recom.reset();
     //データを欠損
-    recom.revise_missing_values();
+    recom.revise_missing_values_new();
     recom.reset2();
     //動作確認用
     //std::cout << "Initial Similarities:\n" << recom.similarity() << std::endl;

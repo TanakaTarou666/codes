@@ -22,7 +22,7 @@ int pata_num = 4;
   
   std::string str, tmp;
 
-  std::string date = "0917";
+  std::string date = "data-5";
   //出力ファイル名
   std::string filenameMAEout = "../../../RESULT/MAE/" + METHOD_NAME+ "_artificialityMAE" + "-" + date + ".txt";
   std::string filenameAUCout = "../../../RESULT/AUC/" + METHOD_NAME+ "_artificialityAUC" + "-" + date + ".txt";
@@ -35,7 +35,7 @@ int pata_num = 4;
     for(double beta = 0.0; beta <= 0.2; beta += 0.02){
       if(beta == 0.02)
         beta = 0.01;
-  for(double alpha = 0.001; alpha <= 0.025; alpha *= 5){
+  for(double alpha = 0.005; alpha <= 0.006; alpha *= 5){
       //if(alpha = 0.013)
         //alpha = 0.049;
   //入力ファイル名

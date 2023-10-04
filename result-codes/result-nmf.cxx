@@ -21,7 +21,7 @@ int pata_num = 4;
   int kesson_i = 0;
   
   std::string str, tmp;
-  std::string date = "80100-10-30-4-45";
+  std::string date = "data";
   //出力ファイル名
   std::string filenameMAEout = "../../../RESULT/MAE/" + METHOD_NAME+ "_artificialityMAE" + "-" + date + ".txt";
   std::string filenameAUCout = "../../../RESULT/AUC/" + METHOD_NAME+ "_artificialityAUC" + "-" + date + ".txt";
@@ -29,7 +29,7 @@ int pata_num = 4;
   for(int kesson = 4500 ; kesson <= 7500 ; kesson += 500){ 
     double mae_ave = 0;
     double auc_ave = 0;
-  for(int D = 2 ; D <= 8; D++){ //潜在次元数
+  for(int D = 2 ; D <= 9; D++){ //潜在次元数
   for(double beta = 0; beta < 0.5; beta += 0.5){
   for(double alpha = 0; alpha <= 0.002; alpha += 10){
   //入力ファイル名

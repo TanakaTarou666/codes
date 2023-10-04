@@ -96,8 +96,8 @@ int main(int argc, char *argv[]){
 	recom.FIRST_KESSON_SEED() = firstKESSONSeed_main;
 	//recom.setMAE_h();
 	//recom.setAUC_h();
-    for(double m=0.1;m<=1.0;m+= 0.1){
-	  for(double lambda=100;lambda<=1000;lambda*=10){
+    for(double m=0.2;m<=0.9;m+= 0.1){
+	  for(double lambda=10;lambda<=1000;lambda*=1000){
 
 	  //時間計測
 	  auto start=std::chrono::system_clock::now();

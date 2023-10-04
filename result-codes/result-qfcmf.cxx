@@ -22,25 +22,23 @@ int pata_num = 4;
   int kesson_i = 0;
   
   std::string str, tmp;
-  std::string date = "0823";
+  std::string date = "data";
   //出力ファイル名
   std::string filenameMAEout = "../../../RESULT/MAE/" + METHOD_NAME+ "_artificialityMAE" + "-" + date + ".txt";
   std::string filenameAUCout = "../../../RESULT/AUC/" + METHOD_NAME+ "_artificialityAUC" + "-" + date + ".txt";
 
 
-  for(int kesson = 6800 ; kesson <= 7800 ; kesson += 100){ 
+  for(int kesson = 4500 ; kesson <= 7500 ; kesson += 500){ 
   for(int lam = 10 ; lam <= 1000 ; lam *= 10){
-  for(double m=0.001;m<=0.901;m+=0.3){
-  for(int c_num=2 ; c_num <= 3; c_num++){
+  for(double m=0.001;m<=0.1;m*=10){
+  for(int c_num=4 ; c_num <= 4; c_num++){
     double mae_ave = 0;
     double auc_ave = 0;
-  for(int D = 2 ; D <= 4; D++){ //潜在次元数
-  for(double beta = 0; beta <= 0.005; beta += 0.006){
+  for(int D = 2 ; D <= 9; D++){ //潜在次元数
+  for(double beta = 0.01; beta <= 0.19; beta += 0.02){
       //if(beta = 0.013)
       //  beta = 0.049;
-  for(double alpha = 0.001; alpha <= 0.013; alpha += 0.006){
-      if(alpha = 0.013)
-        alpha = 0.049;
+  for(double alpha = 0.001; alpha <= 0.005; alpha += 0.004){
 
   //入力ファイル名
 

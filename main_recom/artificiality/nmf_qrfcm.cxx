@@ -96,7 +96,7 @@ int main(int argc, char *argv[]){
 	recom.FIRST_KESSON_SEED() = firstKESSONSeed_main;
 	//recom.setMAE_h();
 	//recom.setAUC_h();
-    for(double m=0.2;m<=1.0;m+= 0.1){
+    for(double m=0.001;m<=0.1;m *= 10){
 	  for(double lambda=10;lambda<=1000;lambda*=10){
 
 	  //時間計測

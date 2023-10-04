@@ -19,19 +19,22 @@ int pata_num = 4;
   int i; //dataのカウント
   int j; //strの4列目を出力するためのカウント
   int kesson_i = 0;
+  double m;
   
-  std::string date = "0927";
+  std::string date = "data";
 
   std::string str, tmp;
   //出力ファイル名
   std::string filenameMAEout = "../../../RESULT/MAE/" + METHOD_NAME+ "_artificialityMAE" + "-" + date + ".txt";
   std::string filenameAUCout = "../../../RESULT/AUC/" + METHOD_NAME+ "_artificialityAUC" + "-" + date + ".txt";
 
+  double mh[11] = {0.001,0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9};
 
   for(int kesson = 4500 ; kesson <= 7500 ; kesson += 500){ 
   for(int lam = 10 ; lam <= 1000 ; lam *= 10){
-  for(double m=0.1;m<=1.0;m+=0.1){
-
+  //for(double m=0.001;m<=0.1;m*=10){
+  for(int mc=0;mc<11;mc += 1){
+    m = mh[mc];
   for(int c_num=4 ; c_num <= 4; c_num++){
     double mae_ave = 0;
     double auc_ave = 0;
@@ -108,7 +111,7 @@ int pata_num = 4;
     if(tmp_ave<=mae_ave){
       mae_ave=tmp_ave;
             MAEdata[kesson_i] = tmp_MAEdata[kesson_i];
-            std::cout << "ave:" << tmp_ave << std::endl;
+            //std::cout << "ave:" << tmp_ave << std::endl;
             paraMAE[kesson_i][0] = lam;
             paraMAE[kesson_i][1] = m+1;
             paraMAE[kesson_i][2] = D;
@@ -117,7 +120,7 @@ int pata_num = 4;
             paraMAE[kesson_i][5] = mae_ave / pata_num;
     }
   }//else
-  std::cout << "MAE end :" << filenameMAE << std::endl;
+  //std::cout << "MAE end :" << filenameMAE << std::endl;
   ifs.close();
 
   //std::cout << "count:" << MAEdata[1] << std::endl;
@@ -174,7 +177,7 @@ int pata_num = 4;
     if(tmp_ave>=auc_ave){
       auc_ave=tmp_ave;
             AUCdata[kesson_i] = tmp_AUCdata[kesson_i];
-            std::cout << "ave:" << tmp_ave << std::endl;
+            //std::cout << "ave:" << tmp_ave << std::endl;
             paraAUC[kesson_i][0] = lam;
             paraAUC[kesson_i][1] = m+1;
             paraAUC[kesson_i][2] = D;
@@ -183,7 +186,7 @@ int pata_num = 4;
             paraAUC[kesson_i][5] = auc_ave / pata_num;
     }
   }//else
-  std::cout << "AUC end :" << filenameAUC << std::endl;
+  //std::cout << "AUC end :" << filenameAUC << std::endl;
   ifs2.close();
   }//c_num
   }//m

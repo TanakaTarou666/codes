@@ -10,8 +10,9 @@ class Matrix{
 private:
   //行数
   int Rows;
-  Vector *Element;
+  //Vector *Element;
 public:
+  Vector *Element;//高速化のため直接アクセスできるようにしている
   //Matrix(int rows=0);
   //コンストラクタ
   Matrix(int rows=0, int cols=0);

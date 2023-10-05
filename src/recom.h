@@ -7,7 +7,7 @@
 //欠損のさせ方を何通りにするか
  //#define MISSINGTRIALS 4
 //クラスタリングの初期値を何通りにするか
-#define CLUSTERINGTRIALS 5//4//1
+#define CLUSTERINGTRIALS 1//4//1
 //#define CLUSTERINGTRIALS 1
 //pearson, eicf, co-clustering
 #define METHOD_NUMBER 2

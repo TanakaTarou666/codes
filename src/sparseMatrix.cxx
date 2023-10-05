@@ -109,13 +109,17 @@ Matrix operator*(const SparseMatrix &lhs, const Matrix &rhs){
     std::cout << std::endl;
     exit(1);
   }
-  Matrix result(lhs.rows(), rhs.cols());
-  for(int i=0;i<result.rows();i++){
-    for(int j=0;j<result.cols();j++){
+  int n=lhs.rows();
+  int m=lhs.cols();
+  int l=rhs.cols();
+  Matrix result(n, l);
+  for(int i=0;i<n;i++){
+    for(int j=0;j<l;j++){
       result[i][j]=0.0;
+    }
       for(int k=0;k<lhs[i].essencialSize();k++){
-	      result[i][j]+=lhs[i].elementIndex(k)*rhs[lhs[i].indexIndex(k)][j];
-        //std::cout<<i*10000+j*100+k<<std::endl;
+        for(int j=0;j<l;j++){
+	      result[i][j]+=lhs.Element[i].Element[k]*rhs[lhs.Element[i].Index[k]][j];
       }
     }
   }
@@ -223,18 +227,37 @@ SparseMatrix S_Hadamard(const Matrix &lhs, const Matrix &rhs){
 
 SparseMatrix S_Hadamard(const Matrix &lhs, const Matrix &rhs,SparseMatrix &result){
   int n=rhs.rows(),m=rhs.cols();
-  int lowsNum;
   for(int i=0;i<n;i++){
     int k=0;
     for(int j=0;j<m;j++){
       if(lhs[i][j]!=0 && rhs[i][j]!=0){
-  	    result[i].modifyElement(k,j,lhs[i][j]*rhs[i][j]);
-           //std::cout << result[i] << std::endl;
-           //std::cout << 10000*i+j*100+k << std::endl;
+  	    //result[i].modifyElement(k,j,lhs[i][j]*rhs[i][j]); 
+        result.Element[i].Element[k]=lhs.Element[i].Element[j]*rhs.Element[i].Element[j];
+        result.Element[i].Index[k]=j;
         k++;
       }
     }
   }
-  
+  return result;
+}
+
+SparseMatrix S_Hadamard(const SparseMatrix &lhs, const Matrix &rhs,SparseMatrix &result){
+  int n=rhs.rows();
+  for(int i=0;i<n;i++){
+    for(int j=0;j<lhs.Element[i].essencialSize();j++){
+        result.Element[i].Element[j]=lhs.Element[i].Element[j]*rhs.Element[i].Element[lhs.Element[i].Index[j]];
+        result.Element[i].Index[j]=lhs.Element[i].Index[j];
+     }
+  }
+  return result;
+}
+
+Matrix transpose(const SparseMatrix &arg){
+  Matrix result(arg.cols(), arg.rows());
+  for(int i=0;i<result.cols();i++){
+    for(int j=0;j<arg[i].essencialSize();j++){
+      result[arg.Element[i].indexIndex(j)][i]=arg.Element[i].Element[j];
+    }
+  }
   return result;
 }

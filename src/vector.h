@@ -56,9 +56,10 @@ class Vector{
   //要素数
   int Size;
   //要素
-  double *Element;
+  //double *Element;
   //公開
  public:
+  double *Element;//高速化のため直接アクセスできるようにしている
   //コンストラクタ
   Vector(int size=0);
   //デストラクタ

@@ -167,7 +167,7 @@ artificiality_qfcwnmf.out : $(objects) src/recom.cxx \
 main_recom/artificiality/qfcwnmf.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
 	-DARTIFICIALITY $(FS) -o $@			
-artificiality_qfcmf.out : $(objects) src/recom.cxx \
+.out/artificiality_qfcmf.out : $(objects) src/recom.cxx \
 main_recom/artificiality/qfcmf.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
 	-DARTIFICIALITY $(FS) -o $@		
@@ -194,6 +194,9 @@ nmf.out : $(objects) src/recom.cxx main_recom/nmf.cxx
 .out/wnmf.out : $(objects) src/recom.cxx main_recom/wnmf.cxx
 	$(CXX) $(CXXFLAGS) $^ \
 	$(DATASET) $(FS) -o $@
+.out/qfcmf.out : $(objects) src/recom.cxx main_recom/qfcmf.cxx
+	$(CXX) $(CXXFLAGS) $^ \
+	$(DATASET) $(FS) -o $@	
 
 .out/mf2.out : $(objects) src/recom.cxx main_recom/mf.cxx
 	$(CXX) $(CXXFLAGS) $^ \

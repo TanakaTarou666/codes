@@ -11,11 +11,14 @@ class SparseVector{
   int Size;
   //非ゼロ成分のみサイズ
   int EssencialSize;
-  //非ゼロ成分本当のデータ番号
+  //int *Index;
+  //double *Element;
+
+ public:
+ //非ゼロ成分本当のデータ番号
   int *Index;
   //非ゼロ成分要素
   double *Element;
- public:
   //コンストラクタ
   SparseVector(int Size=0, int essencialSize=0);
   //コピーコンストラクタ

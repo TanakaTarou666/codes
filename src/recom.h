@@ -11,7 +11,7 @@
 //#define CLUSTERINGTRIALS 1
 //pearson, eicf, co-clustering
 #define METHOD_NUMBER 2
-#define MOVIE100K
+//#define MOVIE100K
 //BookCrossingは10240欠損させる
 //他は20480欠損させる
 //BEGINは最初の欠損数，ENDは最大の欠損数
@@ -37,8 +37,8 @@
 #elif defined ARTIFICIALITY // uekara 7500 500 500
 //#define KESSON 5
 //#define KESSON_BEGIN 5
-#define KESSON 7000//500//2
-#define KESSON_BEGIN 7000//52
+#define KESSON 5000//500//2
+#define KESSON_BEGIN 5000//52
 #define KIZAMI 500
 #elif defined JESTER
 #define KESSON 100000

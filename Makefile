@@ -171,7 +171,7 @@ main_recom/artificiality/qfcwnmf.cxx
 main_recom/artificiality/qfcmf.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
 	-DARTIFICIALITY $(FS) -o $@		
-artificiality_fm.out : $(objects) src/recom.cxx \
+.out/artificiality_fm.out : $(objects) src/recom.cxx \
 main_recom/artificiality/fm.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
 	-DARTIFICIALITY $(FS) -o $@

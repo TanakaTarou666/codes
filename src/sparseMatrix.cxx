@@ -109,12 +109,17 @@ Matrix operator*(const SparseMatrix &lhs, const Matrix &rhs){
     std::cout << std::endl;
     exit(1);
   }
-  Matrix result(lhs.rows(), rhs.cols());
-  for(int i=0;i<result.rows();i++){
-    for(int j=0;j<result.cols();j++){
+  int n=lhs.rows();
+  int m=lhs.cols();
+  int l=rhs.cols();
+  Matrix result(n, l);
+  for(int i=0;i<n;i++){
+    for(int j=0;j<l;j++){
       result[i][j]=0.0;
+    }
       for(int k=0;k<lhs[i].essencialSize();k++){
-	      result[i][j]+=lhs[i].elementIndex(k)*rhs[k][j];
+        for(int j=0;j<l;j++){
+	      result[i][j]+=lhs.Element[i].Element[k]*rhs[lhs.Element[i].Index[k]][j];
       }
     }
   }
@@ -154,9 +159,9 @@ double frobenius_norm(const SparseMatrix &arg){
 Matrix Hadamard(const SparseMatrix &lhs, const Matrix &rhs){
   Matrix result(rhs.rows(), rhs.cols(),0.0);
   for(int i=0;i<result.rows();i++){
-    for(int j=0;j<result.cols();j++){
+    for(int j=0;j<lhs[i].essencialSize();j++){
         if(lhs[i].elementIndex(j) != 0)
-  	      result[i][j]=lhs[i].elementIndex(j)*rhs[i][j];
+  	      result[i][lhs[i].indexIndex(j)]=lhs[i].elementIndex(j)*rhs[i][lhs[i].indexIndex(j)];
     }
   }
   return result;
@@ -168,6 +173,90 @@ Matrix M_Hadamard(const Matrix &lhs, const Matrix &rhs){
     for(int j=0;j<result.cols();j++){
         if(lhs[i][j] != 0)
   	      result[i][j]=lhs[i][j]*rhs[i][j];
+    }
+  }
+  return result;
+}
+
+SparseMatrix S_Hadamard(const SparseMatrix &lhs, const Matrix &rhs){
+  SparseMatrix result(rhs.rows(), rhs.cols());
+  int lowsNum;
+  for(int i=0;i<result.rows();i++){
+    lowsNum=0;
+    int a[lhs[i].essencialSize()+1];
+    a[0]=0; 
+    for(int j=0;j<lhs[i].essencialSize();j++){
+      if(lhs[i].elementIndex(j) != 0 && rhs[i][lhs[i].indexIndex(j)]!=0) lowsNum++;
+      a[j+1]=lowsNum;
+    }
+    SparseVector sv(rhs.cols(),lowsNum);
+    for(int j=0;j<lhs[i].essencialSize();j++){
+      if(a[j]!=a[j+1])
+  	    sv.modifyElement(a[j],lhs[i].indexIndex(j),lhs[i].elementIndex(j)*rhs[i][lhs[i].indexIndex(j)]);
+    }
+    result[i] = sv;
+  }
+  return result;
+}
+
+SparseMatrix S_Hadamard(const Matrix &lhs, const Matrix &rhs){
+  int n=rhs.rows(),m=rhs.cols();
+  SparseMatrix result(n, m);
+  int lowsNum;
+  for(int i=0;i<n;i++){
+    lowsNum=0;
+    int a[2][m+1];
+    a[0][0]=0;
+    a[1][0]=0;  
+    for(int j=0;j<m;j++){
+      a[0][j+1]=j+1;
+      if(lhs[i][j] != 0 && rhs[i][j]!=0) lowsNum++;
+      a[1][j+1]=lowsNum;
+    }
+    SparseVector sv(m,lowsNum);
+    for(int j=0;j<m;j++){
+      if(a[1][j]!=a[1][j+1])
+  	    sv.modifyElement(a[1][j],a[0][j],lhs[i][j]*rhs[i][j]);
+    }
+    result[i] = sv;
+ 
+  }
+  
+  return result;
+}
+
+SparseMatrix S_Hadamard(const Matrix &lhs, const Matrix &rhs,SparseMatrix &result){
+  int n=rhs.rows(),m=rhs.cols();
+  for(int i=0;i<n;i++){
+    int k=0;
+    for(int j=0;j<m;j++){
+      if(lhs[i][j]!=0 && rhs[i][j]!=0){
+  	    //result[i].modifyElement(k,j,lhs[i][j]*rhs[i][j]); 
+        result.Element[i].Element[k]=lhs.Element[i].Element[j]*rhs.Element[i].Element[j];
+        result.Element[i].Index[k]=j;
+        k++;
+      }
+    }
+  }
+  return result;
+}
+
+SparseMatrix S_Hadamard(const SparseMatrix &lhs, const Matrix &rhs,SparseMatrix &result){
+  int n=rhs.rows();
+  for(int i=0;i<n;i++){
+    for(int j=0;j<lhs.Element[i].essencialSize();j++){
+        result.Element[i].Element[j]=lhs.Element[i].Element[j]*rhs.Element[i].Element[lhs.Element[i].Index[j]];
+        result.Element[i].Index[j]=lhs.Element[i].Index[j];
+     }
+  }
+  return result;
+}
+
+Matrix transpose(const SparseMatrix &arg){
+  Matrix result(arg.cols(), arg.rows());
+  for(int i=0;i<result.cols();i++){
+    for(int j=0;j<arg[i].essencialSize();j++){
+      result[arg.Element[i].indexIndex(j)][i]=arg.Element[i].Element[j];
     }
   }
   return result;

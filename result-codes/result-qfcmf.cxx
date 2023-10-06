@@ -38,7 +38,7 @@ int pata_num = 4;
   for(double beta = 0.01; beta <= 0.19; beta += 0.02){
       //if(beta = 0.013)
       //  beta = 0.049;
-  for(double alpha = 0.001; alpha <= 0.005; alpha += 0.004){
+  for(double alpha = 0.001; alpha <= 0.004; alpha += 0.004){
 
   //入力ファイル名
 

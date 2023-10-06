@@ -15,6 +15,8 @@
 #include<sys/stat.h>
 #include<experimental/filesystem>
 #include<boost/math/special_functions/binomial.hpp>
+#include <boost/numeric/ublas/matrix.hpp>
+#include <boost/numeric/ublas/io.hpp>
 using namespace std::experimental::filesystem::v1;
 /*
   ムーブとコピーの違い
@@ -54,9 +56,10 @@ class Vector{
   //要素数
   int Size;
   //要素
-  double *Element;
+  //double *Element;
   //公開
  public:
+  double *Element;//高速化のため直接アクセスできるようにしている
   //コンストラクタ
   Vector(int size=0);
   //デストラクタ

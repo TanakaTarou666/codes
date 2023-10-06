@@ -224,7 +224,7 @@ double Vector::operator*(const Vector &rhs) const{
   }
   double result=Element[0]*rhs[0];
   for(int i=1;i<Size;i++){
-    result+=Element[i]*rhs[i];
+    result+=Element[i]*rhs.Element[i];
   }
   return result;
 }

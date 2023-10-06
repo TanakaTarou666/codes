@@ -7,8 +7,9 @@ class Vector3d{
 private:
   //行数
   int Height;
-  Matrix *Element;
+  //Matrix *Element;
 public:
+  Matrix *Element;
   //3dArray(int rows=0);
   //コンストラクタ
   Vector3d(int, int, int);

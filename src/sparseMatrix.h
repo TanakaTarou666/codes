@@ -8,8 +8,9 @@ class SparseMatrix{
  private:
   //行数，列数
   int Rows, Cols;
-  SparseVector *Element;
+  //SparseVector *Element;
  public:
+  SparseVector *Element;
   //コンストラクタ
   SparseMatrix(int rows=0, int cols=0);
   //コピーコンストラクタ
@@ -39,5 +40,11 @@ bool operator==(const SparseMatrix &lhs, const SparseMatrix &rhs);
 double frobenius_norm(const SparseMatrix &arg);
 Matrix Hadamard(const SparseMatrix &lhs, const Matrix &rhs);
 Matrix M_Hadamard(const Matrix &lhs, const Matrix &rhs);
+
+SparseMatrix S_Hadamard(const SparseMatrix &lhs, const Matrix &rhs);
+SparseMatrix S_Hadamard(const Matrix &lhs, const Matrix &rhs);
+SparseMatrix S_Hadamard(const Matrix &lhs, const Matrix &rhs,SparseMatrix &result);
+SparseMatrix S_Hadamard(const SparseMatrix &lhs, const Matrix &rhs,SparseMatrix &result);
+Matrix transpose(const SparseMatrix &arg);
 
 #endif

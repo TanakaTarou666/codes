@@ -333,6 +333,26 @@ Matrix operator*(const Vector &lhs, const Matrix &rhs){
   return result;
 }
 
+// Matrix operator*(const Matrix &lhs, const Matrix &rhs){
+//   if(lhs.rows()<1 || rhs.cols()<1 || lhs.cols()!=rhs.rows()){
+//     std::cout << "Can't calculate innerproduct";
+//     std::cout << "for 0-sized vector";
+//     std::cout << "or for different sized vector";
+//     std::cout << std::endl;
+//     exit(1);
+//   }
+//   Matrix result(lhs.rows(), rhs.cols());
+//   for(int i=0;i<result.rows();i++){
+//     for(int j=0;j<result.cols();j++){
+//       result[i][j]=0.0;
+//       for(int k=0;k<lhs.cols();k++){
+// 	result[i][j]+=lhs[i][k]*rhs[k][j];
+//       }
+//     }
+//   }
+//   return result;
+// }
+
 Matrix operator*(const Matrix &lhs, const Matrix &rhs){
   if(lhs.rows()<1 || rhs.cols()<1 || lhs.cols()!=rhs.rows()){
     std::cout << "Can't calculate innerproduct";
@@ -341,12 +361,18 @@ Matrix operator*(const Matrix &lhs, const Matrix &rhs){
     std::cout << std::endl;
     exit(1);
   }
-  Matrix result(lhs.rows(), rhs.cols());
-  for(int i=0;i<result.rows();i++){
-    for(int j=0;j<result.cols();j++){
-      result[i][j]=0.0;
-      for(int k=0;k<lhs.cols();k++){
-	result[i][j]+=lhs[i][k]*rhs[k][j];
+  int n=lhs.rows();
+  int m=lhs.cols();
+  int l=rhs.cols();
+  Matrix result(n, l);
+
+  for(int i=0;i<n;i++){
+    for(int j=0;j<l;j++){
+        result.Element[i].Element[j]=0.0;
+    }
+    for(int k=0;k<m;k++){
+    for(int j=0;j<l;j++){
+	result.Element[i].Element[j]+=lhs.Element[i].Element[k]*rhs.Element[k].Element[j];//lhs[i][k]*rhs[k][j];
       }
     }
   }
@@ -475,5 +501,38 @@ Matrix sum_fraction(const Matrix &arg){
     for(int j=0;j<arg.cols();j++)
       result[i][j]=arg[i][j]/sum;
   }
+  return result;
+}
+
+Matrix rapid_mul(const Matrix &lhs, const Matrix &rhs){
+  if(lhs.rows()<1 || rhs.cols()<1 || lhs.cols()!=rhs.rows()){
+    std::cout << "Can't calculate innerproduct";
+    std::cout << "for 0-sized vector";
+    std::cout << "or for different sized vector";
+    std::cout << std::endl;
+    exit(1);
+  }
+  boost::numeric::ublas::matrix<double> A(lhs.rows(), lhs.cols());
+  boost::numeric::ublas::matrix<double> B(rhs.rows(), rhs.cols());
+  boost::numeric::ublas::matrix<double> C;
+  for(int i=0;i<lhs.rows();i++){
+      for(int j=0;j<lhs.cols();j++){
+          A(i,j)=lhs[i][j];
+      }
+  }
+  for(int i=0;i<rhs.rows();i++){
+      for(int j=0;j<rhs.cols();j++){
+          B(i,j)=rhs[i][j];
+      }
+  }
+  C = boost::numeric::ublas::prod(A, B);
+  Matrix result(lhs.rows(), rhs.cols());
+
+      for(int i=0;i<result.rows();i++){
+        for(int j=0;j<result.cols();j++){
+            result[i][j]=C(i,j);
+        }
+    }
+
   return result;
 }

@@ -10,8 +10,9 @@ class Matrix{
 private:
   //行数
   int Rows;
-  Vector *Element;
+  //Vector *Element;
 public:
+  Vector *Element;//高速化のため直接アクセスできるようにしている
   //Matrix(int rows=0);
   //コンストラクタ
   Matrix(int rows=0, int cols=0);
@@ -90,5 +91,7 @@ Matrix fraction(const Matrix &);
 Matrix max_fraction(const Matrix &);
 //行列の各ベクトルの要素の和で各ベクトルの要素を割る
 Matrix sum_fraction(const Matrix &);
+
+Matrix rapid_mul(const Matrix &lhs, const Matrix &rhs);
 
 #endif

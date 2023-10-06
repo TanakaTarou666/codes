@@ -142,6 +142,12 @@ bool SparseVector::operator!=(const SparseVector &rhs) const{
   return false;
 }
 
+void SparseVector::modifyElement(int n,int index, double value){
+  this->elementIndex(n) = value;
+  this->indexIndex(n) = index;
+  return;
+} 
+
 std::ostream &operator<<(std::ostream &os, const SparseVector &rhs){
   os << "(";
   if(rhs.essencialSize()>0){

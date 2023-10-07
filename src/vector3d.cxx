@@ -336,6 +336,6 @@ double frobenius_norm(const Vector3d &arg){
   for(int i=0;i<arg.rows();i++)
     for(int j=0;j<arg.cols();j++)
       for(int k=0;k<arg.height();k++)
-	      result+=arg[k][i][j]*arg[k][i][j];
+	      result+=arg.Element[k].Element[i].Element[j]*arg.Element[k].Element[i].Element[j];
   return sqrt(result);
 }

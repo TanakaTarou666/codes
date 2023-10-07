@@ -7,11 +7,11 @@
 //欠損のさせ方を何通りにするか
  //#define MISSINGTRIALS 4
 //クラスタリングの初期値を何通りにするか
-#define CLUSTERINGTRIALS 1//4//1
+#define CLUSTERINGTRIALS 5//4//1
 //#define CLUSTERINGTRIALS 1
 //pearson, eicf, co-clustering
 #define METHOD_NUMBER 2
-//#define MOVIE100K
+#define MOVIE100K
 //BookCrossingは10240欠損させる
 //他は20480欠損させる
 //BEGINは最初の欠損数，ENDは最大の欠損数
@@ -37,8 +37,8 @@
 #elif defined ARTIFICIALITY // uekara 7500 500 500
 //#define KESSON 5
 //#define KESSON_BEGIN 5
-#define KESSON 5000//500//2
-#define KESSON_BEGIN 5000//52
+#define KESSON 7000//500//2
+#define KESSON_BEGIN 7000//52
 #define KIZAMI 500
 #elif defined JESTER
 #define KESSON 100000
@@ -65,8 +65,8 @@
 #define KESSON_BEGIN 50000
 #define KIZAMI 10000
 #elif defined MOVIE100K
-#define KESSON 40000
-#define KESSON_BEGIN 40000
+#define KESSON 20000
+#define KESSON_BEGIN 20000
 #define KIZAMI 30000
 #elif defined SAMPLE
 #define KESSON 1

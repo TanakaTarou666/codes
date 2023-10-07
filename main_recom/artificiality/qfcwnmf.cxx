@@ -82,8 +82,8 @@ int main(int argc, char *argv[]){
   //Mのループ
   for(int c=2;c<3;c++){
   for(double mf_k = din[0] ; mf_k <= din[1]; mf_k++){
-    for(double Em=0.001;Em<=0.1;Em*= 1000){
-	  for(double Lam=10;Lam<=1000;Lam*=1000){
+    for(double Em=0.001;Em<=0.1;Em*= 10){
+	  for(double Lam=10;Lam<=1000;Lam*=10){
     //if(Lam==10000) Lam = DBL_MAX;
 
     std::vector<double> para = {mf_k, (double)c, Lam,Em+1.0};

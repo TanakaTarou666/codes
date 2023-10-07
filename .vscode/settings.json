@@ -68,5 +68,6 @@
         "cinttypes": "cpp",
         "typeinfo": "cpp",
         "__nullptr": "cpp"
-    }
+    },
+    "editor.wordWrapColumn": 150
 }

@@ -30,6 +30,22 @@ SparseMatrix::SparseMatrix(SparseMatrix &&arg)
   arg.Element=nullptr;
 }
 
+// SparseMatrix::SparseMatrix(const Vector &arg, const char *s) try : 
+// Rows(arg.size()), Cols(arg.size()), Element(new SparseVector[arg.size()]){
+//   if(strcmp(s, "diag")!=0){
+//       std::cerr << "Invalid string parameter" << std::endl;
+//       exit(1);
+//   }
+//     for(int i=0;i<Rows;i++){
+// 	      Element[i].Element[0]=arg[i];
+//         Element[i].Index[0]=i;
+//     }
+// }
+// catch(std::bad_alloc){
+//   std::cerr << "Out of Memory" << std::endl;
+//   throw;
+//  }
+
 //デストラクタ
 SparseMatrix::~SparseMatrix(void){
   delete []Element;

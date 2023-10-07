@@ -430,7 +430,7 @@ double frobenius_norm(const Matrix &arg){
   double result=0.0;
   for(int i=0;i<arg.rows();i++){
     for(int j=0;j<arg.cols();j++)
-      result+=arg[i][j]*arg[i][j];
+      result+=arg.Element[i].Element[j]*arg.Element[i].Element[j];
   }
   return sqrt(result);
 }

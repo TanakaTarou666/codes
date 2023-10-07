@@ -10,7 +10,7 @@ const std::string data_name=return_data_name();
 const std::string InputDataName="data/sparse_"+data_name
   +"_"+std::to_string(user_number)
   +"_"+std::to_string(item_number)+".txt";
-const std::string METHOD_NAME="QFCWNMF";
+const std::string METHOD_NAME="FM";
 
 int main(int argc, char *argv[]){
 	auto start2=std::chrono::system_clock::now();
@@ -79,11 +79,12 @@ int main(int argc, char *argv[]){
   //欠損数ループ
   for(int kesson = KESSON_BEGIN; kesson <= KESSON; kesson += KIZAMI){
   //MFのパラメータでループ
-  for(int c=5;c<6;c++){
   for(double mf_k = din[0] ; mf_k <= din[1]; mf_k++){
-    for(double Em=0.001;Em<=0.1;Em*= 10){
-	  for(double Lam=10;Lam<=1000;Lam*=10){
-    std::vector<double> para = {mf_k, (double)c, Lam,Em+1.0};
+  for(double mf_beta = 0.0; mf_beta <= 0.13; mf_beta += 0.02){
+    if(mf_beta==0.02) mf_beta = 0.01;
+  //for(double mf_alpha = 0.001; mf_alpha >= 0.001; mf_alpha /= 10){
+  for(double mf_alpha = 0.001; mf_alpha >= 0.001; mf_alpha /= 10){
+    std::vector<double> para = {mf_k, mf_beta, mf_alpha};
     std::vector<std::string> dirs = MkdirMF({METHOD_NAME}, para, kesson);
 
   //Recomクラスの生成
@@ -101,7 +102,7 @@ int main(int argc, char *argv[]){
       } else {
         K_num = std::round(return_user_number() * mf_k / 100);
       }
-      //std::cout << "K: " << mf_k << "%(" << K_num << "), beta = " << mf_beta << ", alpha = " << mf_alpha << " is skipped." << std::endl;
+      std::cout << "K: " << mf_k << "%(" << K_num << "), beta = " << mf_beta << ", alpha = " << mf_alpha << " is skipped." << std::endl;
       break;
     }
   }
@@ -126,7 +127,7 @@ int main(int argc, char *argv[]){
     //動作確認用
     //std::cout << "Initial Similarities:\n" << recom.similarity() << std::endl;
     //MF: 潜在次元, 正則化, 学習率, 更新回数上限(指定無いと2000)
-    if(recom.qfcwnmf_pred(dirs[0], mf_k, 2000,c,Lam,Em+1.0) == 1){
+    if(recom.fm_pred(dirs[0], mf_k, mf_beta, mf_alpha, 2000) == 1){
       mf_nan = true;
       break;
     }
@@ -159,10 +160,9 @@ int main(int argc, char *argv[]){
 	*/
   recom.saveSEEDandAverage(dirs[0], time, mf_nan);
   firstKESSONSeed_main = recom.FIRST_KESSON_SEED();
-  std::cout << "K = " << mf_k << " is done." << std::endl;
+  std::cout << "K = " << mf_k << ", beta = " << mf_beta << ", alpha = " << mf_alpha << " is done." << std::endl;
   // if(!mf_nan)
   //   break; //最大のalphaのみで実験するためのbreak
-      }
   }//mf_alpha
   }//mf_beta
   }//mf_k

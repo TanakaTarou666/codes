@@ -17,6 +17,7 @@ class SparseMatrix{
   SparseMatrix(const SparseMatrix &arg);
   //ムーブコンストラクタ
   SparseMatrix(SparseMatrix &&arg);
+  explicit SparseMatrix(const Vector &arg, const char *s);
   //デストラクタ
   ~SparseMatrix(void);
   //コピー代入

@@ -74,17 +74,15 @@ int main(int argc, char *argv[]){
     exit(1);
   }
 	
-
   std::vector<int> firstKESSONSeed_main(0); //recomクラスのものをmain関数で保持する用
   //欠損数ループ
   for(int kesson = KESSON_BEGIN; kesson <= KESSON; kesson += KIZAMI){
   //MFのパラメータでループ
   for(double mf_k = din[0] ; mf_k <= din[1]; mf_k++){
-
-  for(double mf_beta = 0.0; mf_beta <0.20; mf_beta += 0.02){
+  for(double mf_beta = 0.0; mf_beta <0.20; mf_beta += 1.02){
     if(mf_beta==0.02) mf_beta = 0.01;
   //for(double mf_alpha = 0.001; mf_alpha >= 0.001; mf_alpha /= 10){
-  for(double mf_alpha = 0.001; mf_alpha < 0.026; mf_alpha *= 5){
+  for(double mf_alpha = 0.001; mf_alpha < 0.026; mf_alpha *= 125){
     std::vector<double> para = {mf_k, mf_beta, mf_alpha};
     std::vector<std::string> dirs = MkdirMF({METHOD_NAME}, para, kesson);
 

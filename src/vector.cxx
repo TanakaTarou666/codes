@@ -379,7 +379,7 @@ double squared_norm(const Vector &arg){
 double norm_square(const Vector &arg){
   double result=0.0;
   for(int i=0;i<arg.size();i++){
-    result+=arg[i]*arg[i];
+    result+=arg.Element[i]*arg.Element[i];
   }
   return result;
 }

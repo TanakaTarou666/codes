@@ -80,7 +80,6 @@ int main(int argc, char *argv[]){
     exit(1);
   }
 	
-
   std::vector<int> firstKESSONSeed_main(0); //recomクラスのものをmain関数で保持する用
   //欠損数ループ
   for(int kesson = KESSON_BEGIN; kesson <= KESSON; kesson += KIZAMI){

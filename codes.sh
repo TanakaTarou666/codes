@@ -1,17 +1,18 @@
-files=("mf.out" "wnmf.out" "qfcmf.out" "qfcwnmf.out" "fm.out" ) #
+files=("mf" "wnmf" "qfcmf" "qfcwnmf" "fm" ) #
 # 制御用のFIFOファイルを作成
 # 2つのコアで並列処理を実行 #
-for file in "${files[@]}";  #
+for ((i=2; i<8; i++)) #
 do #
-{
-for ((i=2; i<7; i++)) #
+{ #
+for file in "${files[@]}";  #
 do  #
   { #
-    make ".out/$file" #
-    taskset -c $((i - 2)) ".out/$file" 1 5 "${i}" "${i}" #
-  } & #
+    make ".out/$file${i}.out" #
+    #コア指定 taskset -c $((i - 2))
+    ".out/$file${i}.out" 1 5 "${i}" "${i}" #
+  } ; #
 done #
-} ;
+} & #
 done #
 
 # 全てのジョブが完了するまで待機

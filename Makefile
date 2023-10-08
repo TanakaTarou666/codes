@@ -259,7 +259,65 @@ nmf.out : $(objects) src/recom.cxx main_recom/nmf.cxx
 	$(DATASET) $(FS) -o $@
 .out/mf_qrfcm7.out : $(qrfcm) src/recom.cxx main_recom/mf_qrfcm.cxx
 	$(CXX) $(CXXFLAGS) $^ \
-	$(DATASET) $(FS) -o $@					
+	$(DATASET) $(FS) -o $@	
+
+.out/qfcmf2.out : $(objects) src/recom.cxx main_recom/qfcmf.cxx
+	$(CXX) $(CXXFLAGS) $^ \
+	$(DATASET) $(FS) -o $@	
+.out/qfcmf3.out : $(objects) src/recom.cxx main_recom/qfcmf.cxx
+	$(CXX) $(CXXFLAGS) $^ \
+	$(DATASET) $(FS) -o $@	
+.out/qfcmf4.out : $(objects) src/recom.cxx main_recom/qfcmf.cxx
+	$(CXX) $(CXXFLAGS) $^ \
+	$(DATASET) $(FS) -o $@	
+.out/qfcmf5.out : $(objects) src/recom.cxx main_recom/qfcmf.cxx
+	$(CXX) $(CXXFLAGS) $^ \
+	$(DATASET) $(FS) -o $@
+.out/qfcmf6.out : $(objects) src/recom.cxx main_recom/qfcmf.cxx
+	$(CXX) $(CXXFLAGS) $^ \
+	$(DATASET) $(FS) -o $@
+.out/qfcmf7.out : $(objects) src/recom.cxx main_recom/qfcmf.cxx
+	$(CXX) $(CXXFLAGS) $^ \
+	$(DATASET) $(FS) -o $@	
+
+.out/qfcwnmf2.out : $(objects) src/recom.cxx main_recom/qfcwnmf.cxx
+	$(CXX) $(CXXFLAGS) $^ \
+	$(DATASET) $(FS) -o $@	
+.out/qfcwnmf3.out : $(objects) src/recom.cxx main_recom/qfcwnmf.cxx
+	$(CXX) $(CXXFLAGS) $^ \
+	$(DATASET) $(FS) -o $@	
+.out/qfcwnmf4.out : $(objects) src/recom.cxx main_recom/qfcwnmf.cxx
+	$(CXX) $(CXXFLAGS) $^ \
+	$(DATASET) $(FS) -o $@	
+.out/qfcwnmf5.out : $(objects) src/recom.cxx main_recom/qfcwnmf.cxx
+	$(CXX) $(CXXFLAGS) $^ \
+	$(DATASET) $(FS) -o $@	
+.out/qfcwnmf6.out : $(objects) src/recom.cxx main_recom/qfcwnmf.cxx
+	$(CXX) $(CXXFLAGS) $^ \
+	$(DATASET) $(FS) -o $@	
+.out/qfcwnmf7.out : $(objects) src/recom.cxx main_recom/qfcwnmf.cxx
+	$(CXX) $(CXXFLAGS) $^ \
+	$(DATASET) $(FS) -o $@	
+
+
+.out/fm2.out : $(objects) src/recom.cxx main_recom/fm.cxx
+	$(CXX) $(CXXFLAGS) $^ \
+	$(DATASET) $(FS) -o $@	
+.out/fm3.out : $(objects) src/recom.cxx main_recom/fm.cxx
+	$(CXX) $(CXXFLAGS) $^ \
+	$(DATASET) $(FS) -o $@	
+.out/fm4.out : $(objects) src/recom.cxx main_recom/fm.cxx
+	$(CXX) $(CXXFLAGS) $^ \
+	$(DATASET) $(FS) -o $@	
+.out/fm5.out : $(objects) src/recom.cxx main_recom/fm.cxx
+	$(CXX) $(CXXFLAGS) $^ \
+	$(DATASET) $(FS) -o $@	
+.out/fm6.out : $(objects) src/recom.cxx main_recom/fm.cxx
+	$(CXX) $(CXXFLAGS) $^ \
+	$(DATASET) $(FS) -o $@	
+.out/fm7.out : $(objects) src/recom.cxx main_recom/fm.cxx
+	$(CXX) $(CXXFLAGS) $^ \
+	$(DATASET) $(FS) -o $@	
 
 auc_calculation.out : $(objects) src/recom.cxx main_recom/auc_calculation.cxx
 	$(CXX) $(CXXFLAGS) $^ \

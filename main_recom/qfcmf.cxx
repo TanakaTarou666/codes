@@ -78,10 +78,11 @@ int main(int argc, char *argv[]){
   std::vector<int> firstKESSONSeed_main(0); //recomクラスのものをmain関数で保持する用
   //欠損数ループ
 for(double mf_alpha = 0.001; mf_alpha < 0.050; mf_alpha *=5000 ){
-  for(double mf_beta = 0.01; mf_beta < 0.21; mf_beta += 1.02){
-  for(double Lam=10;Lam<=1000;Lam*=1000){
-  for(double Em=0.001;Em<=0.1;Em*=1000){
-  for(int c=2;c<6;c+=10){ 
+  for(double mf_beta = 0.01; mf_beta < 0.13; mf_beta += 0.04){
+  for(double Lam=1000;Lam<=1000;Lam*=1000){
+  for(double Em=0.1;Em<=0.1;Em*=1000){
+  for(int c=2;c<9;c+=1){ 
+    if(c==3||c==6)c+=2;
     for(double mf_k = din[0] ; mf_k <= din[1]; mf_k++){
     for(int kesson = KESSON_BEGIN; kesson <= KESSON; kesson += KIZAMI){
     std::vector<double> para = {mf_k, (double)c, Lam, Em+1.0, mf_beta, mf_alpha};

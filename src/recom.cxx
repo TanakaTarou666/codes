@@ -2,8 +2,7 @@
 
 #include <numbers>
 
-Recom::Recom(int user, int item, int user_cen, int item_cen, int miss,
-             int cin_start, int cin_end)
+Recom::Recom(int user, int item, int user_cen, int item_cen, int miss, int cin_start, int cin_end)
     : SEED(0),
       Current(0),
       CCurrent(0),
@@ -51,9 +50,7 @@ Matrix Recom::kessonindex(void) const { return KessonIndex; }
 
 Matrix Recom::similarity(void) const { return Similarity; }
 
-double Recom::similarity(int index1, int index2) {
-    return Similarity[index1][index2];
-}
+double Recom::similarity(int index1, int index2) { return Similarity[index1][index2]; }
 
 double &Recom::obje(int index) { return Obje[index]; }
 
@@ -72,8 +69,7 @@ std::vector<int> &Recom::FIRST_KESSON_SEED(void) { return firstKESSONSeed; }
 void Recom::input(std::string FileName) {
     std::ifstream ifs(FileName);
     if (!ifs) {
-        std::cerr << "DirectoryName" << FileName << ": could not open."
-                  << std::endl;
+        std::cerr << "DirectoryName" << FileName << ": could not open." << std::endl;
         exit(1);
     }
     for (int cnt = 0; cnt < return_user_number(); cnt++) {
@@ -103,23 +99,19 @@ void Recom::SeedSet1() {
 void Recom::SeedSet2() {
     if (Missing > KESSON_BEGIN) {
         SEED = firstKESSONSeed[Current];
-    } else if ((signed int)firstKESSONSeed.size() <
-               (Current_end - Current_start +
-                1)) {  // size() は long unsigned int
+    } else if ((signed int)firstKESSONSeed.size() < (Current_end - Current_start + 1)) {  // size() は long unsigned int
         firstKESSONSeed.push_back(SEED);
     }
     return;
 }
 
-int Recom::loadSEEDandAverage(
-    std::string dir) {  // Current_start が1以上のときのみこの関数は実行される
+int Recom::loadSEEDandAverage(std::string dir) {  // Current_start が1以上のときのみこの関数は実行される
     // std::cout << """loadSEEDandAverage"" IS CALLED.\n";
     std::string filename = dir + "/";
     filename += std::to_string(Current_start) + "_SEEDandAverage.txt";
     std::ifstream ifs(filename, std::ios::app);
     if (!ifs) {
-        std::cerr << "ファイルopen失敗(loadSEEDandAverage): " << filename
-                  << std::endl;
+        std::cerr << "ファイルopen失敗(loadSEEDandAverage): " << filename << std::endl;
     } else {
         std::string str, tmp;
         getline(ifs, str);
@@ -137,8 +129,7 @@ int Recom::loadSEEDandAverage(
     return 0;
 }
 
-void Recom::loadSEED(
-    std::string dir) {  // Current_start が1以上のときのみこの関数は実行される
+void Recom::loadSEED(std::string dir) {  // Current_start が1以上のときのみこの関数は実行される
     std::string filename = dir + "/";
     filename += std::to_string(Current_start) + "_SEED.txt";
     std::ifstream ifs(filename, std::ios::app);
@@ -155,19 +146,16 @@ void Recom::saveSEEDandAverage(std::string dir, std::string time, bool nan) {
     filename += std::to_string(Current_end + 1) + "_SEEDandAverage.txt";
     std::ofstream ofs(filename, std::ios::app);
     if (!ofs) {
-        std::cerr << "ファイルopen失敗(saveSEEDandAverage): " << filename
-                  << std::endl;
+        std::cerr << "ファイルopen失敗(saveSEEDandAverage): " << filename << std::endl;
     } else {
         if (nan) {
             ofs << 0 << std::endl;
-            ofs << DBL_MAX << "\t" << -1 << "\t" << -1 << "\n"
-                << time << std::endl;
+            ofs << DBL_MAX << "\t" << -1 << "\t" << -1 << "\n" << time << std::endl;
         } else {
             int &tmp = firstKESSONSeed.back();
             ofs << tmp << std::endl;
             // MAE, F-measure, AUCの順
-            ofs << std::fixed << std::setprecision(10) << Averages[0] << "\t"
-                << Averages[1] << "\t" << Averages[2] << std::endl;
+            ofs << std::fixed << std::setprecision(10) << Averages[0] << "\t" << Averages[1] << "\t" << Averages[2] << std::endl;
             ofs << time << std::endl;
         }
         ofs.close();
@@ -203,13 +191,10 @@ void Recom::saveClusterInfo(std::string dir) {
             isItemEvaluated[i] = false;
         }
         for (int i = 0; i < return_user_number(); i++) {
-            if (Mem[cluster_index][i] ==
-                1.0) {  // ユーザiがクラスタに属するなら...
+            if (Mem[cluster_index][i] == 1.0) {  // ユーザiがクラスタに属するなら...
                 cluster_user_num++;
-                for (int j = 0; j < SparseIncompleteData[i].essencialSize();
-                     j++) {
-                    isItemEvaluated[SparseIncompleteData[i].indexIndex(j)] =
-                        true;
+                for (int j = 0; j < SparseIncompleteData[i].essencialSize(); j++) {
+                    isItemEvaluated[SparseIncompleteData[i].indexIndex(j)] = true;
                 }
             }
         }
@@ -219,22 +204,18 @@ void Recom::saveClusterInfo(std::string dir) {
             }
         }
         // カウント終了，ファイルへ出力
-        ofs_cl << cluster_index + 1 << "\t" << cluster_user_num << "\t"
-               << cluster_item_num << std::endl;
+        ofs_cl << cluster_index + 1 << "\t" << cluster_user_num << "\t" << cluster_item_num << std::endl;
     }
     ofs_cl.close();
     return;
 }
 
 double Recom::choicedAuc_recalculation(int k, std::string dir) {
-    std::string filename = dir + "/ROC/choice/" + METHOD_NAME_recom + "ROC" +
-                           std::to_string(Missing) + "_" + std::to_string(k) +
-                           "sort.txt";
+    std::string filename = dir + "/ROC/choice/" + METHOD_NAME_recom + "ROC" + std::to_string(Missing) + "_" + std::to_string(k) + "sort.txt";
     std::ifstream ifs(filename);
     double rocarea = 0.0;
     if (!ifs) {
-        std::cerr << "ファイルopen失敗(choicedAuc_recalculation): " << filename
-                  << std::endl;
+        std::cerr << "ファイルopen失敗(choicedAuc_recalculation): " << filename << std::endl;
     } else {
         std::string str, tmp;
         int i = 0;
@@ -285,8 +266,7 @@ void Recom::calculationloadsaveChoicedMaeAuc(std::string dir) {
     std::string filename = dir + "/ChoicedMaeAuc.txt";
     std::ifstream ifs(filename);
     if (!ifs) {
-        std::cerr << "ファイルopen失敗(calculationloadsaveChoicedMaeAuc): "
-                  << filename << std::endl;
+        std::cerr << "ファイルopen失敗(calculationloadsaveChoicedMaeAuc): " << filename << std::endl;
     } else {
         std::string str, tmp;
         int i = 0;
@@ -304,14 +284,12 @@ void Recom::calculationloadsaveChoicedMaeAuc(std::string dir) {
         // 書き込み
         std::ofstream ofs(filename, std::ios::out);
         if (!ofs) {
-            std::cerr << "ファイルopen失敗(calculationloadsaveChoicedMaeAuc): "
-                      << filename << std::endl;
+            std::cerr << "ファイルopen失敗(calculationloadsaveChoicedMaeAuc): " << filename << std::endl;
         } else {
             for (int i = 0; i < Current_end + 1; i++) {
                 // MAE, F-measure, AUCの順
-                ofs << retention[i][0] << "\t" << retention[i][1] << "\t"
-                    << std::fixed << std::setprecision(10)
-                    << choicedAuc_recalculation(i, dir) << std::endl;
+                ofs << retention[i][0] << "\t" << retention[i][1] << "\t" << std::fixed << std::setprecision(10) << choicedAuc_recalculation(i, dir)
+                    << std::endl;
             }
 
             ofs.close();
@@ -329,8 +307,7 @@ double Recom::averageAuc_recalculation(std::string dir) {
     std::string filename = dir + "/ChoicedMaeAuc.txt";
     std::ifstream ifs(filename);
     if (!ifs) {
-        std::cerr << "ファイルopen失敗(averageAuc_recalculation): " << filename
-                  << std::endl;
+        std::cerr << "ファイルopen失敗(averageAuc_recalculation): " << filename << std::endl;
     } else {
         std::string str, tmp;
         int i = 0;
@@ -367,8 +344,7 @@ void Recom::calculationloadsaveSEEDandAverage(std::string dir) {
     filename += std::to_string(Current_end + 1) + "_SEEDandAverage.txt";
     std::ifstream ifs(filename);
     if (!ifs) {
-        std::cerr << "ファイルopen失敗(calculationloadsaveSEEDandAverage): "
-                  << filename << std::endl;
+        std::cerr << "ファイルopen失敗(calculationloadsaveSEEDandAverage): " << filename << std::endl;
     } else {
         std::string str, tmp;
         getline(ifs, str);
@@ -387,15 +363,12 @@ void Recom::calculationloadsaveSEEDandAverage(std::string dir) {
             // 書き込み
             std::ofstream ofs(filename, std::ios::out);
             if (!ofs) {
-                std::cerr
-                    << "ファイルopen失敗(calculationloadsaveSEEDandAverage): "
-                    << filename << std::endl;
+                std::cerr << "ファイルopen失敗(calculationloadsaveSEEDandAverage): " << filename << std::endl;
             } else {
                 ofs << retention[0][0] << std::endl;
                 // MAE, F-measure, AUCの順
-                ofs << retention[1][0] << "\t" << retention[1][1] << "\t"
-                    << std::fixed << std::setprecision(10)
-                    << averageAuc_recalculation(dir) << std::endl;
+                ofs << retention[1][0] << "\t" << retention[1][1] << "\t" << std::fixed << std::setprecision(10) << averageAuc_recalculation(dir)
+                    << std::endl;
                 ofs << retention[2][0] << std::endl;
 
                 ofs.close();
@@ -414,8 +387,7 @@ void Recom::calculationloadsaveaverageMaeFmeasureAuc(std::string dir) {
     std::string filename = dir + "/averageMaeFmeasureAuc.txt";
     std::ifstream ifs(filename);
     if (!ifs) {
-        std::cerr << "ファイルopen失敗(calculationloadsaveSEEDandAverage): "
-                  << filename << std::endl;
+        std::cerr << "ファイルopen失敗(calculationloadsaveSEEDandAverage): " << filename << std::endl;
     } else {
         std::string str, tmp;
         getline(ifs, str);
@@ -433,10 +405,8 @@ void Recom::calculationloadsaveaverageMaeFmeasureAuc(std::string dir) {
                          "calculationloadsaveaverageMaeFmeasureAuc): "
                       << filename << std::endl;
         } else {
-            ofs << retention[0] << "\t" << retention[1] << "\t" << retention[2]
-                << "\t" << retention[3] << "\t" << std::fixed
-                << std::setprecision(10) << averageAuc_recalculation(dir)
-                << std::endl;
+            ofs << retention[0] << "\t" << retention[1] << "\t" << retention[2] << "\t" << retention[3] << "\t" << std::fixed << std::setprecision(10)
+                << averageAuc_recalculation(dir) << std::endl;
             ofs.close();
         }
         ifs.close();
@@ -447,18 +417,14 @@ void Recom::calculationloadsaveaverageMaeFmeasureAuc(std::string dir) {
 
 double Recom::Auc_recalculation(int k, int l, std::string dir) {
     double rocarea = 0.0;
-    std::string filename = dir + "/ROC/" + METHOD_NAME_recom + "ROC" +
-                           std::to_string(Missing) + "_" + std::to_string(k) +
-                           "_" + std::to_string(l) + "sort.txt";
+    std::string filename =
+        dir + "/ROC/" + METHOD_NAME_recom + "ROC" + std::to_string(Missing) + "_" + std::to_string(k) + "_" + std::to_string(l) + "sort.txt";
     std::ifstream ifs(filename);
     if (!ifs) {
-        filename = dir + "/ROC/choice/" + METHOD_NAME_recom + "ROC" +
-                   std::to_string(Missing) + "_" + std::to_string(k) +
-                   "sort.txt";
+        filename = dir + "/ROC/choice/" + METHOD_NAME_recom + "ROC" + std::to_string(Missing) + "_" + std::to_string(k) + "sort.txt";
         std::ifstream ifs2(filename, std::ios::app);
         if (!ifs2) {
-            std::cerr << "ファイルopen失敗(Auc_recalculation): " << filename
-                      << std::endl;
+            std::cerr << "ファイルopen失敗(Auc_recalculation): " << filename << std::endl;
         } else {
             std::string str, tmp;
             int i = 0;
@@ -527,8 +493,7 @@ void Recom::calculationloadsaveAUC(std::string dir) {
     std::string filename = dir + "/" + METHOD_NAME_recom + "AUC.txt";
     std::ifstream ifs(filename);
     if (!ifs) {
-        std::cerr << "ファイルopen失敗(calculationloadsaveAUC): " << filename
-                  << std::endl;
+        std::cerr << "ファイルopen失敗(calculationloadsaveAUC): " << filename << std::endl;
     } else {
         std::string str, tmp;
         int i = 0;
@@ -546,18 +511,13 @@ void Recom::calculationloadsaveAUC(std::string dir) {
         // 書き込み
         std::ofstream ofs(filename, std::ios::out);
         if (!ofs) {
-            std::cerr << "ファイルopen失敗(calculationloadsaveAUC): "
-                      << filename << std::endl;
+            std::cerr << "ファイルopen失敗(calculationloadsaveAUC): " << filename << std::endl;
         } else {
             for (int i = 0; i < Current_end + 1; i++) {
                 for (int j = 0; j < 10; j++) {
                     // MAE, F-measure, AUCの順
-                    ofs << retention[i * 10 + j][0] << "\t"
-                        << retention[i * 10 + j][1] << "\t"
-                        << retention[i * 10 + j][2] << "\t"
-                        << retention[i * 10 + j][3] << "\t" << std::fixed
-                        << std::setprecision(10) << Auc_recalculation(i, j, dir)
-                        << std::endl;
+                    ofs << retention[i * 10 + j][0] << "\t" << retention[i * 10 + j][1] << "\t" << retention[i * 10 + j][2] << "\t"
+                        << retention[i * 10 + j][3] << "\t" << std::fixed << std::setprecision(10) << Auc_recalculation(i, j, dir) << std::endl;
                 }
             }
 
@@ -594,8 +554,7 @@ void Recom::reset_aveMAE(void) {
 
 void Recom::change_median(void) {
     for (int k = 0; k < return_user_number(); k++) {
-        for (int ell = 0; ell < SparseIncompleteData[k].essencialSize();
-             ell++) {
+        for (int ell = 0; ell < SparseIncompleteData[k].essencialSize(); ell++) {
             int flag = 0;
             for (int m = 0; m < Missing; m++) {
                 if ((k == KessonIndex[m][0]) && (ell == SparseIndex[m])) {
@@ -614,8 +573,7 @@ void Recom::change_median(void) {
 
 void Recom::change_median_artificiality(void) {
     for (int k = 0; k < return_user_number(); k++) {
-        for (int ell = 0; ell < SparseIncompleteData[k].essencialSize();
-             ell++) {
+        for (int ell = 0; ell < SparseIncompleteData[k].essencialSize(); ell++) {
             int flag = 0;
             for (int m = 0; m < Missing; m++) {
                 if ((k == KessonIndex[m][0]) && (ell == SparseIndex[m])) {
@@ -636,8 +594,7 @@ void Recom::change_aveData(void) {
     // int a;
     for (int k = 0; k < return_user_number(); k++) {
         int count = 0;
-        for (int ell = 0; ell < SparseIncompleteData[k].essencialSize();
-             ell++) {
+        for (int ell = 0; ell < SparseIncompleteData[k].essencialSize(); ell++) {
             int flag = 0;
             for (int m = 0; m < Missing; m++) {
                 if ((k == KessonIndex[m][0]) && (ell == SparseIndex[m])) {
@@ -653,8 +610,7 @@ void Recom::change_aveData(void) {
         aveData[k] /= count;
         // std::cout<<aveData[k]<<"\t"<<count<<std::endl;
 
-        for (int ell = 0; ell < SparseIncompleteData[k].essencialSize();
-             ell++) {
+        for (int ell = 0; ell < SparseIncompleteData[k].essencialSize(); ell++) {
             int flag = 0;
             for (int m = 0; m < Missing; m++) {
                 if ((k == KessonIndex[m][0]) && (ell == SparseIndex[m])) {
@@ -703,8 +659,7 @@ void Recom::revise_missing_values(void) {
         std::uniform_int_distribution<> randRow(0, return_user_number() - 1);
         // ランダムに行番号生成
         tmprow = randRow(mt);
-        std::uniform_int_distribution<> randCol(
-            0, SparseCorrectData[tmprow].essencialSize() - 1);
+        std::uniform_int_distribution<> randCol(0, SparseCorrectData[tmprow].essencialSize() - 1);
         // ランダムに列番号生成
         tmpcol = randCol(mt);
         // データ行すべて欠損させないように,一行5要素は残す
@@ -712,8 +667,7 @@ void Recom::revise_missing_values(void) {
         for (int i = 0; i < SparseIncompleteData[tmprow].essencialSize(); i++)
             if (SparseIncompleteData[tmprow].elementIndex(i) == 0) c++;
         // 既に欠損していない場合
-        if (SparseIncompleteData[tmprow].elementIndex(tmpcol) > 0 &&
-            SparseIncompleteData[tmprow].essencialSize() - c > 5) {
+        if (SparseIncompleteData[tmprow].elementIndex(tmpcol) > 0 && SparseIncompleteData[tmprow].essencialSize() - c > 5) {
             // 要素を0にする
             SparseIncompleteData[tmprow].elementIndex(tmpcol) = 0;
             // 欠損した行番号を保存
@@ -780,51 +734,37 @@ void Recom::revise_missing_values(void) {
 void Recom::mae(std::string text, int method_number, bool mfcl) {
     double result = 0.0;
     for (int m = 0; m < Missing; m++) {
-        result += fabs(
-            SparseCorrectData[KessonIndex[m][0]].elementIndex(SparseIndex[m]) -
-            Prediction[m]);
+        result += fabs(SparseCorrectData[KessonIndex[m][0]].elementIndex(SparseIndex[m]) - Prediction[m]);
     }
     if (mfcl) {
         resultMAE[method_number][0] = result / (double)Missing;
     } else {
         resultMAE[method_number][CCurrent] = result / (double)Missing;
     }
-    std::ofstream ofs(text + "/" + METHOD_NAME_recom + "MAE.txt",
-                      std::ios::app);
-    ofs << Missing << "\t" << SEED << "\t" << Current << "\t" << CCurrent
-        << "\t" << std::fixed << std::setprecision(10)
-        << result / (double)Missing << std::endl;
+    std::ofstream ofs(text + "/" + METHOD_NAME_recom + "MAE.txt", std::ios::app);
+    ofs << Missing << "\t" << SEED << "\t" << Current << "\t" << CCurrent << "\t" << std::fixed << std::setprecision(10) << result / (double)Missing
+        << std::endl;
     ofs.close();
     return;
 }
 
 void Recom::fmeasure(std::string text, int method_number, bool mfcl) {
-    std::ofstream ofs(text + "/" + METHOD_NAME_recom + "Fmeasure.txt",
-                      std::ios::app);
+    std::ofstream ofs(text + "/" + METHOD_NAME_recom + "Fmeasure.txt", std::ios::app);
     for (int index = 1; index < (int)return_max_value() * 100; index++) {
         double TP = 0.0, FP = 0.0, FN = 0.0, TN = 0.0;
         // 閾値の設定
         double siki = (double)index / 100.0;
         for (int m = 0; m < Missing; m++) {
             // 正解値が閾値以上かつ，予測値が閾値以上場合
-            if ((siki <= SparseCorrectData[KessonIndex[m][0]].elementIndex(
-                             SparseIndex[m])) &&
-                (siki <= Prediction[m]))
-                TP += 1.0;
+            if ((siki <= SparseCorrectData[KessonIndex[m][0]].elementIndex(SparseIndex[m])) && (siki <= Prediction[m])) TP += 1.0;
             // 正解値が閾値を下回ったかつ，予測値が閾値上回った場合
-            else if ((siki > SparseCorrectData[KessonIndex[m][0]].elementIndex(
-                                 SparseIndex[m])) &&
-                     (siki <= Prediction[m]))
+            else if ((siki > SparseCorrectData[KessonIndex[m][0]].elementIndex(SparseIndex[m])) && (siki <= Prediction[m]))
                 FP += 1.0;
             // 正解値が閾値上回ったかつ，予測値が閾値を下回った場合
-            else if ((siki <= SparseCorrectData[KessonIndex[m][0]].elementIndex(
-                                  SparseIndex[m])) &&
-                     (siki > Prediction[m]))
+            else if ((siki <= SparseCorrectData[KessonIndex[m][0]].elementIndex(SparseIndex[m])) && (siki > Prediction[m]))
                 FN += 1.0;
             // それ以外
-            else if ((siki > SparseCorrectData[KessonIndex[m][0]].elementIndex(
-                                 SparseIndex[m])) &&
-                     (siki > Prediction[m]))
+            else if ((siki > SparseCorrectData[KessonIndex[m][0]].elementIndex(SparseIndex[m])) && (siki > Prediction[m]))
                 TN += 1.0;
             else
                 continue;
@@ -842,10 +782,8 @@ void Recom::fmeasure(std::string text, int method_number, bool mfcl) {
             } else {
                 resultFmeasure[method_number][CCurrent] = dummy;
             }
-            ofs << Missing << "\t" << SEED << "\t" << current() << "\t"
-                << Ccurrent() << "\t" << TP << "\t" << FP << "\t" << FN << "\t"
-                << TN << "\t" << std::fixed << std::setprecision(10) << dummy
-                << std::endl;
+            ofs << Missing << "\t" << SEED << "\t" << current() << "\t" << Ccurrent() << "\t" << TP << "\t" << FP << "\t" << FN << "\t" << TN << "\t"
+                << std::fixed << std::setprecision(10) << dummy << std::endl;
         }
         /*~2017/12/25
         //0で割る場合，無理やり回避
@@ -880,9 +818,7 @@ void Recom::fmeasure(std::string text, int method_number, bool mfcl) {
 }
 
 void Recom::roc(std::string dir) {
-    std::string ROC_STR = dir + "/ROC/" + METHOD_NAME_recom + "ROC" +
-                          std::to_string(Missing) + "_" +
-                          std::to_string(Current) + "_" +
+    std::string ROC_STR = dir + "/ROC/" + METHOD_NAME_recom + "ROC" + std::to_string(Missing) + "_" + std::to_string(Current) + "_" +
                           std::to_string(CCurrent) + "sort.txt";
     // ROCでプロットする点の数
     int max_index = (int)return_max_value() * 100;
@@ -895,9 +831,7 @@ void Recom::roc(std::string dir) {
     else {
         // 横軸でソート
         Sort(False, True, max_index);
-        for (int i = 0; i < max_index; i++)
-            ofs << std::fixed << std::setprecision(10) << False[i] << "\t"
-                << True[i] << std::endl;
+        for (int i = 0; i < max_index; i++) ofs << std::fixed << std::setprecision(10) << False[i] << "\t" << True[i] << std::endl;
     }
     ofs.close();
     return;
@@ -967,9 +901,7 @@ void Recom::auc(std::string dir) {
     if (!ofs) {
         std::cerr << "ファイルopen失敗(auc):trials:" << std::endl;
     } else {
-        ofs << Missing << "\t" << SEED << "\t" << Current << "\t" << CCurrent
-            << "\t" << std::fixed << std::setprecision(10) << rocarea
-            << std::endl;
+        ofs << Missing << "\t" << SEED << "\t" << Current << "\t" << CCurrent << "\t" << std::fixed << std::setprecision(10) << rocarea << std::endl;
     }
     ofs.close();
     return;
@@ -1009,42 +941,29 @@ void Recom::choice_mae_f(std::vector<std::string> dir, int p) {
             choiceMAE[method][Current] = resultMAE[method][0];
             choiceFmeasure[method][Current] = resultFmeasure[method][0];
             // 選ばれたROCをchoiceフォルダに移す
-            std::string oldname = dir[method] + "/ROC/" + METHOD_NAME_recom +
-                                  "ROC" + std::to_string(Missing) + "_" +
-                                  std::to_string(Current + Current_start) +
-                                  "_" + std::to_string(obje_index) + "sort.txt";
-            std::string newname =
-                dir[method] + "/ROC/choice/" + METHOD_NAME_recom + "ROC" +
-                std::to_string(Missing) + "_" +
-                std::to_string(Current + Current_start) + "sort.txt";
+            std::string oldname = dir[method] + "/ROC/" + METHOD_NAME_recom + "ROC" + std::to_string(Missing) + "_" +
+                                  std::to_string(Current + Current_start) + "_" + std::to_string(obje_index) + "sort.txt";
+            std::string newname = dir[method] + "/ROC/choice/" + METHOD_NAME_recom + "ROC" + std::to_string(Missing) + "_" +
+                                  std::to_string(Current + Current_start) + "sort.txt";
             Rename(oldname, newname);
         } else if (p == 1) {
             choiceMAE[method][Current] = resultMAE[method][obje_index];
-            choiceFmeasure[method][Current] =
-                resultFmeasure[method][obje_index];
+            choiceFmeasure[method][Current] = resultFmeasure[method][obje_index];
             bestObj[method][Current] = obje_index;
             // 選ばれたROCをchoiceフォルダに移す
-            std::string oldname = dir[method] + "/ROC/" + METHOD_NAME_recom +
-                                  "ROC" + std::to_string(Missing) + "_" +
-                                  std::to_string(Current + Current_start) +
-                                  "_" + std::to_string(obje_index) + "sort.txt";
-            std::string newname =
-                dir[method] + "/ROC/choice/" + METHOD_NAME_recom + "ROC" +
-                std::to_string(Missing) + "_" +
-                std::to_string(Current + Current_start) + "sort.txt";
+            std::string oldname = dir[method] + "/ROC/" + METHOD_NAME_recom + "ROC" + std::to_string(Missing) + "_" +
+                                  std::to_string(Current + Current_start) + "_" + std::to_string(obje_index) + "sort.txt";
+            std::string newname = dir[method] + "/ROC/choice/" + METHOD_NAME_recom + "ROC" + std::to_string(Missing) + "_" +
+                                  std::to_string(Current + Current_start) + "sort.txt";
             Rename(oldname, newname);
         } else {  // MF+クラスタリング用
             choiceMAE[method][Current] = resultMAE[method][0];
             choiceFmeasure[method][Current] = resultFmeasure[method][0];
             // クラスタリング初期値のナンバリングを消す
-            std::string oldname = dir[method] + "/ROC/" + METHOD_NAME_recom +
-                                  "ROC" + std::to_string(Missing) + "_" +
-                                  std::to_string(Current + Current_start) +
-                                  "_" + std::to_string(obje_index) + "sort.txt";
-            std::string newname = dir[method] + "/ROC/" + METHOD_NAME_recom +
-                                  "ROC" + std::to_string(Missing) + "_" +
-                                  std::to_string(Current + Current_start) +
-                                  "sort.txt";
+            std::string oldname = dir[method] + "/ROC/" + METHOD_NAME_recom + "ROC" + std::to_string(Missing) + "_" +
+                                  std::to_string(Current + Current_start) + "_" + std::to_string(obje_index) + "sort.txt";
+            std::string newname = dir[method] + "/ROC/" + METHOD_NAME_recom + "ROC" + std::to_string(Missing) + "_" +
+                                  std::to_string(Current + Current_start) + "sort.txt";
             Rename(oldname, newname);
             // std::cout << "Open: " << oldname << std::endl;
         }
@@ -1059,9 +978,7 @@ void Recom::save_roc_for_artificiality(std::string dir, bool mfcl) {
     } else {
         str_roc = "/ROC/choice/";
     }
-    std::string ROC_STR = dir + str_roc + METHOD_NAME_recom + "ROC" +
-                          std::to_string(Missing) + "_" +
-                          std::to_string(Current) + "sort.txt";
+    std::string ROC_STR = dir + str_roc + METHOD_NAME_recom + "ROC" + std::to_string(Missing) + "_" + std::to_string(Current) + "sort.txt";
     // ROCでプロットする点の数
     int max_index = (int)return_max_value() * 100;
     // 一旦保存
@@ -1073,9 +990,7 @@ void Recom::save_roc_for_artificiality(std::string dir, bool mfcl) {
     else {
         // 横軸でソート
         Sort(False, True, max_index);
-        for (int i = 0; i < max_index; i++)
-            ofs << std::fixed << std::setprecision(10) << False[i] << "\t"
-                << True[i] << std::endl;
+        for (int i = 0; i < max_index; i++) ofs << std::fixed << std::setprecision(10) << False[i] << "\t" << True[i] << std::endl;
     }
     ofs.close();
     return;
@@ -1091,8 +1006,7 @@ void Recom::save_mae_f(std::vector<std::string> dir) {
 
 void Recom::out_mae_f(std::vector<std::string> dir) {
     for (int method = 0; method < (int)dir.size(); method++) {
-        std::ofstream ofs(dir[method] + "/averageMaeFmeasure.txt",
-                          std::ios::app);
+        std::ofstream ofs(dir[method] + "/averageMaeFmeasure.txt", std::ios::app);
         double sumMAE = 0.0, sumF = 0.0;
         int i = Current_start;
         do {
@@ -1111,8 +1025,7 @@ void Recom::out_mae_f(std::vector<std::string> dir) {
 
         double denominator = (double)Current_end + 1.0;
 
-        ofs << Missing << "\t" << std::fixed << std::setprecision(10) << "\t"
-            << sumMAE / denominator << "\t" << sumF / denominator << std::endl;
+        ofs << Missing << "\t" << std::fixed << std::setprecision(10) << "\t" << sumMAE / denominator << "\t" << sumF / denominator << std::endl;
         ofs.close();
     }
     return;
@@ -1127,15 +1040,11 @@ void Recom::precision_summury(std::vector<std::string> dir) {
         }
         for (int x = 0; x < (Current_end - Current_start + 1); x++) {
             Vector array1(max, 0.0, "all"), array2(max, 0.0, "all");
-            std::ifstream ifs(dir[method] + "/ROC/choice/" + METHOD_NAME_recom +
-                              "ROC" + std::to_string(Missing) + "_" +
+            std::ifstream ifs(dir[method] + "/ROC/choice/" + METHOD_NAME_recom + "ROC" + std::to_string(Missing) + "_" +
                               std::to_string(x + Current_start) + "sort.txt");
             if (!ifs) {
-                std::cerr << "ファイルinput失敗(precision_summury):trials:"
-                          << x + Current_start << "miss:" << Missing
-                          << std::endl;
-                std::cout << dir[method] + "/ROC/choice/" + METHOD_NAME_recom +
-                                 "ROC" + std::to_string(Missing) + "_" +
+                std::cerr << "ファイルinput失敗(precision_summury):trials:" << x + Current_start << "miss:" << Missing << std::endl;
+                std::cout << dir[method] + "/ROC/choice/" + METHOD_NAME_recom + "ROC" + std::to_string(Missing) + "_" +
                                  std::to_string(x + Current_start) + "sort.txt"
                           << std::endl;
                 break;
@@ -1171,9 +1080,8 @@ void Recom::precision_summury(std::vector<std::string> dir) {
         for (int i = 0; i < (Current_end - Current_start + 1); i++) {
             sumMAE += choiceMAE[method][i];
             sumF += choiceFmeasure[method][i];
-            ofs << std::fixed << std::setprecision(10) << choiceMAE[method][i]
-                << "\t" << choiceFmeasure[method][i] << "\t"
-                << choiceAUC[method][i] << std::endl;
+            ofs << std::fixed << std::setprecision(10) << choiceMAE[method][i] << "\t" << choiceFmeasure[method][i] << "\t" << choiceAUC[method][i]
+                << std::endl;
         }
 
         // 前回の実験の値を追加
@@ -1183,19 +1091,15 @@ void Recom::precision_summury(std::vector<std::string> dir) {
             rocarea += Averages[2] * (double)Current_start;
         }
 
-        std::ofstream ofs_ave(dir[method] + "/averageMaeFmeasureAuc.txt",
-                              std::ios::trunc);
+        std::ofstream ofs_ave(dir[method] + "/averageMaeFmeasureAuc.txt", std::ios::trunc);
         if (!ofs_ave) std::cerr << "ファイルopen失敗: precision_summury\n";
 
         double denominator = (double)Current_end + 1.0;
 
-        std::cout << "miss:" << Missing << "\tMAE=" << sumMAE / denominator
-                  << "\tF-measure=" << sumF / denominator
+        std::cout << "miss:" << Missing << "\tMAE=" << sumMAE / denominator << "\tF-measure=" << sumF / denominator
                   << "\tAUC=" << rocarea / denominator << std::endl;
-        ofs_ave << Missing << "\t" << (int)denominator << std::fixed
-                << std::setprecision(10) << "\t" << sumMAE / denominator << "\t"
-                << sumF / denominator << "\t" << rocarea / denominator
-                << std::endl;
+        ofs_ave << Missing << "\t" << (int)denominator << std::fixed << std::setprecision(10) << "\t" << sumMAE / denominator << "\t"
+                << sumF / denominator << "\t" << rocarea / denominator << std::endl;
         aveMAE += sumMAE / denominator;
 
         Averages[0] = sumMAE / denominator;
@@ -1211,15 +1115,13 @@ void Recom::precision_summury2(std::vector<std::string> dir) {
     for (int method = 0; method < (int)dir.size(); method++) {
         std::ifstream ifs_mae(dir[method] + "/" + method_name() + "MAE.txt");
         if (!ifs_mae) {
-            std::cerr << "ファイルinput失敗(precision_summury2):trials:"
-                      << method_name() << "MAE.txt" << std::endl;
+            std::cerr << "ファイルinput失敗(precision_summury2):trials:" << method_name() << "MAE.txt" << std::endl;
             std::cout << dir[0] << std::endl;
             break;
         }
         std::ifstream ifs_f(dir[method] + "/" + method_name() + "Fmeasure.txt");
         if (!ifs_f) {
-            std::cerr << "ファイルinput失敗(precision_summury2):trials:"
-                      << method_name() << "Fmeasure.txt" << std::endl;
+            std::cerr << "ファイルinput失敗(precision_summury2):trials:" << method_name() << "Fmeasure.txt" << std::endl;
             break;
         }
         std::string str, tmp;
@@ -1261,8 +1163,7 @@ void Recom::precision_summury2(std::vector<std::string> dir) {
                           << method_name() << "Fmeasure.txt)" << std::endl;
                 return;
             } else if (colIndex < std::stoi(tmp)) {
-                choiceFmeasure[method][colIndex] =
-                    -1;  // error用出力(未使用なのでここは無くても良い)
+                choiceFmeasure[method][colIndex] = -1;  // error用出力(未使用なのでここは無くても良い)
             } else {
                 for (int j = 0; j < 2; j++) {
                     getline(stream, tmp, '\t');
@@ -1281,13 +1182,9 @@ void Recom::precision_summury2(std::vector<std::string> dir) {
         for (int x = 0; x < Current_end + 1; x++) {
             Vector array1(max, 0.0, "all"), array2(max, 0.0, "all");
             if (choiceMAE[method][x] != -1) {
-                std::ifstream ifs(dir[method] + "/ROC/" + METHOD_NAME_recom +
-                                  "ROC" + std::to_string(Missing) + "_" +
-                                  std::to_string(x) + "sort.txt");
+                std::ifstream ifs(dir[method] + "/ROC/" + METHOD_NAME_recom + "ROC" + std::to_string(Missing) + "_" + std::to_string(x) + "sort.txt");
                 if (!ifs) {
-                    std::cerr
-                        << "ファイルinput失敗(precision_summury2): trials:" << x
-                        << ", miss:" << Missing << std::endl;
+                    std::cerr << "ファイルinput失敗(precision_summury2): trials:" << x << ", miss:" << Missing << std::endl;
                     break;
                 }
                 for (int i = 0; i < max; i++) ifs >> array1[i] >> array2[i];
@@ -1325,9 +1222,8 @@ void Recom::precision_summury2(std::vector<std::string> dir) {
             } else {
                 sumMAE += choiceMAE[method][i];
                 sumF += choiceFmeasure[method][i];
-                ofs << std::fixed << std::setprecision(10)
-                    << choiceMAE[method][i] << "\t" << choiceFmeasure[method][i]
-                    << "\t" << choiceAUC[method][i] << std::endl;
+                ofs << std::fixed << std::setprecision(10) << choiceMAE[method][i] << "\t" << choiceFmeasure[method][i] << "\t"
+                    << choiceAUC[method][i] << std::endl;
             }
         }
 
@@ -1338,8 +1234,7 @@ void Recom::precision_summury2(std::vector<std::string> dir) {
         //   rocarea += Averages[2] * (double)Current_start;
         // }
 
-        std::ofstream ofs_ave(dir[method] + "/averageMaeFmeasureAuc.txt",
-                              std::ios::trunc);
+        std::ofstream ofs_ave(dir[method] + "/averageMaeFmeasureAuc.txt", std::ios::trunc);
         if (!ofs_ave) std::cerr << "ファイルopen失敗: precision_summury2\n";
 
         double denominator = (double)Current_end + 1.0;
@@ -1347,10 +1242,8 @@ void Recom::precision_summury2(std::vector<std::string> dir) {
         // std::cout << "miss:" << Missing << "\tMAE=" << sumMAE / denominator
         //           << "\tF-measure=" << sumF / denominator << "\tAUC="
         //           << rocarea / denominator << std::endl;
-        ofs_ave << Missing << "\t" << (int)denominator << std::fixed
-                << std::setprecision(10) << "\t" << sumMAE / denominator << "\t"
-                << sumF / denominator << "\t" << rocarea / denominator
-                << std::endl;
+        ofs_ave << Missing << "\t" << (int)denominator << std::fixed << std::setprecision(10) << "\t" << sumMAE / denominator << "\t"
+                << sumF / denominator << "\t" << rocarea / denominator << std::endl;
         aveMAE += sumMAE / denominator;
 
         Averages[0] = sumMAE / denominator;
@@ -1363,15 +1256,13 @@ void Recom::precision_summury2(std::vector<std::string> dir) {
 void Recom::total_average_mae(std::vector<std::string> dir) {
     std::ofstream ofs(dir[0] + "/totalaverageMae.txt", std::ios::app);
     if (!ofs) std::cerr << "ファイルopen失敗: total_average_mae\n";
-    std::cout << "averageMAE=" << aveMAE / ((Missing - KESSON_BEGIN) / KIZAMI)
-              << std::endl;
+    std::cout << "averageMAE=" << aveMAE / ((Missing - KESSON_BEGIN) / KIZAMI) << std::endl;
     ofs << aveMAE / ((Missing - KESSON_BEGIN) / KIZAMI) << std::endl;
 }
 
 void Recom::revise_prediction(void) {
     for (int index = 0; index < Missing; index++) {
-        double RecomItem = 0.0, RecomUSER = 0.0, RecomITEM = 0.0,
-               RecomUserItem = 0.0;
+        double RecomItem = 0.0, RecomUSER = 0.0, RecomITEM = 0.0, RecomUserItem = 0.0;
         double numerator = 0.0, denominator = 0.0;
         double numerator1 = 0.0, denominator1 = 0.0;
         double numerator2 = 0.0, denominator2 = 0.0;
@@ -1391,8 +1282,7 @@ void Recom::revise_prediction(void) {
                 int user_index = SparseIncompleteData[k].indexIndex(ell);
                 if (user_index > KessonIndex[index][1]) break;
                 double user_element = SparseIncompleteData[k].elementIndex(ell);
-                if ((user_element > 0) &&
-                    (user_index == KessonIndex[index][1])) {
+                if ((user_element > 0) && (user_index == KessonIndex[index][1])) {
                     numerator1 += user_element;
                     denominator1++;
                     break;
@@ -1401,8 +1291,7 @@ void Recom::revise_prediction(void) {
             /******RecomUSER********/
             if (Mem[index1][k] == 1.0) {
                 for (int ell = 0; ell < user_size; ell++) {
-                    double user_element =
-                        SparseIncompleteData[k].elementIndex(ell);
+                    double user_element = SparseIncompleteData[k].elementIndex(ell);
                     if (user_element > 0) {
                         numerator2 += user_element;
                         denominator2++;
@@ -1413,8 +1302,7 @@ void Recom::revise_prediction(void) {
             for (int ell = 0; ell < user_size; ell++) {
                 int user_index = SparseIncompleteData[k].indexIndex(ell);
                 if (ItemMem[index2][user_index] == 1.0) {
-                    double user_element =
-                        SparseIncompleteData[k].elementIndex(ell);
+                    double user_element = SparseIncompleteData[k].elementIndex(ell);
                     if (user_element > 0) {
                         numerator3 += user_element;
                         denominator3++;
@@ -1426,8 +1314,7 @@ void Recom::revise_prediction(void) {
                 for (int ell = 0; ell < user_size; ell++) {
                     int user_index = SparseIncompleteData[k].indexIndex(ell);
                     if (ItemMem[index2][user_index] == 1.0) {
-                        double user_element =
-                            SparseIncompleteData[k].elementIndex(ell);
+                        double user_element = SparseIncompleteData[k].elementIndex(ell);
                         if (user_element > 0) {
                             numerator += user_element;
                             denominator++;
@@ -1440,8 +1327,7 @@ void Recom::revise_prediction(void) {
         if (denominator2 > 0) RecomUSER = numerator2 / denominator2;
         if (denominator3 > 0) RecomITEM = numerator3 / denominator3;
         if (denominator > 0) RecomUserItem = numerator / denominator;
-        Prediction[index] =
-            RecomUser + RecomItem - RecomUSER - RecomITEM + RecomUserItem;
+        Prediction[index] = RecomUser + RecomItem - RecomUSER - RecomITEM + RecomUserItem;
     }
     return;
 }
@@ -1471,20 +1357,13 @@ void Recom::revise_prediction2(const Matrix &V) {
             if (Mem[i][a] == 1.0) h = i;
         for (int k = 0; k < return_user_number(); k++) {
             double rTv = 0.0;
-            for (int ell = 0; ell < SparseIncompleteData[k].essencialSize();
-                 ell++)
-                rTv += SparseIncompleteData[k].elementIndex(ell) *
-                       V[h][SparseIncompleteData[k].indexIndex(ell)];
+            for (int ell = 0; ell < SparseIncompleteData[k].essencialSize(); ell++)
+                rTv += SparseIncompleteData[k].elementIndex(ell) * V[h][SparseIncompleteData[k].indexIndex(ell)];
             denominator += /*W[k]*/ Mem[h][k] * rTv;
-            for (int ell = 0; ell < SparseIncompleteData[k].essencialSize();
-                 ell++) {
-                if (KessonIndex[index][1] <
-                    SparseIncompleteData[k].indexIndex(ell))
-                    break;
-                if (KessonIndex[index][1] ==
-                    SparseIncompleteData[k].indexIndex(ell)) {
-                    numerator += /*W[k]*/ Mem[h][k] * rTv *
-                                 SparseIncompleteData[k].elementIndex(ell);
+            for (int ell = 0; ell < SparseIncompleteData[k].essencialSize(); ell++) {
+                if (KessonIndex[index][1] < SparseIncompleteData[k].indexIndex(ell)) break;
+                if (KessonIndex[index][1] == SparseIncompleteData[k].indexIndex(ell)) {
+                    numerator += /*W[k]*/ Mem[h][k] * rTv * SparseIncompleteData[k].elementIndex(ell);
                     break;
                 }
             }
@@ -1502,8 +1381,7 @@ void Recom::pearsonsim(void) {
         /*ユーザ1の非ゼロサイズ*/
         int user1_size = SparseIncompleteData[user1].essencialSize();
         for (int user2 = 0; user2 < return_user_number(); user2++) {
-            double psum = 0.0, sum1 = 0.0, sum2 = 0.0, sum1sq = 0.0,
-                   sum2sq = 0.0;
+            double psum = 0.0, sum1 = 0.0, sum2 = 0.0, sum1sq = 0.0, sum2sq = 0.0;
             double hyokasu = 0.0;
             /*ユーザ1がユーザ2である場合*/
             if (user1 == user2)
@@ -1518,29 +1396,22 @@ void Recom::pearsonsim(void) {
                       ユーザ2の非ゼロサイズを上回ったらbreak ~20180606*/
                     if (user2_size < user2_ell) break;
                     /*ユーザ1の既評価値*/
-                    double user1_element =
-                        SparseIncompleteData[user1].elementIndex(ell);
+                    double user1_element = SparseIncompleteData[user1].elementIndex(ell);
                     /*ユーザ1の既評価値が欠損でなければ計算*/
                     if (user1_element > 0) {
                         // ユーザ1のインデックス*/
-                        int user1_index =
-                            SparseIncompleteData[user1].indexIndex(ell);
+                        int user1_index = SparseIncompleteData[user1].indexIndex(ell);
                         while (1) {
                             if (user2_size == user2_ell) break;
                             /*ユーザ2のインデックス*/
-                            int user2_index =
-                                SparseIncompleteData[user2].indexIndex(
-                                    user2_ell);
+                            int user2_index = SparseIncompleteData[user2].indexIndex(user2_ell);
                             /*ユーザ2の方が上回ったらbreak*/
                             if (user1_index < user2_index) break;
                             /*ユーザ2の既評価値*/
-                            double user2_element =
-                                SparseIncompleteData[user2].elementIndex(
-                                    user2_ell);
+                            double user2_element = SparseIncompleteData[user2].elementIndex(user2_ell);
                             /*インデックスが揃った場合とユーザ既評価値が
                         欠損されてなければ計算*/
-                            if ((user1_index == user2_index) &&
-                                (user2_element > 0)) {
+                            if ((user1_index == user2_index) && (user2_element > 0)) {
                                 hyokasu += 1.0;
                                 psum += user1_element * user2_element;
                                 sum1 += user1_element;
@@ -1555,8 +1426,7 @@ void Recom::pearsonsim(void) {
                     }
                 }
                 double numerator = psum - (sum1 * sum2 / hyokasu);
-                double denominator = sqrt((sum1sq - pow(sum1, 2.0) / hyokasu) *
-                                          (sum2sq - pow(sum2, 2.0) / hyokasu));
+                double denominator = sqrt((sum1sq - pow(sum1, 2.0) / hyokasu) * (sum2sq - pow(sum2, 2.0) / hyokasu));
                 if (denominator == 0 || std::isnan(denominator))
                     Similarity[user1][user2] = 0.0;
                 else
@@ -1583,8 +1453,7 @@ void Recom::pearsonsim_clustering(void) {
         for (int i = 0; i < Mem.rows(); i++)
             if (Mem[i][user1] == 1.0) tmpcenternum = i;
         for (int user2 = 0; user2 < return_user_number(); user2++) {
-            double psum = 0.0, sum1 = 0.0, sum2 = 0.0, sum1sq = 0.0,
-                   sum2sq = 0.0;
+            double psum = 0.0, sum1 = 0.0, sum2 = 0.0, sum1sq = 0.0, sum2sq = 0.0;
             double hyokasu = 0.0;
             /*ユーザ2がユーザ1である，または
         ユーザ1が属すユーザクラスタに属さないユーザであった場合
@@ -1601,29 +1470,22 @@ void Recom::pearsonsim_clustering(void) {
                       既評価数を上回ったらbreak*/
                     if (user2_size < user2_ell) break;
                     /*ユーザ1の現在の既評価値*/
-                    double user1_element =
-                        SparseIncompleteData[user1].elementIndex(ell);
+                    double user1_element = SparseIncompleteData[user1].elementIndex(ell);
                     /*ユーザ1の現在の既評価値が欠損されてなければ計算*/
                     if (user1_element > 0) {
                         /*ユーザ1の現在の評価値インデックスのインデックス*/
-                        int user1_index =
-                            SparseIncompleteData[user1].indexIndex(ell);
+                        int user1_index = SparseIncompleteData[user1].indexIndex(ell);
                         while (1) {
                             if (user2_size == user2_ell) break;
                             /*ユーザ2の現在の評価値インデックスのインデックス*/
-                            int user2_index =
-                                SparseIncompleteData[user2].indexIndex(
-                                    user2_ell);
+                            int user2_index = SparseIncompleteData[user2].indexIndex(user2_ell);
                             /*ユーザ2の方が上回ったらbreak*/
                             if (user1_index < user2_index) break;
                             /*現在のユーザの既評価値*/
-                            double user2_element =
-                                SparseIncompleteData[user2].elementIndex(
-                                    user2_ell);
+                            double user2_element = SparseIncompleteData[user2].elementIndex(user2_ell);
                             /*インデックスが揃った場合とユーザ既評価値が
                         欠損されてなければ計算*/
-                            if ((user1_index == user2_index) &&
-                                (user2_element > 0)) {
+                            if ((user1_index == user2_index) && (user2_element > 0)) {
                                 hyokasu += 1.0;
                                 psum += user1_element * user2_element;
                                 sum1 += user1_element;
@@ -1639,8 +1501,7 @@ void Recom::pearsonsim_clustering(void) {
                     }
                 }
                 double numerator = psum - (sum1 * sum2 / hyokasu);
-                double denominator = sqrt((sum1sq - pow(sum1, 2.0) / hyokasu) *
-                                          (sum2sq - pow(sum2, 2.0) / hyokasu));
+                double denominator = sqrt((sum1sq - pow(sum1, 2.0) / hyokasu) * (sum2sq - pow(sum2, 2.0) / hyokasu));
                 if (denominator == 0 || std::isnan(denominator))
                     Similarity[user1][user2] = 0.0;
                 else
@@ -1653,20 +1514,17 @@ void Recom::pearsonsim_clustering(void) {
 }
 
 // PCM用類似度計算
-void Recom::pearsonsim_for_pcm(const Matrix &Membership_PCM,
-                               const Vector &Threshold) {
+void Recom::pearsonsim_for_pcm(const Matrix &Membership_PCM, const Vector &Threshold) {
     for (int user1 = 0; user1 < return_user_number(); user1++) {
         /*ユーザ1の既評価数*/
         int user1_size = SparseIncompleteData[user1].essencialSize();
         for (int user2 = 0; user2 < return_user_number(); user2++) {
-            double psum = 0.0, sum1 = 0.0, sum2 = 0.0, sum1sq = 0.0,
-                   sum2sq = 0.0;
+            double psum = 0.0, sum1 = 0.0, sum2 = 0.0, sum1sq = 0.0, sum2sq = 0.0;
             double hyokasu = 0.0;
             /*ユーザ2がユーザ1である，または
         ユーザ1が属すユーザクラスタに属さないユーザであった場合
         ユーザ2とユーザ1の類似度を0にすることで計算させない*/
-            if (user1 == user2 ||
-                Membership_PCM[user1][user2] < Threshold[user1])
+            if (user1 == user2 || Membership_PCM[user1][user2] < Threshold[user1])
                 Similarity[user1][user2] = 0.0;
             else {
                 /*ユーザ2の既評価数*/
@@ -1678,29 +1536,22 @@ void Recom::pearsonsim_for_pcm(const Matrix &Membership_PCM,
                       既評価数を上回ったらbreak*/
                     if (user2_size < user2_ell) break;
                     /*ユーザ1の現在の既評価値*/
-                    double user1_element =
-                        SparseIncompleteData[user1].elementIndex(ell);
+                    double user1_element = SparseIncompleteData[user1].elementIndex(ell);
                     /*ユーザ1の現在の既評価値が欠損されてなければ計算*/
                     if (user1_element > 0) {
                         /*ユーザ1の現在の評価値インデックスのインデックス*/
-                        int user1_index =
-                            SparseIncompleteData[user1].indexIndex(ell);
+                        int user1_index = SparseIncompleteData[user1].indexIndex(ell);
                         while (1) {
                             if (user2_size == user2_ell) break;
                             /*ユーザ2の現在の評価値インデックスのインデックス*/
-                            int user2_index =
-                                SparseIncompleteData[user2].indexIndex(
-                                    user2_ell);
+                            int user2_index = SparseIncompleteData[user2].indexIndex(user2_ell);
                             /*ユーザ2の方が上回ったらbreak*/
                             if (user1_index < user2_index) break;
                             /*現在のユーザの既評価値*/
-                            double user2_element =
-                                SparseIncompleteData[user2].elementIndex(
-                                    user2_ell);
+                            double user2_element = SparseIncompleteData[user2].elementIndex(user2_ell);
                             /*インデックスが揃った場合とユーザ既評価値が
                         欠損されてなければ計算*/
-                            if ((user1_index == user2_index) &&
-                                (user2_element > 0)) {
+                            if ((user1_index == user2_index) && (user2_element > 0)) {
                                 hyokasu += 1.0;
                                 psum += user1_element * user2_element;
                                 sum1 += user1_element;
@@ -1716,8 +1567,7 @@ void Recom::pearsonsim_for_pcm(const Matrix &Membership_PCM,
                     }
                 }
                 double numerator = psum - (sum1 * sum2 / hyokasu);
-                double denominator = sqrt((sum1sq - pow(sum1, 2.0) / hyokasu) *
-                                          (sum2sq - pow(sum2, 2.0) / hyokasu));
+                double denominator = sqrt((sum1sq - pow(sum1, 2.0) / hyokasu) * (sum2sq - pow(sum2, 2.0) / hyokasu));
                 if (denominator == 0 || std::isnan(denominator))
                     Similarity[user1][user2] = 0.0;
                 else
@@ -1738,12 +1588,9 @@ void Recom::pearsonpred1(void) {
                 for (int ell = 0; ell < user_size; ell++) {
                     int user_index = SparseIncompleteData[i].indexIndex(ell);
                     if (user_index > miss_user_index) break;
-                    double user_element =
-                        SparseIncompleteData[i].elementIndex(ell);
-                    if ((user_element > 0.0) &&
-                        (user_index == miss_user_index)) {
-                        numerator +=
-                            Similarity[KessonIndex[index][0]][i] * user_element;
+                    double user_element = SparseIncompleteData[i].elementIndex(ell);
+                    if ((user_element > 0.0) && (user_index == miss_user_index)) {
+                        numerator += Similarity[KessonIndex[index][0]][i] * user_element;
                         denominator += Similarity[KessonIndex[index][0]][i];
                         break;
                     }
@@ -1768,12 +1615,9 @@ void Recom::pearsonpred2(void) {
                 for (int ell = 0; ell < user_size; ell++) {
                     int user_index = SparseIncompleteData[i].indexIndex(ell);
                     if (user_index > miss_user_index) break;
-                    double user_element =
-                        SparseIncompleteData[i].elementIndex(ell);
-                    if ((user_element > 0.0) &&
-                        (user_index == miss_user_index)) {
-                        numerator += Similarity[KessonIndex[index][0]][i] *
-                                     (user_element - user_average(i));
+                    double user_element = SparseIncompleteData[i].elementIndex(ell);
+                    if ((user_element > 0.0) && (user_index == miss_user_index)) {
+                        numerator += Similarity[KessonIndex[index][0]][i] * (user_element - user_average(i));
                         denominator += Similarity[KessonIndex[index][0]][i];
                         break;
                     }
@@ -1783,8 +1627,7 @@ void Recom::pearsonpred2(void) {
         if (denominator == 0)
             Prediction[index] = user_average(KessonIndex[index][0]);
         else {
-            Prediction[index] =
-                user_average(KessonIndex[index][0]) + numerator / denominator;
+            Prediction[index] = user_average(KessonIndex[index][0]) + numerator / denominator;
         }
         if (std::isnan(Prediction[index])) Prediction[index] = 0.0;
     }
@@ -1799,18 +1642,14 @@ void Recom::pearsonpred2_after_clustering(void) {
         for (int i = 0; i < Mem.rows(); i++)
             if (Mem[i][KessonIndex[index][0]] == 1.0) tmpcenternum = i;
         for (int i = 0; i < return_user_number(); i++) {
-            if (Similarity[KessonIndex[index][0]][i] > 0.0 &&
-                Mem[tmpcenternum][i] == 1.0) {
+            if (Similarity[KessonIndex[index][0]][i] > 0.0 && Mem[tmpcenternum][i] == 1.0) {
                 int user_size = SparseIncompleteData[i].essencialSize();
                 for (int ell = 0; ell < user_size; ell++) {
                     int user_index = SparseIncompleteData[i].indexIndex(ell);
                     if (user_index > miss_user_index) break;
-                    double user_element =
-                        SparseIncompleteData[i].elementIndex(ell);
-                    if ((user_element > 0.0) &&
-                        (user_index == miss_user_index)) {
-                        numerator += Similarity[KessonIndex[index][0]][i] *
-                                     (user_element - user_average(i));
+                    double user_element = SparseIncompleteData[i].elementIndex(ell);
+                    if ((user_element > 0.0) && (user_index == miss_user_index)) {
+                        numerator += Similarity[KessonIndex[index][0]][i] * (user_element - user_average(i));
                         denominator += Similarity[KessonIndex[index][0]][i];
                         break;
                     }
@@ -1820,8 +1659,7 @@ void Recom::pearsonpred2_after_clustering(void) {
         if (denominator == 0)
             Prediction[index] = user_average(KessonIndex[index][0]);
         else {
-            Prediction[index] =
-                user_average(KessonIndex[index][0]) + numerator / denominator;
+            Prediction[index] = user_average(KessonIndex[index][0]) + numerator / denominator;
         }
         if (std::isnan(Prediction[index])) {
             Prediction[index] = 0.0;
@@ -1892,46 +1730,24 @@ int Recom::mf_pred(std::string dir, double K_percent, double beta, double alpha,
             prev_Q = Q;
             prev_P = P;
             for (int i = 0; i < P.rows(); i++) {
-                for (int j = 0; j < SparseIncompleteData[i].essencialSize();
-                     j++) {
+                for (int j = 0; j < SparseIncompleteData[i].essencialSize(); j++) {
                     if (SparseIncompleteData[i].elementIndex(j) != 0) {
                         // e = r - p * q
-                        double err =
-                            SparseIncompleteData[i].elementIndex(j) -
-                            (P[i] * Q[SparseIncompleteData[i].indexIndex(j)]);
+                        double err = SparseIncompleteData[i].elementIndex(j) - (P[i] * Q[SparseIncompleteData[i].indexIndex(j)]);
                         // 更新
                         for (int k_i = 0; k_i < K; k_i++) {
-                            P[i][k_i] +=
-                                alpha *
-                                (2 * err *
-                                     Q[SparseIncompleteData[i].indexIndex(j)]
-                                      [k_i] -
-                                 beta * P[i][k_i]);
+                            P[i][k_i] += alpha * (2 * err * Q[SparseIncompleteData[i].indexIndex(j)][k_i] - beta * P[i][k_i]);
                             Q[SparseIncompleteData[i].indexIndex(j)][k_i] +=
-                                alpha *
-                                (2 * err * P[i][k_i] -
-                                 beta * Q[SparseIncompleteData[i].indexIndex(j)]
-                                         [k_i]);
+                                alpha * (2 * err * P[i][k_i] - beta * Q[SparseIncompleteData[i].indexIndex(j)][k_i]);
                             if (!isfinite(P[i][k_i])) {
-                                std::cerr << "P[" << i << "][" << k_i
-                                          << "] is not finite. step = " << step
-                                          << ", err = " << err
-                                          << ", error = " << error
-                                          << ", K = " << K
-                                          << ", beta = " << beta
-                                          << ", alpha = " << alpha << std::endl;
+                                std::cerr << "P[" << i << "][" << k_i << "] is not finite. step = " << step << ", err = " << err
+                                          << ", error = " << error << ", K = " << K << ", beta = " << beta << ", alpha = " << alpha << std::endl;
                                 ParameterNaN = true;
                                 break;
                             }
-                            if (!isfinite(Q[SparseIncompleteData[i].indexIndex(
-                                    j)][k_i])) {
-                                std::cerr << "Q[" << j << "][" << k_i
-                                          << "] is not finite. step = " << step
-                                          << ", err = " << err
-                                          << ", error = " << error
-                                          << ", K = " << K
-                                          << ", beta = " << beta
-                                          << ", alpha = " << alpha << std::endl;
+                            if (!isfinite(Q[SparseIncompleteData[i].indexIndex(j)][k_i])) {
+                                std::cerr << "Q[" << j << "][" << k_i << "] is not finite. step = " << step << ", err = " << err
+                                          << ", error = " << error << ", K = " << K << ", beta = " << beta << ", alpha = " << alpha << std::endl;
                                 ParameterNaN = true;
                                 break;
                             }
@@ -1947,14 +1763,9 @@ int Recom::mf_pred(std::string dir, double K_percent, double beta, double alpha,
             error = 0.0;
             double P_L2Norm = 0.0, Q_L2Norm = 0.0;
             for (int i = 0; i < P.rows(); i++) {
-                for (int j = 0; j < SparseIncompleteData[i].essencialSize();
-                     j++) {
+                for (int j = 0; j < SparseIncompleteData[i].essencialSize(); j++) {
                     if (SparseIncompleteData[i].elementIndex(j) != 0) {
-                        error +=
-                            pow(SparseIncompleteData[i].elementIndex(j) -
-                                    (P[i] *
-                                     Q[SparseIncompleteData[i].indexIndex(j)]),
-                                2);
+                        error += pow(SparseIncompleteData[i].elementIndex(j) - (P[i] * Q[SparseIncompleteData[i].indexIndex(j)]), 2);
                     }
                 }
                 P_L2Norm += P[i] * P[i];
@@ -1963,24 +1774,19 @@ int Recom::mf_pred(std::string dir, double K_percent, double beta, double alpha,
                 Q_L2Norm += Q[j] * Q[j];
             }
 
-            double diff =
-                frobenius_norm(prev_P - P) + frobenius_norm(prev_Q - Q);
-            std::cout << "diff_p:" << frobenius_norm(prev_P - P)
-                      << " diff_q:" << frobenius_norm(prev_Q - Q)
-                      << " diff:" << diff << " step" << step << " L:" << error
-                      << std::endl;
+            double diff = frobenius_norm(prev_P - P) + frobenius_norm(prev_Q - Q);
+            std::cout << "diff_p:" << frobenius_norm(prev_P - P) << " diff_q:" << frobenius_norm(prev_Q - Q) << " diff:" << diff << " step" << step
+                      << " L:" << error << std::endl;
             error += (beta / 2.0) * (P_L2Norm + Q_L2Norm);
 
-            if (diff < 0.1 && step >= 50) {
-                std::cout << "error = " << error << ", step = " << step
-                          << std::endl;
+            if (diff < DIFF && step >= 50) {
+                std::cout << "error = " << error << ", step = " << step << std::endl;
                 break;
             }
 
             if (step == steps - 1) {
-                std::cout << "step = " << step << ", error = " << error
-                          << ", K: " << K_percent << "%, beta = " << beta
-                          << ", alpha = " << alpha << std::endl;
+                std::cout << "step = " << step << ", error = " << error << ", K: " << K_percent << "%, beta = " << beta << ", alpha = " << alpha
+                          << std::endl;
                 ParameterNaN = true;
             }
         }
@@ -1996,17 +1802,15 @@ int Recom::mf_pred(std::string dir, double K_percent, double beta, double alpha,
             // 計算済みのP, Qから評価値予測を実行
             for (int index = 0; index < Missing; index++) {
                 // 欠損箇所だけ計算
-                Prediction[index] =
-                    P[KessonIndex[index][0]] * Q[KessonIndex[index][1]];
+                Prediction[index] = P[KessonIndex[index][0]] * Q[KessonIndex[index][1]];
             }
         }
     }  // 初期値ループ
     return 0;
 }
 
-int Recom::mf_pred_after_clustering(
-    std::string dir, double K_percent, double beta, double alpha,
-    int steps)  // K以外は初期値有なので指定無しでも可
+int Recom::mf_pred_after_clustering(std::string dir, double K_percent, double beta, double alpha,
+                                    int steps)  // K以外は初期値有なので指定無しでも可
 {
     std::cout << "欠損：" << Missing << std::endl;
     for (int cluster_index = 0; cluster_index < Mem.rows(); cluster_index++) {
@@ -2021,14 +1825,11 @@ int Recom::mf_pred_after_clustering(
             isItemEvaluated[i] = false;
         }
         for (int i = 0; i < return_user_number(); i++) {
-            if (Mem[cluster_index][i] ==
-                1.0) {  // ユーザiがクラスタに属するなら...
+            if (Mem[cluster_index][i] == 1.0) {  // ユーザiがクラスタに属するなら...
                 UserIndexMap.insert(std::make_pair(i, cluster_user_num));
                 cluster_user_num++;
-                for (int j = 0; j < SparseIncompleteData[i].essencialSize();
-                     j++) {
-                    isItemEvaluated[SparseIncompleteData[i].indexIndex(j)] =
-                        true;
+                for (int j = 0; j < SparseIncompleteData[i].essencialSize(); j++) {
+                    isItemEvaluated[SparseIncompleteData[i].indexIndex(j)] = true;
                 }
             }
         }
@@ -2063,8 +1864,7 @@ int Recom::mf_pred_after_clustering(
         int trialLimit = CLUSTERINGTRIALS;
         int mf_seed = 0;
         // trialLimit = 1; //debug
-        for (int rand_mf_trial = 0; rand_mf_trial < trialLimit;
-             rand_mf_trial++) {
+        for (int rand_mf_trial = 0; rand_mf_trial < trialLimit; rand_mf_trial++) {
             // std::cout << "MF: initial setting " << rand_mf_trial <<
             // std::endl; P, Qの初期値を乱数で決定
             std::mt19937_64 mt;
@@ -2098,54 +1898,27 @@ int Recom::mf_pred_after_clustering(
                 for (int i = 0; i < return_user_number(); i++) {
                     if (Mem[cluster_index][i] == 1.0) {
                         mf_user_index++;
-                        for (int j = 0;
-                             j < SparseIncompleteData[i].essencialSize(); j++) {
-                            if (isItemEvaluated[SparseIncompleteData[i]
-                                                    .indexIndex(j)]) {
-                                mf_item_index = ItemIndexMap.at(
-                                    SparseIncompleteData[i].indexIndex(j));
-                                if (SparseIncompleteData[i].elementIndex(j) !=
-                                    0) {
+                        for (int j = 0; j < SparseIncompleteData[i].essencialSize(); j++) {
+                            if (isItemEvaluated[SparseIncompleteData[i].indexIndex(j)]) {
+                                mf_item_index = ItemIndexMap.at(SparseIncompleteData[i].indexIndex(j));
+                                if (SparseIncompleteData[i].elementIndex(j) != 0) {
                                     // e = r - p * q
-                                    double err =
-                                        SparseIncompleteData[i].elementIndex(
-                                            j) -
-                                        (P[mf_user_index] * Q[mf_item_index]);
+                                    double err = SparseIncompleteData[i].elementIndex(j) - (P[mf_user_index] * Q[mf_item_index]);
                                     // 更新式で更新
                                     for (int k_i = 0; k_i < K; k_i++) {
-                                        P[mf_user_index][k_i] +=
-                                            alpha *
-                                            (2 * err * Q[mf_item_index][k_i] -
-                                             beta * P[mf_user_index][k_i]);
-                                        Q[mf_item_index][k_i] +=
-                                            alpha *
-                                            (2 * err * P[mf_user_index][k_i] -
-                                             beta * Q[mf_item_index][k_i]);
+                                        P[mf_user_index][k_i] += alpha * (2 * err * Q[mf_item_index][k_i] - beta * P[mf_user_index][k_i]);
+                                        Q[mf_item_index][k_i] += alpha * (2 * err * P[mf_user_index][k_i] - beta * Q[mf_item_index][k_i]);
                                         if (!isfinite(P[mf_user_index][k_i])) {
-                                            std::cerr
-                                                << "P[" << mf_user_index << "]["
-                                                << k_i
-                                                << "] is not finite. step = "
-                                                << step << ", err = " << err
-                                                << ", error = " << error
-                                                << ", K = " << K
-                                                << ", beta = " << beta
-                                                << ", alpha = " << alpha
-                                                << std::endl;
+                                            std::cerr << "P[" << mf_user_index << "][" << k_i << "] is not finite. step = " << step
+                                                      << ", err = " << err << ", error = " << error << ", K = " << K << ", beta = " << beta
+                                                      << ", alpha = " << alpha << std::endl;
                                             ParameterNaN = true;
                                             break;
                                         }
                                         if (!isfinite(Q[mf_item_index][k_i])) {
-                                            std::cerr
-                                                << "Q[" << mf_item_index << "]["
-                                                << k_i
-                                                << "] is not finite. step = "
-                                                << step << ", err = " << err
-                                                << ", error = " << error
-                                                << ", K = " << K
-                                                << ", beta = " << beta
-                                                << ", alpha = " << alpha
-                                                << std::endl;
+                                            std::cerr << "Q[" << mf_item_index << "][" << k_i << "] is not finite. step = " << step
+                                                      << ", err = " << err << ", error = " << error << ", K = " << K << ", beta = " << beta
+                                                      << ", alpha = " << alpha << std::endl;
                                             // std::cout << "\nQ:\n" << Q <<
                                             // std::endl;
                                             ParameterNaN = true;
@@ -2169,20 +1942,11 @@ int Recom::mf_pred_after_clustering(
                 for (int i = 0; i < return_user_number(); i++) {
                     if (Mem[cluster_index][i] == 1.0) {
                         mf_user_index++;
-                        for (int j = 0;
-                             j < SparseIncompleteData[i].essencialSize(); j++) {
-                            if (isItemEvaluated[SparseIncompleteData[i]
-                                                    .indexIndex(j)]) {
-                                mf_item_index = ItemIndexMap.at(
-                                    SparseIncompleteData[i].indexIndex(j));
-                                if (SparseIncompleteData[i].elementIndex(j) !=
-                                    0) {
-                                    error += pow(
-                                        SparseIncompleteData[i].elementIndex(
-                                            j) -
-                                            (P[mf_user_index] *
-                                             Q[mf_item_index]),
-                                        2);
+                        for (int j = 0; j < SparseIncompleteData[i].essencialSize(); j++) {
+                            if (isItemEvaluated[SparseIncompleteData[i].indexIndex(j)]) {
+                                mf_item_index = ItemIndexMap.at(SparseIncompleteData[i].indexIndex(j));
+                                if (SparseIncompleteData[i].elementIndex(j) != 0) {
+                                    error += pow(SparseIncompleteData[i].elementIndex(j) - (P[mf_user_index] * Q[mf_item_index]), 2);
                                 }
                             }
                         }
@@ -2196,19 +1960,17 @@ int Recom::mf_pred_after_clustering(
                 }
                 error += (beta / 2.0) * (P_L2Norm + Q_L2Norm);
 
-                double diff =
-                    frobenius_norm(prev_P - P) + frobenius_norm(prev_Q - Q);
+                double diff = frobenius_norm(prev_P - P) + frobenius_norm(prev_Q - Q);
 
-                if (diff < 0.7 && step >= 50) {
+                if (diff < DIFF && step >= 50) {
                     break;
                 }
 
                 prev_P = P;
                 prev_Q = Q;
                 if (step == steps - 1) {
-                    std::cout << "step = " << step << ", error = " << error
-                              << ", K: " << K_percent << "%, beta = " << beta
-                              << ", alpha = " << alpha << std::endl;
+                    std::cout << "step = " << step << ", error = " << error << ", K: " << K_percent << "%, beta = " << beta << ", alpha = " << alpha
+                              << std::endl;
                     ParameterNaN = true;
                 }
                 // prev_error = error;
@@ -2227,9 +1989,7 @@ int Recom::mf_pred_after_clustering(
                     // 欠損箇所だけかつ，今回のクラスタの分だけ計算
                     if (Mem[cluster_index][KessonIndex[index][0]] == 1.0) {
                         if (isItemEvaluated[(int)KessonIndex[index][1]]) {
-                            Prediction[index] =
-                                P[UserIndexMap.at(KessonIndex[index][0])] *
-                                Q[ItemIndexMap.at(KessonIndex[index][1])];
+                            Prediction[index] = P[UserIndexMap.at(KessonIndex[index][0])] * Q[ItemIndexMap.at(KessonIndex[index][1])];
                         }
                     }
                 }
@@ -2240,8 +2000,7 @@ int Recom::mf_pred_after_clustering(
     return 0;
 }
 
-int Recom::qfcmf_pred(std::string dir, double K_percent, int steps, int C,
-                      double Lambda, double FuzzifierEm, double beta,
+int Recom::qfcmf_pred(std::string dir, double K_percent, int steps, int C, double Lambda, double FuzzifierEm, double beta,
                       double alpha) {  // はクラスタ数
 
     int K;
@@ -2346,52 +2105,19 @@ int Recom::qfcmf_pred(std::string dir, double K_percent, int steps, int C,
                 // i...Nでループ
                 for (int i = 0; i < P[c].rows(); i++) {  // i
                     if (Membership.Element[c].Element[i] > 0) {
-                        for (int j = 0;
-                             j <
-                             SparseIncompleteData.Element[i].essencialSize();
-                             j++) {
-                            if (SparseIncompleteData.Element[i].Element[j] !=
-                                0) {
-                                double err =
-                                    SparseIncompleteData.Element[i].Element[j] -
-                                    P.Element[c][i] *
-                                        Q.Element[c][SparseIncompleteData
-                                                         .Element[i]
-                                                         .Index[j]];
+                        for (int j = 0; j < SparseIncompleteData.Element[i].essencialSize(); j++) {
+                            if (SparseIncompleteData.Element[i].Element[j] != 0) {
+                                double err = SparseIncompleteData.Element[i].Element[j] -
+                                             P.Element[c][i] * Q.Element[c][SparseIncompleteData.Element[i].Index[j]];
                                 for (int k = 0; k < K; k++) {
                                     P.Element[c].Element[i].Element[k] -=
-                                        alpha *
-                                        (pow(Membership.Element[c].Element[i],
-                                             FuzzifierEm) *
-                                         (-2.0 *
-                                              Q.Element[c]
-                                                  .Element[SparseIncompleteData
-                                                               .Element[i]
-                                                               .Index[j]]
-                                                  .Element[k] *
-                                              err +
-                                          1.0 * beta *
-                                              P.Element[c]
-                                                  .Element[i]
-                                                  .Element[k]));
-                                    Q.Element[c]
-                                        .Element[SparseIncompleteData.Element[i]
-                                                     .Index[j]]
-                                        .Element[k] -=
-                                        alpha *
-                                        (pow(Membership.Element[c].Element[i],
-                                             FuzzifierEm) *
-                                         (-2.0 *
-                                              P.Element[c]
-                                                  .Element[i]
-                                                  .Element[k] *
-                                              err +
-                                          1.0 * beta *
-                                              Q.Element[c]
-                                                  .Element[SparseIncompleteData
-                                                               .Element[i]
-                                                               .Index[j]]
-                                                  .Element[k]));
+                                        alpha * (pow(Membership.Element[c].Element[i], FuzzifierEm) *
+                                                 (-2.0 * Q.Element[c].Element[SparseIncompleteData.Element[i].Index[j]].Element[k] * err +
+                                                  1.0 * beta * P.Element[c].Element[i].Element[k]));
+                                    Q.Element[c].Element[SparseIncompleteData.Element[i].Index[j]].Element[k] -=
+                                        alpha * (pow(Membership.Element[c].Element[i], FuzzifierEm) *
+                                                 (-2.0 * P.Element[c].Element[i].Element[k] * err +
+                                                  1.0 * beta * Q.Element[c].Element[SparseIncompleteData.Element[i].Index[j]].Element[k]));
                                 }
                             }  // k
                         }      // not data
@@ -2410,18 +2136,13 @@ int Recom::qfcmf_pred(std::string dir, double K_percent, int steps, int C,
 
                 for (int i = 0; i < SparseIncompleteData.rows(); i++) {
                     Dissimilarities.Element[c].Element[i] = 0.0;
-                    for (int j = 0; j < SparseIncompleteData[i].essencialSize();
-                         j++) {
+                    for (int j = 0; j < SparseIncompleteData[i].essencialSize(); j++) {
                         if (SparseIncompleteData[i].Element[j] != 0) {
                             double tmp = 0.0;
-                            tmp =
-                                P.Element[c][i] *
-                                Q.Element[c][SparseIncompleteData[i].Index[j]];
+                            tmp = P.Element[c][i] * Q.Element[c][SparseIncompleteData[i].Index[j]];
                             Dissimilarities.Element[c].Element[i] +=
-                                (SparseIncompleteData.Element[i].Element[j] -
-                                 tmp) *
-                                (SparseIncompleteData.Element[i].Element[j] -
-                                 tmp);  // + beta*P_L2Norm + beta*Q_L2Norm;
+                                (SparseIncompleteData.Element[i].Element[j] - tmp) *
+                                (SparseIncompleteData.Element[i].Element[j] - tmp);  // + beta*P_L2Norm + beta*Q_L2Norm;
                         }
                     }
                 }
@@ -2434,14 +2155,9 @@ int Recom::qfcmf_pred(std::string dir, double K_percent, int steps, int C,
                     if (Dissimilarities.Element[c].Element[i] != 0.0) {
                         double denominator = 0.0;
                         for (int j = 0; j < C; j++) {
-                            denominator += pow(
-                                (1 -
-                                 Lambda * (1 - FuzzifierEm) *
-                                     Dissimilarities.Element[c].Element[i]) /
-                                    (1 -
-                                     Lambda * (1 - FuzzifierEm) *
-                                         Dissimilarities.Element[j].Element[i]),
-                                1.0 / (FuzzifierEm - 1));
+                            denominator += pow((1 - Lambda * (1 - FuzzifierEm) * Dissimilarities.Element[c].Element[i]) /
+                                                   (1 - Lambda * (1 - FuzzifierEm) * Dissimilarities.Element[j].Element[i]),
+                                               1.0 / (FuzzifierEm - 1));
                         }
                         Membership.Element[c].Element[i] = 1.0 / (denominator);
                     }
@@ -2466,24 +2182,20 @@ int Recom::qfcmf_pred(std::string dir, double K_percent, int steps, int C,
                 break;
             }
 
-            if (diff < 0.011 && step >= 50) {
-                std::cout << "u:\n"
-                          << Membership << "\n step:" << step << std::endl;
+            if (diff < DIFF && step >= 50) {
+                std::cout << "u:\n" << Membership << "\n step:" << step << std::endl;
                 break;
             }
 
             error = 0.0;
             for (int i = 0; i < C; i++) {
                 for (int j = 0; j < return_user_number(); j++) {
-                    error += pow(Membership[i][j], FuzzifierEm) *
-                             Dissimilarities[i][j];
-                    +1 / (Lambda * (FuzzifierEm - 1)) *
-                        (pow(Membership[i][j], FuzzifierEm) - 1);
+                    error += pow(Membership[i][j], FuzzifierEm) * Dissimilarities[i][j];
+                    +1 / (Lambda * (FuzzifierEm - 1)) * (pow(Membership[i][j], FuzzifierEm) - 1);
                 }
             }
             if (step == steps - 1) {
-                std::cout << "step = " << step << ", error = " << error
-                          << ", K: " << K_percent << std::endl;
+                std::cout << "step = " << step << ", error = " << error << ", K: " << K_percent << std::endl;
                 ParameterNaN = true;
             }
         }
@@ -2501,10 +2213,7 @@ int Recom::qfcmf_pred(std::string dir, double K_percent, int steps, int C,
                 Prediction[index] = 0.0;
                 for (int p = 0; p < K; p++) {
                     for (int i = 0; i < C; i++) {
-                        Prediction[index] +=
-                            Membership[i][KessonIndex[index][0]] *
-                            P[i][KessonIndex[index][0]][p] *
-                            Q[i][KessonIndex[index][1]][p];
+                        Prediction[index] += Membership[i][KessonIndex[index][0]] * P[i][KessonIndex[index][0]][p] * Q[i][KessonIndex[index][1]][p];
                     }
                 }
                 // std::cout <<"Prediction:"<<Prediction[index]<< "
@@ -2517,11 +2226,10 @@ int Recom::qfcmf_pred(std::string dir, double K_percent, int steps, int C,
     return 0;
 }
 
-int Recom::nmf_pred(
-    std::string dir, double K_percent,
-    int steps) {  // K以外は初期値有なので指定無しでも可
-                  // betaは熱田先輩のやつでいうγ　alphaは学習率　kは潜在次元数？
-                  // 　dirも謎
+int Recom::nmf_pred(std::string dir, double K_percent,
+                    int steps) {  // K以外は初期値有なので指定無しでも可
+                                  // betaは熱田先輩のやつでいうγ　alphaは学習率　kは潜在次元数？
+                                  // 　dirも謎
     int K;
     if (return_user_number() > return_item_number()) {
         K = std::round(return_item_number() * K_percent / 100);
@@ -2556,8 +2264,7 @@ int Recom::nmf_pred(
         }
         for (int j = 0; j < SparseIncompleteData[i].essencialSize(); j++) {
             if (SparseIncompleteData[i].elementIndex(j) != 0)
-                IncompleteData[i][SparseIncompleteData[i].indexIndex(j)] =
-                    SparseIncompleteData[i].elementIndex(j);
+                IncompleteData[i][SparseIncompleteData[i].indexIndex(j)] = SparseIncompleteData[i].elementIndex(j);
         }
     }
     std::cout << "IncompleteData:" << IncompleteData << std::endl;
@@ -2607,8 +2314,7 @@ int Recom::nmf_pred(
             for (int row = 0; row < P.rows(); row++) {
                 for (int col = 0; col < P.cols(); col++) {
                     if (P[row][col] > 0.000000001) {
-                        P[row][col] *=
-                            (P_numerator[row][col] / P_denominator[row][col]);
+                        P[row][col] *= (P_numerator[row][col] / P_denominator[row][col]);
                     }
                 }
             }
@@ -2621,8 +2327,7 @@ int Recom::nmf_pred(
             for (int row = 0; row < Q.rows(); row++) {
                 for (int col = 0; col < Q.cols(); col++) {
                     if (Q_denominator[col][row] > 0.000000001) {
-                        Q[row][col] *=
-                            (Q_numerator[col][row] / Q_denominator[col][row]);
+                        Q[row][col] *= (Q_numerator[col][row] / Q_denominator[col][row]);
                     }
                 }
             }
@@ -2631,33 +2336,26 @@ int Recom::nmf_pred(
             // 目的関数値計算
 
             for (int i = 0; i < P.rows(); i++) {
-                for (int j = 0; j < SparseIncompleteData[i].essencialSize();
-                     j++) {
+                for (int j = 0; j < SparseIncompleteData[i].essencialSize(); j++) {
                     if (SparseIncompleteData[i].elementIndex(j) != 0) {
-                        error +=
-                            pow(SparseIncompleteData[i].elementIndex(j) -
-                                    (P[i] *
-                                     Q[SparseIncompleteData[i].indexIndex(j)]),
-                                2);
+                        error += pow(SparseIncompleteData[i].elementIndex(j) - (P[i] * Q[SparseIncompleteData[i].indexIndex(j)]), 2);
                     }
                 }
             }
 
             // error += (beta/2.0) * (P_L2Norm + Q_L2Norm);
 
-            double diff =
-                frobenius_norm(prev_P - P) + frobenius_norm(prev_Q - Q);
+            double diff = frobenius_norm(prev_P - P) + frobenius_norm(prev_Q - Q);
             std::cout << "diff:" << diff << std::endl;
             // if(false){ //diff出力用
-            if (diff < 0.011 && step >= 50) {
+            if (diff < DIFF && step >= 50) {
                 break;
             }
 
             prev_P = P;
             prev_Q = Q;
             if (step == steps - 1) {
-                std::cout << "step = " << step << ", error = " << error
-                          << ", K: " << K_percent << std::endl;
+                std::cout << "step = " << step << ", error = " << error << ", K: " << K_percent << std::endl;
                 ParameterNaN = true;
             }
         }  // stepのループ
@@ -2674,8 +2372,7 @@ int Recom::nmf_pred(
             // 計算済みのP, Qから評価値予測を実行
             for (int index = 0; index < Missing; index++) {
                 // 欠損箇所だけ計算
-                Prediction[index] =
-                    P[KessonIndex[index][0]] * Q[KessonIndex[index][1]];
+                Prediction[index] = P[KessonIndex[index][0]] * Q[KessonIndex[index][1]];
                 // std::cout <<"Prediction:"<<Prediction[index]<< "
                 // SparseCorrectData:" <<
                 // SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1])
@@ -2706,8 +2403,7 @@ int Recom::wnmf_pred(std::string dir, double K_percent, int steps) {
     // 欠損場所をSijに与える
     for (int i = 0; i < SparseIncompleteData.rows(); i++) {
         for (int j = 0; j < SparseIncompleteData[i].essencialSize(); j++) {
-            if (SparseIncompleteData[i].elementIndex(j) != 0)
-                Sij[i][SparseIncompleteData[i].indexIndex(j)] = 1.0;
+            if (SparseIncompleteData[i].elementIndex(j) != 0) Sij[i][SparseIncompleteData[i].indexIndex(j)] = 1.0;
         }
     }
 
@@ -2745,15 +2441,10 @@ int Recom::wnmf_pred(std::string dir, double K_percent, int steps) {
         bool ParameterNaN = false;
 
         SparseMatrix SMData = S_Hadamard(SparseIncompleteData, Sij);
-        SparseMatrix transpose_SMData =
-            S_Hadamard(transpose(SparseIncompleteData), transpose(Sij));
+        SparseMatrix transpose_SMData = S_Hadamard(transpose(SparseIncompleteData), transpose(Sij));
 
-        Matrix transpose_Sij = transpose(Sij);
-
-        SparseMatrix S_Sij = S_Hadamard(Sij, Sij);
-        SparseMatrix transpose_S_Sij = S_Hadamard(transpose_Sij, transpose_Sij);
         SparseMatrix S_PQ = S_Hadamard(Sij, Sij);
-        SparseMatrix transpose_S_PQ = S_Hadamard(transpose_Sij, transpose_Sij);
+        SparseMatrix transpose_S_PQ = S_Hadamard(transpose(Sij), transpose(Sij));
 
         for (int step = 0; step < steps; step++) {
             prev_P = P;
@@ -2761,61 +2452,56 @@ int Recom::wnmf_pred(std::string dir, double K_percent, int steps) {
             // 更新式W
             Matrix P_numerator;
             Matrix P_denominator;
+            for (int i = 0; i < S_PQ.rows(); i++) {
+                for (int j = 0; j < S_PQ.Element[i].essencialSize(); j++) {
+                    S_PQ.Element[i].Element[j] = P[i] * Q[S_PQ.Element[i].Index[j]];
+                }
+            }
             P_numerator = SMData * Q;
-            P_denominator = S_Hadamard(S_Sij, P * transpose(Q), S_PQ) * Q;
+            P_denominator = S_PQ * Q;
             for (int row = 0; row < P.rows(); row++) {
                 for (int col = 0; col < P.cols(); col++) {
-                    if (P_denominator[row][col] == 0.0)
-                        P_denominator[row][col] = 1.0e-07;
-                    P[row][col] *=
-                        (P_numerator[row][col] / P_denominator[row][col]);
+                    if (P_denominator.Element[row].Element[col] == 0.0) P_denominator.Element[row].Element[col] = 1.0e-07;
+                    P.Element[row].Element[col] *= (P_numerator.Element[row].Element[col] / P_denominator.Element[row].Element[col]);
                 }
             }
             // 更新式H
             Matrix Q_numerator;
             Matrix Q_denominator;
+            for (int i = 0; i < transpose_S_PQ.rows(); i++) {
+                for (int j = 0; j < transpose_S_PQ.Element[i].essencialSize(); j++) {
+                    transpose_S_PQ.Element[i].Element[j] = P[transpose_S_PQ.Element[i].Index[j]] * Q[i];
+                }
+            }
             Q_numerator = transpose_SMData * P;
-            Q_denominator =
-                S_Hadamard(transpose_S_Sij, Q * transpose(P), transpose_S_PQ) *
-                P;
+            Q_denominator = transpose_S_PQ * P;
             for (int row = 0; row < Q.rows(); row++) {
                 for (int col = 0; col < Q.cols(); col++) {
-                    if (Q_denominator[row][col] == 0.0)
-                        Q_denominator[row][col] = 1.0e-07;
-                    Q[row][col] *=
-                        (Q_numerator[row][col] / Q_denominator[row][col]);
+                    if (Q_denominator.Element[row].Element[col] == 0.0) Q_denominator.Element[row].Element[col] = 1.0e-07;
+                    Q.Element[row].Element[col] *= (Q_numerator.Element[row].Element[col] / Q_denominator.Element[row].Element[col]);
                 }
             }
 
             double err_num = 0;
             error = 0;
             for (int i = 0; i < P.rows(); i++) {
-                for (int j = 0; j < SparseIncompleteData[i].essencialSize();
-                     j++) {
+                for (int j = 0; j < SparseIncompleteData[i].essencialSize(); j++) {
                     if (SparseIncompleteData[i].elementIndex(j) != 0) {
                         err_num++;
-                        error +=
-                            pow(SparseIncompleteData[i].elementIndex(j) -
-                                    (P[i] *
-                                     Q[SparseIncompleteData[i].indexIndex(j)]),
-                                2);
+                        error += pow(SparseIncompleteData[i].elementIndex(j) - (P[i] * Q[SparseIncompleteData[i].indexIndex(j)]), 2);
                     }
                 }
             }
 
-            double diff =
-                frobenius_norm(prev_P - P) + frobenius_norm(prev_Q - Q);
-            std::cout << "step:" << step << " diff:" << diff
-                      << " error:" << error << " error_ave:" << error / err_num
-                      << std::endl;
+            double diff = frobenius_norm(prev_P - P) + frobenius_norm(prev_Q - Q);
+            std::cout << "step:" << step << " diff:" << diff << " error:" << error << " error_ave:" << error / err_num << std::endl;
 
-            if (diff < 0.7 && step >= 50) {
+            if (diff < DIFF && step >= 50) {
                 break;
             }
 
             if (step == steps - 1) {
-                std::cout << "step = " << step << ", error = " << error
-                          << ", K: " << K_percent << std::endl;
+                std::cout << "step = " << step << ", error = " << error << ", K: " << K_percent << std::endl;
                 ParameterNaN = true;
             }
         }  // stepのループ
@@ -2824,10 +2510,7 @@ int Recom::wnmf_pred(std::string dir, double K_percent, int steps) {
         for (int i = 0; i < P.rows(); i++) {
             for (int j = 0; j < SparseIncompleteData[i].essencialSize(); j++) {
                 if (SparseIncompleteData[i].elementIndex(j) != 0) {
-                    error += pow(
-                        SparseIncompleteData[i].elementIndex(j) -
-                            (P[i] * Q[SparseIncompleteData[i].indexIndex(j)]),
-                        2);
+                    error += pow(SparseIncompleteData[i].elementIndex(j) - (P[i] * Q[SparseIncompleteData[i].indexIndex(j)]), 2);
                 }
             }
         }
@@ -2844,17 +2527,15 @@ int Recom::wnmf_pred(std::string dir, double K_percent, int steps) {
             // 計算済みのP, Qから評価値予測を実行
             for (int index = 0; index < Missing; index++) {
                 // 欠損箇所だけ計算
-                Prediction[index] =
-                    P[KessonIndex[index][0]] * Q[KessonIndex[index][1]];
+                Prediction[index] = P[KessonIndex[index][0]] * Q[KessonIndex[index][1]];
             }
         }
     }
     return 0;
 }
 
-int Recom::nmf_pred_after_clustering(
-    std::string dir, double K_percent,
-    int steps)  // K以外は初期値有なので指定無しでも可
+int Recom::nmf_pred_after_clustering(std::string dir, double K_percent,
+                                     int steps)  // K以外は初期値有なので指定無しでも可
 {
     for (int cluster_index = 0; cluster_index < Mem.rows(); cluster_index++) {
         // クラスタに属するユーザ数と，それらが評価したアイテム数
@@ -2868,14 +2549,11 @@ int Recom::nmf_pred_after_clustering(
             isItemEvaluated[i] = false;
         }
         for (int i = 0; i < return_user_number(); i++) {
-            if (Mem[cluster_index][i] ==
-                1.0) {  // ユーザiがクラスタに属するなら...
+            if (Mem[cluster_index][i] == 1.0) {  // ユーザiがクラスタに属するなら...
                 UserIndexMap.insert(std::make_pair(i, cluster_user_num));
                 cluster_user_num++;
-                for (int j = 0; j < SparseIncompleteData[i].essencialSize();
-                     j++) {
-                    isItemEvaluated[SparseIncompleteData[i].indexIndex(j)] =
-                        true;
+                for (int j = 0; j < SparseIncompleteData[i].essencialSize(); j++) {
+                    isItemEvaluated[SparseIncompleteData[i].indexIndex(j)] = true;
                 }
             }
         }
@@ -2920,15 +2598,12 @@ int Recom::nmf_pred_after_clustering(
             if (Mem[cluster_index][i] == 1.0) {
                 for (int j = 0; j < return_item_number(); j++) {
                     user_average += SparseIncompleteData[i].elementIndex(j);
-                    if (SparseIncompleteData[i].elementIndex(j) != 0)
-                        user_average_num++;
+                    if (SparseIncompleteData[i].elementIndex(j) != 0) user_average_num++;
                 }
                 user_average /= user_average_num;
                 for (int j = 0; j < return_item_number(); j++) {
-                    IncompleteData[k][j] =
-                        SparseIncompleteData[i].elementIndex(j);
-                    if (IncompleteData[k][j] == 0)
-                        IncompleteData[k][j] = user_average;  // 欠損値の初期値
+                    IncompleteData[k][j] = SparseIncompleteData[i].elementIndex(j);
+                    if (IncompleteData[k][j] == 0) IncompleteData[k][j] = user_average;  // 欠損値の初期値
                 }
                 // std::cout<< user_average_num <<std::endl;
                 // std::cout<< IncompleteData[k] <<std::endl;
@@ -2942,8 +2617,7 @@ int Recom::nmf_pred_after_clustering(
         int trialLimit = CLUSTERINGTRIALS;
         int mf_seed = 0;
         // trialLimit = 1; //debug
-        for (int rand_mf_trial = 0; rand_mf_trial < trialLimit;
-             rand_mf_trial++) {
+        for (int rand_mf_trial = 0; rand_mf_trial < trialLimit; rand_mf_trial++) {
             // std::cout << "MF: initial setting " << rand_mf_trial <<
             // std::endl; P, Qの初期値を乱数で決定
             std::mt19937_64 mt;
@@ -2983,8 +2657,7 @@ int Recom::nmf_pred_after_clustering(
                 for (int row = 0; row < P.rows(); row++) {
                     for (int col = 0; col < P.cols(); col++) {
                         if (P[row][col] > 0.000000001) {
-                            P[row][col] *= (P_numerator[row][col] /
-                                            P_denominator[row][col]);
+                            P[row][col] *= (P_numerator[row][col] / P_denominator[row][col]);
                         }
                     }
                 }
@@ -2997,8 +2670,7 @@ int Recom::nmf_pred_after_clustering(
                 for (int row = 0; row < Q.rows(); row++) {
                     for (int col = 0; col < Q.cols(); col++) {
                         if (Q_denominator[col][row] > 0.000000001) {
-                            Q[row][col] *= (Q_numerator[col][row] /
-                                            Q_denominator[col][row]);
+                            Q[row][col] *= (Q_numerator[col][row] / Q_denominator[col][row]);
                         }
                     }
                 }
@@ -3010,20 +2682,11 @@ int Recom::nmf_pred_after_clustering(
                 for (int i = 0; i < return_user_number(); i++) {
                     if (Mem[cluster_index][i] == 1.0) {
                         mf_user_index++;
-                        for (int j = 0;
-                             j < SparseIncompleteData[i].essencialSize(); j++) {
-                            if (isItemEvaluated[SparseIncompleteData[i]
-                                                    .indexIndex(j)]) {
-                                mf_item_index = ItemIndexMap.at(
-                                    SparseIncompleteData[i].indexIndex(j));
-                                if (SparseIncompleteData[i].elementIndex(j) !=
-                                    0) {
-                                    error += pow(
-                                        SparseIncompleteData[i].elementIndex(
-                                            j) -
-                                            (P[mf_user_index] *
-                                             Q[mf_item_index]),
-                                        2);
+                        for (int j = 0; j < SparseIncompleteData[i].essencialSize(); j++) {
+                            if (isItemEvaluated[SparseIncompleteData[i].indexIndex(j)]) {
+                                mf_item_index = ItemIndexMap.at(SparseIncompleteData[i].indexIndex(j));
+                                if (SparseIncompleteData[i].elementIndex(j) != 0) {
+                                    error += pow(SparseIncompleteData[i].elementIndex(j) - (P[mf_user_index] * Q[mf_item_index]), 2);
                                 }
                             }
                         }
@@ -3036,8 +2699,7 @@ int Recom::nmf_pred_after_clustering(
 
                 // if(fabs(prev_error - error) < 1.0E-5){ //収束判定
                 // if(prev_error < error){
-                double diff =
-                    frobenius_norm(prev_P - P) + frobenius_norm(prev_Q - Q);
+                double diff = frobenius_norm(prev_P - P) + frobenius_norm(prev_Q - Q);
                 // diff出力
                 //  std::ofstream ofs_diff(dir + "/diff/diff" +
                 //  std::to_string(rand_mf_trial) + ".txt", std::ios::app);
@@ -3047,19 +2709,15 @@ int Recom::nmf_pred_after_clustering(
                 //  ofs_diff.close();
                 // 収束条件
                 // if(false){ //diff出力用
-                if (diff < 0.011 && step >= 50) {
+                if (diff < DIFF && step >= 50) {
                     // std::cout << "error = " << error << ", step = " << step
                     // << std::endl;
-                    break;
-                }
-                if (step >= 2000) {
                     break;
                 }
                 prev_P = P;
                 prev_Q = Q;
                 if (step == steps - 1) {
-                    std::cout << "step = " << step << ", error = " << error
-                              << ", K: " << K_percent << std::endl;
+                    std::cout << "step = " << step << ", error = " << error << ", K: " << K_percent << std::endl;
                     ParameterNaN = true;
                 }
                 // prev_error = error;
@@ -3079,10 +2737,7 @@ int Recom::nmf_pred_after_clustering(
                     // 欠損箇所だけかつ，今回のクラスタの分だけ計算
                     if (Mem[cluster_index][KessonIndex[index][0]] == 1.0) {
                         if (isItemEvaluated[(int)KessonIndex[index][1]]) {
-                            Prediction[index] =
-                                P[UserIndexMap.at(KessonIndex[index][0])] *
-                                    Q[ItemIndexMap.at(KessonIndex[index][1])] +
-                                0.5;
+                            Prediction[index] = P[UserIndexMap.at(KessonIndex[index][0])] * Q[ItemIndexMap.at(KessonIndex[index][1])] + 0.5;
                             // Prediction[index]=SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1])
                             // ; std::cout <<"Prediction:"<<Prediction[index]<<
                             // " SparseCorrectData:" <<
@@ -3098,8 +2753,7 @@ int Recom::nmf_pred_after_clustering(
     return 0;
 }
 
-int Recom::qfcnmf_pred(std::string dir, double K_percent, int steps, int C,
-                       double Lambda, double FuzzifierEm) {  // はクラスタ数
+int Recom::qfcnmf_pred(std::string dir, double K_percent, int steps, int C, double Lambda, double FuzzifierEm) {  // はクラスタ数
 
     int K;
 
@@ -3138,8 +2792,7 @@ int Recom::qfcnmf_pred(std::string dir, double K_percent, int steps, int C,
         }
         for (int j = 0; j < SparseIncompleteData[i].essencialSize(); j++) {
             if (SparseIncompleteData[i].elementIndex(j) != 0)
-                IncompleteData[i][SparseIncompleteData[i].indexIndex(j)] =
-                    SparseIncompleteData[i].elementIndex(j);
+                IncompleteData[i][SparseIncompleteData[i].indexIndex(j)] = SparseIncompleteData[i].elementIndex(j);
         }
     }
 
@@ -3230,10 +2883,8 @@ int Recom::qfcnmf_pred(std::string dir, double K_percent, int steps, int C,
 
                 // std::cout << "QFCNMF:" << rand_mf_trial << std::endl;
 
-                H_numerator =
-                    transpose(W[i]) * Matrix(tmp, "diag") * IncompleteData;
-                H_denominator = transpose(W[i]) * Matrix(tmp, "diag") * W[i] *
-                                H[i];  //+ 0.01*Matrix(tmp,"diag")*H[i];
+                H_numerator = transpose(W[i]) * Matrix(tmp, "diag") * IncompleteData;
+                H_denominator = transpose(W[i]) * Matrix(tmp, "diag") * W[i] * H[i];  //+ 0.01*Matrix(tmp,"diag")*H[i];
                 /*std::cout << "H_numerator" << i << ":\n" << H_numerator <<
                   std::endl; std::cout << "H_denominator" << i << ":\n" <<
                   H_denominator << std::endl;*/
@@ -3242,11 +2893,8 @@ int Recom::qfcnmf_pred(std::string dir, double K_percent, int steps, int C,
 
                 for (int row = 0; row < H[i].rows(); row++) {
                     for (int col = 0; col < H[i].cols(); col++) {
-                        if (H_numerator[row][col] != 0 &&
-                            H_denominator[row][col] != 0 &&
-                            H[i][row][col] != 0.0) {
-                            H[i][row][col] *= (H_numerator[row][col] /
-                                               H_denominator[row][col]);
+                        if (H_numerator[row][col] != 0 && H_denominator[row][col] != 0 && H[i][row][col] != 0.0) {
+                            H[i][row][col] *= (H_numerator[row][col] / H_denominator[row][col]);
                             // std::cout
                             // <<"H_denominator[row][col]:"<<H_denominator[row][col]
                             // << " H_numerator[row][col]:"<<
@@ -3271,11 +2919,8 @@ int Recom::qfcnmf_pred(std::string dir, double K_percent, int steps, int C,
                 W_denominator = W[i] * H[i] * transpose(H[i]);
                 for (int row = 0; row < W[i].rows(); row++) {
                     for (int col = 0; col < W[i].cols(); col++) {
-                        if (W_numerator[row][col] != 0 &&
-                            W_denominator[row][col] != 0 &&
-                            W[i][row][col] != 0.0) {
-                            W[i][row][col] *= (W_numerator[row][col] /
-                                               W_denominator[row][col]);
+                        if (W_numerator[row][col] != 0 && W_denominator[row][col] != 0 && W[i][row][col] != 0.0) {
+                            W[i][row][col] *= (W_numerator[row][col] / W_denominator[row][col]);
                         }
                     }
                 }
@@ -3292,9 +2937,7 @@ int Recom::qfcnmf_pred(std::string dir, double K_percent, int steps, int C,
                             for (int p = 0; p < K; p++) {
                                 tmp += W[i][k][p] * H[i][p][j];
                             }
-                            Dissimilarities[i][k] +=
-                                (IncompleteData[k][j] - tmp) *
-                                (IncompleteData[k][j] - tmp);
+                            Dissimilarities[i][k] += (IncompleteData[k][j] - tmp) * (IncompleteData[k][j] - tmp);
                         }
                     }
                 }
@@ -3308,12 +2951,9 @@ int Recom::qfcnmf_pred(std::string dir, double K_percent, int steps, int C,
                     if (Dissimilarities[i][k] != 0.0) {
                         double denominator = 0.0;
                         for (int j = 0; j < C; j++) {
-                            denominator +=
-                                pow((1 - Lambda * (1 - FuzzifierEm) *
-                                             Dissimilarities[j][k]) /
-                                        (1 - Lambda * (1 - FuzzifierEm) *
-                                                 Dissimilarities[i][k]),
-                                    1.0 / (1 - FuzzifierEm));
+                            denominator += pow(
+                                (1 - Lambda * (1 - FuzzifierEm) * Dissimilarities[j][k]) / (1 - Lambda * (1 - FuzzifierEm) * Dissimilarities[i][k]),
+                                1.0 / (1 - FuzzifierEm));
                         }
                         Membership[i][k] = 1.0 / denominator;
                     }
@@ -3321,16 +2961,7 @@ int Recom::qfcnmf_pred(std::string dir, double K_percent, int steps, int C,
             }  // k
             // std::cout << "u:\n" << Membership << std::endl;
 
-            std::string filename = dir + "/";
-            filename += "_Membership.txt";
-            std::ofstream ofs(filename, std::ios::app);
-            if (!ofs) {
-                std::cerr << "ファイルopen失敗(Membership): " << filename
-                          << std::endl;
-            } else {
-                ofs << Membership << std::endl;
-                ofs.close();
-            }
+            
 
             Vector3d a = prev_H - H;
 
@@ -3343,48 +2974,28 @@ int Recom::qfcnmf_pred(std::string dir, double K_percent, int steps, int C,
                 break;
             }
 
-            for (int index = 0; index < Missing; index++) {
-                Prediction[index] = 0.0;
-                for (int p = 0; p < K; p++) {
-                    for (int i = 0; i < C; i++) {
-                        Prediction[index] +=
-                            Membership[i][KessonIndex[index][0]] *
-                            W[i][KessonIndex[index][0]][p] *
-                            H[i][p][KessonIndex[index][1]];
-                    }
-                }
-                // std::cout <<"Prediction:"<<Prediction[index]<< "
-                // SparseCorrectData:" <<
-                // SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1])
-                // <<std::endl;
-            }
+            
 
             std::cout << "#diff:" << diff << "\t";
             std::cout << "#diff_u:" << diff_u << "\t";
             std::cout << "#diff_h:" << diff_h << "\t";
             std::cout << "#diff_w:" << diff_w << "\n";
 
-            if (diff < 0.011 && step >= 50) {
+            if (diff < DIFF && step >= 50) {
                 // std::cout <<  <<std::endl;
-                break;
-            }
-            if (step >= 2000) {
                 break;
             }
 
             error = 0.0;
             for (int i = 0; i < C; i++) {
                 for (int j = 0; j < return_user_number(); j++) {
-                    error += pow(Membership[i][j], FuzzifierEm) *
-                                 Dissimilarities[i][j] +
-                             1.0 / (Lambda * (FuzzifierEm - 1)) *
-                                 (pow(Membership[i][j], FuzzifierEm) - 1);
+                    error += pow(Membership[i][j], FuzzifierEm) * Dissimilarities[i][j] +
+                             1.0 / (Lambda * (FuzzifierEm - 1)) * (pow(Membership[i][j], FuzzifierEm) - 1);
                 }
             }
             std::cout << "#f:" << error << "\n";
             if (step == steps - 1) {
-                std::cout << "step = " << step << ", error = " << error
-                          << ", K: " << K_percent << std::endl;
+                std::cout << "step = " << step << ", error = " << error << ", K: " << K_percent << std::endl;
                 ParameterNaN = true;
             }
         }
@@ -3399,30 +3010,29 @@ int Recom::qfcnmf_pred(std::string dir, double K_percent, int steps, int C,
         } else if (error < best_error) {
             best_error = error;
             // 計算済みのP, Qから評価値予測を実行
-            /*
-            for(int index = 0; index < Missing; index++){
-              Prediction[index]=0.0;
-              //欠損箇所だけ計算
-              for(int p=0;p<K;p++){
-              for(int i=0;i<C;i++){
-              Prediction[index] +=
-            Membership[i][KessonIndex[index][0]]*W[i][KessonIndex[index][0]][p]
-            * H[i][p][KessonIndex[index][1]];
-              }
-              }
-              std::cout <<"Prediction:"<<Prediction[index]<< "
-            SparseCorrectData:" <<
-            SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1])
-            <<std::endl;
+            for (int index = 0; index < Missing; index++) {
+                Prediction[index] = 0.0;
+                for (int p = 0; p < K; p++) {
+                    for (int i = 0; i < C; i++) {
+                        Prediction[index] += Membership[i][KessonIndex[index][0]] * W[i][KessonIndex[index][0]][p] * H[i][p][KessonIndex[index][1]];
+                    }
+                }
             }
-            */
+            std::string filename = dir + "/";
+            filename += "_Membership.txt";
+            std::ofstream ofs(filename, std::ios::app);
+            if (!ofs) {
+                std::cerr << "ファイルopen失敗(Membership): " << filename << std::endl;
+            } else {
+                ofs << Membership << std::endl;
+                ofs.close();
+            }
         }
     }
     return 0;
 }
 
-int Recom::qfcwnmf_pred(std::string dir, double K_percent, int steps, int C,
-                        double Lambda, double FuzzifierEm) {  // はクラスタ数
+int Recom::qfcwnmf_pred(std::string dir, double K_percent, int steps, int C, double Lambda, double FuzzifierEm) {  // はクラスタ数
 
     int K;
 
@@ -3443,17 +3053,15 @@ int Recom::qfcwnmf_pred(std::string dir, double K_percent, int steps, int C,
     // 欠損場所をSijに与える
     for (int i = 0; i < SparseIncompleteData.rows(); i++) {
         for (int j = 0; j < SparseIncompleteData[i].essencialSize(); j++) {
-            if (SparseIncompleteData[i].elementIndex(j) != 0)
-                Sij[i][SparseIncompleteData[i].indexIndex(j)] = 1.0;
+            if (SparseIncompleteData[i].elementIndex(j) != 0) Sij[i][SparseIncompleteData[i].indexIndex(j)] = 1.0;
         }
     }
 
     Matrix Membership(C, return_user_number(), 1.0 / (double)C);
     Matrix Dissimilarities(C, return_user_number(), 0);
     Matrix prev_Membership(C, return_user_number(), 1 / (double)C);
-    Vector3d W(C, return_user_number(), K), H(C,K, return_item_number());
-    Vector3d prev_W(W.height(), W.rows(), W.cols(), 0.0),
-        prev_H(H.height(), H.rows(), H.cols(), 0.0);
+    Vector3d W(C, return_user_number(), K), H(C, return_item_number(), K);
+    Vector3d prev_W(W.height(), W.rows(), W.cols(), 0.0), prev_H(H.height(), H.rows(), H.cols(), 0.0);
 
     double best_error = DBL_MAX;
     int NaNcount = 0;
@@ -3475,7 +3083,7 @@ int Recom::qfcwnmf_pred(std::string dir, double K_percent, int steps, int C,
                 for (int j = 0; j < return_item_number(); j++) {
                     mt.seed(mf_seed);
                     std::uniform_real_distribution<> rand_h(0.001, 1.0);
-                    H[c][k][j] = rand_h(mt);
+                    H[c][j][k] = rand_h(mt);
                     mf_seed++;
                 }
             }
@@ -3508,14 +3116,8 @@ int Recom::qfcwnmf_pred(std::string dir, double K_percent, int steps, int C,
         double error = 0.0;
         bool ParameterNaN = false;
 
-        Matrix transpose_Sij = transpose(Sij);
-        SparseMatrix SparseSij = S_Hadamard(Sij, Sij);
-        SparseMatrix transpose_SparseSij =
-            S_Hadamard(transpose_Sij, transpose_Sij);
-
         SparseMatrix SparseMatrixData = S_Hadamard(SparseIncompleteData, Sij);
-        SparseMatrix Transpose_SparseMatrixData =
-            S_Hadamard(transpose(SparseIncompleteData), transpose_Sij);
+        SparseMatrix Transpose_SparseMatrixData = S_Hadamard(transpose(SparseIncompleteData), transpose(Sij));
 
         Matrix H_numerator;
         Matrix H_denominator;
@@ -3526,9 +3128,8 @@ int Recom::qfcwnmf_pred(std::string dir, double K_percent, int steps, int C,
             SparseVector tmp_tmp(return_user_number(), 1);
             tmp[k] = tmp_tmp;
         }
-
         SparseMatrix S_WH = S_Hadamard(Sij, Sij);
-        SparseMatrix transpose_S_WH = S_Hadamard(transpose_Sij, transpose_Sij);
+        SparseMatrix transpose_S_WH = S_Hadamard(transpose(Sij), transpose(Sij));
 
         for (int step = 0; step < steps; step++) {
             prev_H = H;
@@ -3537,67 +3138,60 @@ int Recom::qfcwnmf_pred(std::string dir, double K_percent, int steps, int C,
             // Hの更新
             for (int i = 0; i < C; i++) {
                 for (int k = 0; k < return_user_number(); k++) {
-                    tmp.Element[k].Element[0] =
-                        pow(Membership.Element[i].Element[k], FuzzifierEm);
+                    tmp.Element[k].Element[0] = pow(Membership.Element[i].Element[k], FuzzifierEm);
                     tmp.Element[k].Index[0] = k;
                 }
-                H_numerator = Transpose_SparseMatrixData * (tmp * W.Element[i]);
-                H_denominator =
-                    S_Hadamard(transpose_SparseSij,
-                               transpose(W.Element[i] * H.Element[i]),
-                               transpose_S_WH) *
-                    (tmp * W[i]);
-                for (int row = 0; row < H.Element[i].rows(); row++) {
-                    for (int col = 0; col < H.Element[i].cols(); col++) {
-                        if (H_numerator.Element[col].Element[row] != 0 ||
-                            H_denominator.Element[col].Element[row] != 0) {
-                            H.Element[i].Element[row].Element[col] *=
-                                (H_numerator.Element[col].Element[row] /
-                                 H_denominator.Element[col].Element[row]);
-                        }
+                for (int k = 0; k < transpose_S_WH.rows(); k++) {
+                    for (int j = 0; j < transpose_S_WH.Element[k].essencialSize(); j++) {
+                        transpose_S_WH.Element[k].Element[j] = W.Element[i].Element[transpose_S_WH.Element[k].Index[j]] * H.Element[i].Element[k];
                     }
                 }
-            }
-            // Wの更新
-            for (int i = 0; i < C; i++) {
-                W_numerator = SparseMatrixData * transpose(H.Element[i]);
-                W_denominator =
-                    S_Hadamard(SparseSij, W.Element[i] * H.Element[i], S_WH) *
-                    transpose(H.Element[i]);
-                for (int row = 0; row < W.Element[i].rows(); row++) {
-                    for (int col = 0; col < W.Element[i].cols(); col++) {
-                        if (W_numerator.Element[row].Element[col] != 0 ||
-                            W_denominator.Element[row].Element[col] != 0) {
-                            W[i][row][col] *=
-                                (W_numerator.Element[row].Element[col] /
-                                 W_denominator.Element[row].Element[col]);
+                H_numerator = Transpose_SparseMatrixData * (tmp * W.Element[i]);
+                H_denominator = transpose_S_WH * (tmp * W[i]);
+                for (int row = 0; row < H.Element[i].rows(); row++) {
+                    for (int col = 0; col < H.Element[i].cols(); col++) {
+                        if (H_numerator.Element[row].Element[col] != 0 || H_denominator.Element[row].Element[col] != 0) {
+                            H.Element[i].Element[row].Element[col] *=
+                                (H_numerator.Element[row].Element[col] / H_denominator.Element[row].Element[col]);
                         }
                     }
                 }
             }
 
-            //dの更新
+            // Wの更新
+            for (int i = 0; i < C; i++) {
+                for (int k = 0; k < S_WH.rows(); k++) {
+                    for (int j = 0; j < S_WH.Element[k].essencialSize(); j++) {
+                        S_WH.Element[k].Element[j] = W.Element[i].Element[k] * H.Element[i].Element[S_WH.Element[k].Index[j]];
+                    }
+                }
+                W_numerator = SparseMatrixData * H.Element[i];
+                W_denominator = S_WH * H.Element[i];
+                for (int row = 0; row < W.Element[i].rows(); row++) {
+                    for (int col = 0; col < W.Element[i].cols(); col++) {
+                        if (W_numerator.Element[row].Element[col] != 0 || W_denominator.Element[row].Element[col] != 0) {
+                            W[i][row][col] *= (W_numerator.Element[row].Element[col] / W_denominator.Element[row].Element[col]);
+                        }
+                    }
+                }
+            }
+
+            // dの更新
             for (int i = 0; i < C; i++) {
                 for (int k = 0; k < SparseIncompleteData.rows(); k++) {
                     Dissimilarities.Element[i].Element[k] = 0.0;
-                    for (int j = 0; j < SparseIncompleteData.Element[k].essencialSize();
-                         j++) {
+                    for (int j = 0; j < SparseIncompleteData.Element[k].essencialSize(); j++) {
                         if (SparseIncompleteData.Element[k].Element[j] != 0) {
                             double tmp2 = 0.0;
                             for (int p = 0; p < K; p++) {
-                                tmp2 += W.Element[i].Element[k].Element[p] *
-                                        H[i].Element[p].Element[SparseIncompleteData.Element[k].Index[j]];
+                                tmp2 += W.Element[i].Element[k].Element[p] * H[i].Element[SparseIncompleteData.Element[k].Index[j]].Element[p];
                             }
                             Dissimilarities.Element[i].Element[k] +=
-                                (SparseIncompleteData.Element[k].Element[j] -
-                                 tmp2) *
-                                (SparseIncompleteData.Element[k].Element[j] -
-                                 tmp2);  
+                                (SparseIncompleteData.Element[k].Element[j] - tmp2) * (SparseIncompleteData.Element[k].Element[j] - tmp2);
                         }
                     }
                 }
             }
-
 
             // uの更新
             for (int k = 0; k < return_user_number(); k++) {
@@ -3605,28 +3199,16 @@ int Recom::qfcwnmf_pred(std::string dir, double K_percent, int steps, int C,
                     if (Dissimilarities.Element[i].Element[k] != 0.0) {
                         double denominator = 0.0;
                         for (int j = 0; j < C; j++) {
-                            denominator +=
-                                pow((1 - Lambda * (1 - FuzzifierEm) *
-                                             Dissimilarities.Element[j].Element[k]) /
-                                        (1 - Lambda * (1 - FuzzifierEm) *
-                                                 Dissimilarities.Element[i].Element[k]),
-                                    1.0 / (1 - FuzzifierEm));
+                            denominator += pow((1 - Lambda * (1 - FuzzifierEm) * Dissimilarities.Element[j].Element[k]) /
+                                                   (1 - Lambda * (1 - FuzzifierEm) * Dissimilarities.Element[i].Element[k]),
+                                               1.0 / (1 - FuzzifierEm));
                         }
                         Membership[i][k] = 1.0 / denominator;
                     }
                 }
             }  // k
+
             
-            std::string filename = dir + "/";
-            filename += "_Membership.txt";
-            std::ofstream ofs(filename, std::ios::app);
-            if (!ofs) {
-                std::cerr << "ファイルopen失敗(Membership): " << filename
-                          << std::endl;
-            } else {
-                ofs << Membership << std::endl;
-                ofs.close();
-            }
             double diff_u = frobenius_norm(prev_Membership - Membership);
             double diff_h = frobenius_norm(prev_H - H);
             double diff_w = frobenius_norm(prev_W - W);
@@ -3634,20 +3216,19 @@ int Recom::qfcwnmf_pred(std::string dir, double K_percent, int steps, int C,
             error = 0.0;
             for (int i = 0; i < C; i++) {
                 for (int j = 0; j < return_user_number(); j++) {
-                    error += pow(Membership.Element[i].Element[j], FuzzifierEm) *
-                                 Dissimilarities.Element[i].Element[j] ;
-                } 
+                    error += pow(Membership.Element[i].Element[j], FuzzifierEm) * Dissimilarities.Element[i].Element[j];
+                }
             }
-            std::cout <<"step:"<< step << "\t";
-            std::cout <<"diff:"<< diff << "\t";
-            std::cout <<"error:"<< error << "\t";
-            //std::cout <<":"<<  << "\t";
-            std::cout  <<std::endl;
+            std::cout << "step:" << step << "\t";
+            std::cout << "diff:" << diff << "\t";
+            std::cout << "error:" << error << "\t";
+            // std::cout <<":"<<  << "\t";
+            std::cout << std::endl;
             // diff==NaNなら強制終了
             if (!isfinite(diff)) {
                 break;
             }
-            if (diff < 0.1  && step >= 50) {
+            if (diff < DIFF && step >= 50) {
                 break;
             }
         }
@@ -3655,12 +3236,9 @@ int Recom::qfcwnmf_pred(std::string dir, double K_percent, int steps, int C,
         error = 0.0;
         for (int i = 0; i < C; i++) {
             for (int j = 0; j < return_user_number(); j++) {
-                error += pow(Membership.Element[i].Element[j], FuzzifierEm) *
-                                Dissimilarities.Element[i].Element[j] 
-                        + 1.0 / (Lambda * (FuzzifierEm - 1)) *
-                             (pow(Membership[i][j], FuzzifierEm) -
-                              Membership[i][j]);
-            } 
+                error += pow(Membership.Element[i].Element[j], FuzzifierEm) * Dissimilarities.Element[i].Element[j] +
+                         1.0 / (Lambda * (FuzzifierEm - 1)) * (pow(Membership[i][j], FuzzifierEm) - Membership[i][j]);
+            }
         }
 
         if (ParameterNaN) {
@@ -3677,12 +3255,18 @@ int Recom::qfcwnmf_pred(std::string dir, double K_percent, int steps, int C,
                 // 欠損箇所だけ計算
                 for (int p = 0; p < K; p++) {
                     for (int i = 0; i < C; i++) {
-                        Prediction[index] +=
-                            Membership[i][KessonIndex[index][0]] *
-                            W[i][KessonIndex[index][0]][p] *
-                            H[i][p][KessonIndex[index][1]];
+                        Prediction[index] += Membership[i][KessonIndex[index][0]] * W[i][KessonIndex[index][0]][p] * H[i][KessonIndex[index][1]][p];
                     }
                 }
+            }
+            std::string filename = dir + "/";
+            filename += "_Membership.txt";
+            std::ofstream ofs(filename, std::ios::app);
+            if (!ofs) {
+                std::cerr << "ファイルopen失敗(Membership): " << filename << std::endl;
+            } else {
+                ofs << Membership << std::endl;
+                ofs.close();
             }
         }
     }
@@ -3690,18 +3274,14 @@ int Recom::qfcwnmf_pred(std::string dir, double K_percent, int steps, int C,
     return 0;
 }
 
-int Recom::returnBestClusteringInitial(std::string method, int kesson,
-                                       std::vector<double> parameter,
-                                       int centerNum, int current) {
+int Recom::returnBestClusteringInitial(std::string method, int kesson, std::vector<double> parameter, int centerNum, int current) {
     std::vector<std::string> path = MkdirFCS(method, kesson);
     path = Mkdir(parameter, centerNum, path);
-    path[0] += "/ROC/" + method + "ROC" + std::to_string(kesson) + "_" +
-               std::to_string(current) + "_";
+    path[0] += "/ROC/" + method + "ROC" + std::to_string(kesson) + "_" + std::to_string(current) + "_";
     // std::cout << path[0] << std::endl;
     int missingCount = 0, missingIndex = -1;
     for (int i = 0; i < CLUSTERINGTRIALS; i++) {
-        if (!std::filesystem::exists(path[0] + std::to_string(i) +
-                                     "sort.txt")) {
+        if (!std::filesystem::exists(path[0] + std::to_string(i) + "sort.txt")) {
             missingIndex = i;
             missingCount++;
         }
@@ -3712,13 +3292,11 @@ int Recom::returnBestClusteringInitial(std::string method, int kesson,
     return missingIndex;
 }
 
-int Recom::mpbmf_pred(std::string dir, int K, int Scale, double D_percent,
-                      double beta, double alpha,
+int Recom::mpbmf_pred(std::string dir, int K, int Scale, double D_percent, double beta, double alpha,
                       int steps)  // K以外は初期値有なので指定無しでも可
 {
     // K=モデルに導入された疑似嗜好値,D=潜在次元数初期値ループ
-    Vector3d R(K, return_user_number(), return_item_number()),
-        C(K, return_user_number(), return_item_number());
+    Vector3d R(K, return_user_number(), return_item_number()), C(K, return_user_number(), return_item_number());
     Vector3d Z(K, return_user_number(), return_item_number());
 
     int D;
@@ -3783,17 +3361,10 @@ int Recom::mpbmf_pred(std::string dir, int K, int Scale, double D_percent,
         // Scaleは外部から取り入れる
         for (int k = 0; k < C.height(); k++) {
             for (int i = 0; i < C.rows(); i++) {
-                for (int j = 0; j < SparseIncompleteData[i].essencialSize();
-                     j++) {  // essencialSizeである必要性はわからぬ
-                    C[k][i][j] =
-                        std::log(1.0 +
-                                 SparseIncompleteData[i].elementIndex(j)) /
-                        pow(Scale, K - k);  // MFのRij=fijとなる
+                for (int j = 0; j < SparseIncompleteData[i].essencialSize(); j++) {  // essencialSizeである必要性はわからぬ
+                    C[k][i][j] = std::log(1.0 + SparseIncompleteData[i].elementIndex(j)) / pow(Scale, K - k);  // MFのRij=fijとなる
                     if (SparseIncompleteData[i].elementIndex(j) == 0 && k == 0)
-                        std::cout
-                            << "(i,j):(" << i << "," << j
-                            << "):" << SparseIncompleteData[i].elementIndex(j)
-                            << rand_mf_trial << std::endl;
+                        std::cout << "(i,j):(" << i << "," << j << "):" << SparseIncompleteData[i].elementIndex(j) << rand_mf_trial << std::endl;
                 }
             }
             std::cout << "C:\n" << C[k] << std::endl;
@@ -3829,9 +3400,7 @@ int Recom::mpbmf_pred(std::string dir, int K, int Scale, double D_percent,
                 for (int i = 0; i < C.rows(); i++) {
                     for (int j = 0; j < C.cols(); j++) {
                         sum_N[i][j] +=
-                            w[k] * 1.0 / (pow(2.0 * M_PI * sigma, 0.5)) *
-                            std::exp(-1.0 / (2.0 * sigma) *
-                                     pow(C[k][i][j] - U[k][i] * V[k][j], 2.0));
+                            w[k] * 1.0 / (pow(2.0 * M_PI * sigma, 0.5)) * std::exp(-1.0 / (2.0 * sigma) * pow(C[k][i][j] - U[k][i] * V[k][j], 2.0));
                     }
                 }
             }
@@ -3857,21 +3426,14 @@ int Recom::mpbmf_pred(std::string dir, int K, int Scale, double D_percent,
                             w[k] / (pow(2.0 * M_PI * sigma, 0.5)) *
                             std::exp(
                                 -1.0 / (2.0 * sigma) *
-                                pow(C[k][i]
-                                     [SparseIncompleteData[i].indexIndex(j)] -
-                                        U[k][i] * V[k][SparseIncompleteData[i]
-                                                           .indexIndex(j)],
-                                    2.0)) /
+                                pow(C[k][i][SparseIncompleteData[i].indexIndex(j)] - U[k][i] * V[k][SparseIncompleteData[i].indexIndex(j)], 2.0)) /
                             sum_N[i][SparseIncompleteData[i].indexIndex(j)];
                         // std::cout << "MPBMF: i != 0 " << rand_mf_trial <<
                         // std::endl;
 
                         if (SparseIncompleteData[i].elementIndex(j) != 0) {
                             // 損失関数計算 skip
-                            double err =
-                                C[k][i][j] -
-                                U[k][i] *
-                                    V[k][SparseIncompleteData[i].indexIndex(j)];
+                            double err = C[k][i][j] - U[k][i] * V[k][SparseIncompleteData[i].indexIndex(j)];
 
                             // std::cout << "err(" << i << "," << j  << "):" <<
                             // err << "|" <<
@@ -3902,18 +3464,10 @@ int Recom::mpbmf_pred(std::string dir, int K, int Scale, double D_percent,
                                   << " | " << U[k][i][d] / sigma_u << std::endl;
                                 */
                                 U[k][i][d] +=
-                                    alpha *
-                                    (1 / sigma *
-                                         Z[k][i][SparseIncompleteData[i]
-                                                     .indexIndex(j)] *
-                                         (vector3d_mul(V, V, U, k, d, i,
-                                                       SparseIncompleteData[i]
-                                                           .indexIndex(j)) -
-                                          C[k][i][SparseIncompleteData[i]
-                                                      .indexIndex(j)] *
-                                              V[k][SparseIncompleteData[i]
-                                                       .indexIndex(j)][d]) +
-                                     U[k][i][d] / sigma_u);
+                                    alpha * (1 / sigma * Z[k][i][SparseIncompleteData[i].indexIndex(j)] *
+                                                 (vector3d_mul(V, V, U, k, d, i, SparseIncompleteData[i].indexIndex(j)) -
+                                                  C[k][i][SparseIncompleteData[i].indexIndex(j)] * V[k][SparseIncompleteData[i].indexIndex(j)][d]) +
+                                             U[k][i][d] / sigma_u);
 
                                 if (count_U[i] == 0) {
                                     // U[k][i][d] += alpha * (prev_U[k][i][d] /
@@ -3931,31 +3485,18 @@ int Recom::mpbmf_pred(std::string dir, int K, int Scale, double D_percent,
                                    V[k][SparseIncompleteData[i].indexIndex(j)][d]
                                    / sigma_v << std::endl;
                                 */
-                                V[k][SparseIncompleteData[i].indexIndex(j)]
-                                 [d] +=
-                                    alpha *
-                                    (1 / sigma *
-                                         Z[k][i][SparseIncompleteData[i]
-                                                     .indexIndex(j)] *
-                                         (vector3d_mul(U, U, V, k, d,
-                                                       SparseIncompleteData[i]
-                                                           .indexIndex(j),
-                                                       i) -
-                                          U[k][i][d] *
-                                              C[k][i][SparseIncompleteData[i]
-                                                          .indexIndex(j)]) +
-                                     V[k][SparseIncompleteData[i].indexIndex(j)]
-                                      [d] /
-                                         sigma_v);
+                                V[k][SparseIncompleteData[i].indexIndex(j)][d] +=
+                                    alpha * (1 / sigma * Z[k][i][SparseIncompleteData[i].indexIndex(j)] *
+                                                 (vector3d_mul(U, U, V, k, d, SparseIncompleteData[i].indexIndex(j), i) -
+                                                  U[k][i][d] * C[k][i][SparseIncompleteData[i].indexIndex(j)]) +
+                                             V[k][SparseIncompleteData[i].indexIndex(j)][d] / sigma_v);
 
-                                if (count_V[SparseIncompleteData[i].indexIndex(
-                                        j)] == 0) {
+                                if (count_V[SparseIncompleteData[i].indexIndex(j)] == 0) {
                                     // V[k][SparseIncompleteData[i].indexIndex(j)][d]
                                     // += alpha *
                                     // (prev_V[k][SparseIncompleteData[i].indexIndex(j)][d]
                                     // / sigma_v );
-                                    count_V[SparseIncompleteData[i].indexIndex(
-                                        j)] = 1;
+                                    count_V[SparseIncompleteData[i].indexIndex(j)] = 1;
                                 }
                                 // std::cout << "U(" << i << "," << d << "):" <<
                                 // U[k][i][d] << "  V(" << j << "," << d << "):"
@@ -3966,28 +3507,16 @@ int Recom::mpbmf_pred(std::string dir, int K, int Scale, double D_percent,
                                 // << std::endl; std::cout   << std::endl;
 
                                 if (!isfinite(U[k][i][d])) {
-                                    std::cerr
-                                        << "U[" << k << "][" << i << "][" << d
-                                        << "] is not finite. step = " << step
-                                        << ", err = " << err
-                                        << ", error = " << error
-                                        << ", K = " << K << ", D = " << D
-                                        << ", beta = " << beta
-                                        << ", alpha = " << alpha << std::endl;
+                                    std::cerr << "U[" << k << "][" << i << "][" << d << "] is not finite. step = " << step << ", err = " << err
+                                              << ", error = " << error << ", K = " << K << ", D = " << D << ", beta = " << beta
+                                              << ", alpha = " << alpha << std::endl;
                                     ParameterNaN = true;
                                     break;
                                 }
-                                if (!isfinite(
-                                        V[k][SparseIncompleteData[i].indexIndex(
-                                            j)][d])) {
-                                    std::cerr
-                                        << "V[" << k << "][" << j << "][" << d
-                                        << "] is not finite. step = " << step
-                                        << ", err = " << err
-                                        << ", error = " << error
-                                        << ", K = " << K << ", D = " << D
-                                        << ", beta = " << beta
-                                        << ", alpha = " << alpha << std::endl;
+                                if (!isfinite(V[k][SparseIncompleteData[i].indexIndex(j)][d])) {
+                                    std::cerr << "V[" << k << "][" << j << "][" << d << "] is not finite. step = " << step << ", err = " << err
+                                              << ", error = " << error << ", K = " << K << ", D = " << D << ", beta = " << beta
+                                              << ", alpha = " << alpha << std::endl;
                                     // std::cout << "\nQ:\n" << Q << std::endl;
                                     ParameterNaN = true;
                                     break;
@@ -4006,18 +3535,12 @@ int Recom::mpbmf_pred(std::string dir, int K, int Scale, double D_percent,
                 // i,jのループを抜け終わることでやっと特定のUiの計算が終わる
                 // Mstep
                 for (int i = 0; i < C.rows(); i++) {
-                    for (int j = 0; j < SparseIncompleteData[i].essencialSize();
-                         j++) {
+                    for (int j = 0; j < SparseIncompleteData[i].essencialSize(); j++) {
                         if (SparseIncompleteData[i].elementIndex(j) != 0) {
-                            pred_w[k] +=
-                                Z[k][i][SparseIncompleteData[i].indexIndex(j)];
+                            pred_w[k] += Z[k][i][SparseIncompleteData[i].indexIndex(j)];
                             pred_sigma +=
                                 Z[k][i][SparseIncompleteData[i].indexIndex(j)] *
-                                pow(C[k][i]
-                                     [SparseIncompleteData[i].indexIndex(j)] -
-                                        U[k][i] * V[k][SparseIncompleteData[i]
-                                                           .indexIndex(j)],
-                                    2);
+                                pow(C[k][i][SparseIncompleteData[i].indexIndex(j)] - U[k][i] * V[k][SparseIncompleteData[i].indexIndex(j)], 2);
                         }
                     }
                 }
@@ -4042,15 +3565,9 @@ int Recom::mpbmf_pred(std::string dir, int K, int Scale, double D_percent,
             double U_L2Norm = 0.0, V_L2Norm = 0.0;
             for (int k = 0; k < K; k++) {
                 for (int i = 0; i < C.rows(); i++) {
-                    for (int j = 0; j < SparseIncompleteData[i].essencialSize();
-                         j++) {
+                    for (int j = 0; j < SparseIncompleteData[i].essencialSize(); j++) {
                         if (SparseIncompleteData[i].elementIndex(j) != 0) {
-                            error +=
-                                Z[k][i][j] *
-                                pow(C[k][i][j] -
-                                        U[k][i] * V[k][SparseIncompleteData[i]
-                                                           .indexIndex(j)],
-                                    2);
+                            error += Z[k][i][j] * pow(C[k][i][j] - U[k][i] * V[k][SparseIncompleteData[i].indexIndex(j)], 2);
                         }
                     }
                 }
@@ -4067,14 +3584,12 @@ int Recom::mpbmf_pred(std::string dir, int K, int Scale, double D_percent,
             // 収束判定
             // if(fabs(prev_error - error) < 1.0E-5){
             // if(prev_error < error){
-            double diff =
-                frobenius_norm(prev_U - U) + frobenius_norm(prev_V - V);
+            double diff = frobenius_norm(prev_U - U) + frobenius_norm(prev_V - V);
             // std::cout << "diff : " << diff << " diff w : " <<
             // frobenius_norm(w - pred_w) ;
             std::cout << " diff sigma :" << pred_sigma - sigma;
             std::cout << " diff sigma :" << pred_sigma_u - sigma_u;
-            std::cout << " diff sigma :" << pred_sigma_v - sigma_v << ", step"
-                      << step << std::endl;
+            std::cout << " diff sigma :" << pred_sigma_v - sigma_v << ", step" << step << std::endl;
             // diff出力
             // std::ofstream ofs_diff(dir + "/diff/diff" +
             // std::to_string(rand_mf_trial) + ".txt", std::ios::app);
@@ -4096,10 +3611,8 @@ int Recom::mpbmf_pred(std::string dir, int K, int Scale, double D_percent,
             sigma_u = pred_sigma_u;
             sigma_v = pred_sigma_v;
             if (step == steps - 1) {
-                std::cout << "step = " << step << ", error = " << error
-                          << ", K: " << K << ", D: " << D_percent
-                          << "%, beta = " << beta << ", alpha = " << alpha
-                          << std::endl;
+                std::cout << "step = " << step << ", error = " << error << ", K: " << K << ", D: " << D_percent << "%, beta = " << beta
+                          << ", alpha = " << alpha << std::endl;
                 ParameterNaN = true;
             }
             // prev_error = error;
@@ -4121,15 +3634,11 @@ int Recom::mpbmf_pred(std::string dir, int K, int Scale, double D_percent,
                 // 欠損箇所だけ計算
                 for (int k = 0; k < K; k++)
                     if (k == 0) {
-                        Prediction[index] = w[k] * U[k][KessonIndex[index][0]] *
-                                            V[k][KessonIndex[index][1]];
+                        Prediction[index] = w[k] * U[k][KessonIndex[index][0]] * V[k][KessonIndex[index][1]];
                     } else {
-                        Prediction[index] += w[k] *
-                                             U[k][KessonIndex[index][0]] *
-                                             V[k][KessonIndex[index][1]];
+                        Prediction[index] += w[k] * U[k][KessonIndex[index][0]] * V[k][KessonIndex[index][1]];
                     }
-                std::cout << " prediction [" << index
-                          << "] = " << Prediction[index] << std::endl;
+                std::cout << " prediction [" << index << "] = " << Prediction[index] << std::endl;
             }
             Matrix Pre(return_user_number(), return_item_number());
             double z_sum;
@@ -4150,25 +3659,15 @@ int Recom::mpbmf_pred(std::string dir, int K, int Scale, double D_percent,
     std::string filename = dir + "/InitialValue.txt";
     std::ofstream ofs(filename);
     if (!ofs) {
-        std::cerr << "ファイルopen失敗(InitialValue): " << filename
-                  << std::endl;
+        std::cerr << "ファイルopen失敗(InitialValue): " << filename << std::endl;
     } else {
         for (int i = 0; i < trialLimit; i++) {
             for (int k = 0; k < K; k++) {
-                ofs << i << "," << k << ":" << usum_m[i][k] << "\t"
-                    << vsum_m[i][k] << std::endl;
+                ofs << i << "," << k << ":" << usum_m[i][k] << "\t" << vsum_m[i][k] << std::endl;
             }
         }
         ofs.close();
     }
-    // debug
-    //  int count_pred = 0;
-    //  for(int index = 0; index < Missing; index++){
-    //    if(Prediction[index] > 10.0){
-    //      count_pred++;
-    //    }
-    //  }
-    //  std::cout << "Prediction over 10: " << count_pred << std::endl;
     return 0;
 }
 
@@ -4186,7 +3685,7 @@ int Recom::fm_pred(std::string dir, double K_percent, double beta, double alpha,
         std::cerr << "MF: \"step\" should be 50 or more.";
         return 1;
     }
-    // データの成形 
+    // データの成形
     int X_rows = 0;
     for (int i = 0; i < return_user_number(); i++) {
         for (int j = 0; j < SparseIncompleteData[i].essencialSize(); j++) {
@@ -4205,9 +3704,8 @@ int Recom::fm_pred(std::string dir, double K_percent, double beta, double alpha,
         count_n = 0;
         for (int j = 0; j < SparseIncompleteData[i].essencialSize(); j++) {
             if (SparseIncompleteData[i].elementIndex(j) != 0) {
-                X[line_num][i] = 1.0;  //
-                X[line_num][return_user_number() +
-                            SparseIncompleteData[i].indexIndex(j)] = 1.0;  //
+                X[line_num][i] = 1.0;                                                             //
+                X[line_num][return_user_number() + SparseIncompleteData[i].indexIndex(j)] = 1.0;  //
                 count_n++;
 
                 Y[line_num] = SparseIncompleteData[i].elementIndex(j);
@@ -4258,84 +3756,70 @@ int Recom::fm_pred(std::string dir, double K_percent, double beta, double alpha,
             for (int line = 0; line < X.rows(); line++) {
                 // for(int j = 0; j < SparseIncompleteData[i].essencialSize();
                 // j++){
-                    prediction = 0.0;
-                    linearTerm = 0.0;
-                    // 線形項の計算
+                prediction = 0.0;
+                linearTerm = 0.0;
+                // 線形項の計算
+                for (int i = 0; i < X.cols(); i++) {
+                    linearTerm += w.Element[i] * X.Element[line].Element[i];
+                }
+                // 交互作用項の計算
+                for (int factor = 0; factor < K; factor++) {
+                    sum.Element[factor] = 0.0;
+                    squareSum.Element[factor] = 0.0;
                     for (int i = 0; i < X.cols(); i++) {
-                        linearTerm += w.Element[i] * X.Element[line].Element[i];
+                        sum.Element[factor] += V.Element[factor].Element[i] * X[line].Element[i];
+                        squareSum.Element[factor] +=
+                            V.Element[factor].Element[i] * V.Element[factor].Element[i] * X.Element[line].Element[i] * X.Element[line].Element[i];
                     }
-                    // 交互作用項の計算
-                    for (int factor = 0; factor < K; factor++) {
-                        sum.Element[factor] = 0.0;
-                        squareSum.Element[factor] = 0.0;
-                        for (int i = 0; i < X.cols(); i++) {
-                            sum.Element[factor] +=
-                                V.Element[factor].Element[i] *
-                                X[line].Element[i];
-                            squareSum.Element[factor] +=
-                                V.Element[factor].Element[i] *
-                                V.Element[factor].Element[i] *
-                                X.Element[line].Element[i] *
-                                X.Element[line].Element[i];
-                        }
-                        prediction +=
-                            0.5 * (sum.Element[factor] * sum.Element[factor] -
-                                   squareSum.Element[factor]);
-                    }
+                    prediction += 0.5 * (sum.Element[factor] * sum.Element[factor] - squareSum.Element[factor]);
+                }
 
-                    // 予測値と誤差の計算
-                    prediction += linearTerm;
-                    prediction += w_0;
-                    err = (Y.Element[line] -
-                           prediction);  // abs(Y[line] - prediction);
+                // 予測値と誤差の計算
+                prediction += linearTerm;
+                prediction += w_0;
+                err = (Y.Element[line] - prediction);  // abs(Y[line] - prediction);
 
-                    w_0 += alpha * (err - reg_w * w_0);
+                w_0 += alpha * (err - reg_w * w_0);
+                for (int i = 0; i < X.cols(); i++) {
+                    w.Element[i] += alpha * (X.Element[line].Element[i] * err - reg_w * w.Element[i]);
+                    //   if(!isfinite(w[i])){
+                    //   std::cerr << "w[" << i << "] is not finite. step =
+                    //   " << step
+                    //             << ", err = " << err
+                    //             << ", error = " << error
+                    //             << ", K = " << K
+                    //             << ", beta = " << beta
+                    //             << ", alpha = " << alpha
+                    //             << std::endl;
+                    //   ParameterNaN = true;
+                    //   break;
+                    // }
+                }
+                for (int factor = 0; factor < K; factor++) {
                     for (int i = 0; i < X.cols(); i++) {
-                        w.Element[i] +=
-                            alpha * (X.Element[line].Element[i] * err -
-                                     reg_w * w.Element[i]);
-                        //   if(!isfinite(w[i])){
-                        //   std::cerr << "w[" << i << "] is not finite. step =
-                        //   " << step
-                        //             << ", err = " << err
-                        //             << ", error = " << error
-                        //             << ", K = " << K
-                        //             << ", beta = " << beta
-                        //             << ", alpha = " << alpha
-                        //             << std::endl;
-                        //   ParameterNaN = true;
-                        //   break;
+                        V.Element[factor].Element[i] +=
+                            alpha * (err * (X.Element[line].Element[i] * sum.Element[factor] -
+                                            V.Element[factor].Element[i] * X.Element[line].Element[i] * X.Element[line].Element[i]) -
+                                     reg_v * V[factor][i]);
+                        //   if(!isfinite(V[factor][i])){
+                        // std::cerr << "V[" << i << "][" << factor << "] is
+                        // not finite. step = " << step
+                        //           << ", err = " << err
+                        //           << ", error = " << error
+                        //           << ", K = " << K
+                        //           << ", beta = " << beta
+                        //           << ", alpha = " << alpha
+                        //           << std::endl;
+                        // ParameterNaN = true;
+                        // break;
                         // }
                     }
-                        for (int factor = 0; factor < K; factor++) {
-                            for (int i = 0; i < X.cols(); i++) {
-                            V.Element[factor].Element[i] +=
-                                alpha *
-                                (err * (X.Element[line].Element[i] *
-                                            sum.Element[factor] -
-                                        V.Element[factor].Element[i] *
-                                            X.Element[line].Element[i] *
-                                            X.Element[line].Element[i]) -
-                                 reg_v * V[factor][i]);
-                            //   if(!isfinite(V[factor][i])){
-                            // std::cerr << "V[" << i << "][" << factor << "] is
-                            // not finite. step = " << step
-                            //           << ", err = " << err
-                            //           << ", error = " << error
-                            //           << ", K = " << K
-                            //           << ", beta = " << beta
-                            //           << ", alpha = " << alpha
-                            //           << std::endl;
-                            // ParameterNaN = true;
-                            // break;
-                            // }
-                        }
-                    }
-                    // if(ParameterNaN)
-                    //   break; //!= 0
-                   // if(ParameterNaN)
-                   //   break;
-            }      // line end
+                }
+                // if(ParameterNaN)
+                //   break; //!= 0
+                // if(ParameterNaN)
+                //   break;
+            }  // line end
 
             double diff_v = frobenius_norm(prev_V - V);
             double diff_w = squared_norm(prev_w - w);
@@ -4347,7 +3831,7 @@ int Recom::fm_pred(std::string dir, double K_percent, double beta, double alpha,
             std::cout << "diff_w_0:" << diff_w_0 << " ";
             std::cout << "diff:" << diff << " step" << step << std::endl;
 
-            if (diff < 0.071 && step >= 50 || step >= 1000) {
+            if (diff < DIFF && step >= 50) {
                 break;
             }
             if (!isfinite(diff)) {
@@ -4359,9 +3843,8 @@ int Recom::fm_pred(std::string dir, double K_percent, double beta, double alpha,
             prev_w_0 = w_0;
 
             if (step == steps - 1) {
-                std::cout << "step = " << step << ", error = " << error
-                          << ", K: " << K_percent << "%, beta = " << beta
-                          << ", alpha = " << alpha << std::endl;
+                std::cout << "step = " << step << ", error = " << error << ", K: " << K_percent << "%, beta = " << beta << ", alpha = " << alpha
+                          << std::endl;
                 // ParameterNaN = true;
             }
             // prev_error = error;
@@ -4371,37 +3854,35 @@ int Recom::fm_pred(std::string dir, double K_percent, double beta, double alpha,
         double linearerror = 0.0;
         double w_L2Norm = 0.0, v_L2Norm = 0.0;
         for (int line = 0; line < X.rows(); line++) {
-                predict_error = 0.0;
-                linearerror = 0.0;
+            predict_error = 0.0;
+            linearerror = 0.0;
 
-                // 線形項の計算
+            // 線形項の計算
+            for (int i = 0; i < X.cols(); i++) {
+                linearerror += w[i] * X[line][i];
+                w_L2Norm += w[i] * w[i];
+            }
+
+            // 交互作用項の計算
+            for (int factor = 0; factor < K; factor++) {
+                sum[factor] = 0.0;
+                squareSum[factor] = 0.0;
                 for (int i = 0; i < X.cols(); i++) {
-                    linearerror += w[i] * X[line][i];
-                    w_L2Norm += w[i] * w[i];
+                    sum[factor] += V[factor][i] * X[line][i];
+                    squareSum[factor] += V[factor][i] * V[factor][i] * X[line][i] * X[line][i];
                 }
+                v_L2Norm += V[factor] * V[factor];
+                // interactionTerms[factor] = 0.5 * (sum * sum - squareSum);
+                predict_error += 0.5 * (sum[factor] * sum[factor] - squareSum[factor]);
+            }
+            //
 
-                // 交互作用項の計算
-                for (int factor = 0; factor < K; factor++) {
-                    sum[factor] = 0.0;
-                    squareSum[factor] = 0.0;
-                    for (int i = 0; i < X.cols(); i++) {
-                        sum[factor] += V[factor][i] * X[line][i];
-                        squareSum[factor] += V[factor][i] * V[factor][i] *
-                                             X[line][i] * X[line][i];
-                    }
-                    v_L2Norm += V[factor] * V[factor];
-                    // interactionTerms[factor] = 0.5 * (sum * sum - squareSum);
-                    predict_error +=
-                        0.5 * (sum[factor] * sum[factor] - squareSum[factor]);
-                }
-                //
-
-                // 予測値と誤差の計算
-                predict_error += linearerror;
-                predict_error += w_0;
-                error += pow(Y[line] - predict_error, 2);
-                // std::cout << "Y[line] " << Y[line]  <<" predict_error"<<
-                // predict_error<< std::endl;
+            // 予測値と誤差の計算
+            predict_error += linearerror;
+            predict_error += w_0;
+            error += pow(Y[line] - predict_error, 2);
+            // std::cout << "Y[line] " << Y[line]  <<" predict_error"<<
+            // predict_error<< std::endl;
         }
         if (ParameterNaN) {
             NaNcount++;
@@ -4413,8 +3894,7 @@ int Recom::fm_pred(std::string dir, double K_percent, double beta, double alpha,
         } else if (best_error > error) {
             best_error = error;
 
-            Matrix X_pre(return_user_number() * return_item_number(),
-                         return_user_number() + return_item_number(), 0.0);
+            Matrix X_pre(return_user_number() * return_item_number(), return_user_number() + return_item_number(), 0.0);
 
             int line_num = 0;
             for (int i = 0; i < return_user_number(); i++) {
@@ -4440,11 +3920,9 @@ int Recom::fm_pred(std::string dir, double K_percent, double beta, double alpha,
                     squareSum[factor] = 0.0;
                     for (int i = 0; i < X_pre.cols(); i++) {
                         sum[factor] += V[factor][i] * X_pre[line][i];
-                        squareSum[factor] += V[factor][i] * V[factor][i] *
-                                             X_pre[line][i] * X_pre[line][i];
+                        squareSum[factor] += V[factor][i] * V[factor][i] * X_pre[line][i] * X_pre[line][i];
                     }
-                    prediction +=
-                        0.5 * (sum[factor] * sum[factor] - squareSum[factor]);
+                    prediction += 0.5 * (sum[factor] * sum[factor] - squareSum[factor]);
                 }
                 // 予測値と誤差の計算
                 prediction += linearTerm;
@@ -4464,20 +3942,15 @@ int Recom::fm_pred(std::string dir, double K_percent, double beta, double alpha,
             for (int i = 0; i < return_user_number(); i++) {
                 for (int j = 0; j < SparseCorrectData[i].essencialSize(); j++) {
                     if (SparseCorrectData[i].elementIndex(j) != 0) {
-                        CorrectData[i][SparseCorrectData[i].indexIndex(j)] =
-                            SparseCorrectData[i].elementIndex(j);
+                        CorrectData[i][SparseCorrectData[i].indexIndex(j)] = SparseCorrectData[i].elementIndex(j);
                     }
                 }
             }
 
             for (int index = 0; index < Missing; index++) {
-                Prediction[index] =
-                    Pre[KessonIndex[index][0]][KessonIndex[index][1]];
-                std::cout
-                    << "Prediction:" << Prediction[index] << "\t"
-                    << "CorrectData:"
-                    << CorrectData[KessonIndex[index][0]][KessonIndex[index][1]]
-                    << std::endl;
+                Prediction[index] = Pre[KessonIndex[index][0]][KessonIndex[index][1]];
+                std::cout << "Prediction:" << Prediction[index] << "\t"
+                          << "CorrectData:" << CorrectData[KessonIndex[index][0]][KessonIndex[index][1]] << std::endl;
             }
             std::cout << "error < best_error" << std::endl;
         }
@@ -4494,283 +3967,8 @@ int Recom::fm_pred(std::string dir, double K_percent, double beta, double alpha,
     return 0;
 }
 
-// // int Recom::fm_pred(std::string dir, double K_percent, double beta, double
-// alpha, int steps) //K以外は初期値有なので指定無しでも可
-// {
-//   int K;
-//   if(return_user_number() > return_item_number()){
-//     K = std::round(return_item_number() * K_percent / 10);
-//   } else {
-//     K = std::round(return_user_number() * K_percent / 10);
-//   }
-//   K = K_percent;
-//   if(steps < 50){
-//     std::cerr << "MF: \"step\" should be 50 or more.";
-//     return 1;
-//   }
-//   //データの成形 //人工
-//   Matrix X(return_user_number()*return_item_number(),
-//   return_user_number()+return_item_number(),0.0); Vector Y(X.rows(), 0.0,
-//   "all");
 
-//   int line_num = 0;
-//   int count_n = 0;
-//   for (int i=0; i < return_user_number(); i++){
-//     count_n = 0;
-//     for(int j = 0; j < SparseIncompleteData.Element[i].essencialSize(); j++){
-//       X.Element[line_num].Element[i] = 1.0;//
-//       X.Element[line_num].Element[return_user_number()+SparseIncompleteData[i].indexIndex(j)]
-//       = 1.0;// count_n ++; if(SparseIncompleteData[i].elementIndex(j) != 0){
-//         Y[line_num] = SparseIncompleteData.Element[i].elementIndex(j);
-//       }
-//       line_num++;
-//     }
-//   }
-
-//   //ここまでok
-//   Matrix V(K,X.cols());
-//   Matrix prev_V(K,X.cols(),0.0);
-//   double best_error = DBL_MAX;
-//   int NaNcount = 0;
-//   int trialLimit = CLUSTERINGTRIALS;
-//   int mf_seed = 0;
-
-//   for(int rand_mf_trial = 0; rand_mf_trial < trialLimit; rand_mf_trial++){
-//     std::cout << "FM: initial setting " << rand_mf_trial << std::endl;
-//     std::mt19937_64 mt;
-//     for(int k_i = 0; k_i < K; k_i++){
-//       for(int i = 0; i < X.cols(); i++){
-//         mt.seed(mf_seed);
-//         std::uniform_real_distribution<>
-//             rand_v(0.0, 1.0);
-//         //ランダムに値生成
-//         V[k_i][i] = rand_v(mt);
-//         //V[k_i][i] = 1.0;
-//         mf_seed++;
-//       }
-//       //std::cout << "V:\n" << V << std::endl;
-//     }
-
-//     prev_V = V;
-
-//     double error = 0.0;
-//     double err = 0.0;
-//     double omomi = 1 / X.cols();
-//     Vector w(X.cols(),omomi,"all");
-//     Vector prev_w(X.cols(),omomi,"all");
-//     bool ParameterNaN = false;
-//     Vector sum(K,0,"all");
-//     Vector squareSum(K,0,"all");
-//     double prediction = 0.0 , linearTerm, w_0 = 0.0,prev_w_0 = 0.0;
-//     double reg_v = beta , reg_w = beta;
-//     for(int step = 0; step < steps; step++){
-//       for(int line = 0; line < X.rows(); line++){
-//             prediction = 0.0;
-//             linearTerm = 0.0;
-//             // 線形項の計算
-//             for (int i = 0; i < X.cols(); i++) {
-//                 linearTerm += w[i] * X[line][i];
-//             }
-//             // 交互作用項の計算
-//             for (int factor = 0; factor < K; factor++) {
-//                 sum.Element[factor] = 0.0;
-//                 squareSum.Element[factor] = 0.0;
-//                 for (int i = 0; i < X.cols(); i++) {
-//                     sum.Element[factor] += V.Element[factor].Element[i] *
-//                     X.Element[line].Element[i]; squareSum.Element[factor] +=
-//                     V.Element[factor].Element[i] *
-//                     V.Element[factor].Element[i] * X.Element[line].Element[i]
-//                     * X.Element[line].Element[i];
-//                 }
-//                 prediction += 0.5 * (sum.Element[factor] *
-//                 sum.Element[factor] - squareSum.Element[factor]);
-//             }
-
-//             // 予測値と誤差の計算
-//             prediction += linearTerm;
-//             prediction += w_0;
-//             err = (Y.Element[line] - prediction);//abs(Y[line] - prediction);
-
-//             w_0 += alpha * (err - reg_w * w_0) ;
-//             for (int i = 0; i < X.cols(); i++) {
-//                 w.Element[i] += alpha * (X.Element[line].Element[i] * err -
-//                 reg_w * w.Element[i]); if(!isfinite(w[i])){ std::cerr << "w["
-//                 << i << "] is not finite. step = " << step
-//                           << ", err = " << err
-//                           << ", error = " << error
-//                           << ", K = " << K
-//                           << ", beta = " << beta
-//                           << ", alpha = " << alpha
-//                           << std::endl;
-//                 ParameterNaN = true;
-//                 break;
-//               }
-//                 for (int factor = 0; factor < K; factor++) {
-//                   V.Element[factor].Element[i] += alpha * (err *
-//                   (X.Element[line].Element[i] * sum.Element[factor]  -
-//                   V.Element[factor].Element[i] * X.Element[line].Element[i] *
-//                   X.Element[line].Element[i] ) -
-//                   reg_v*V.Element[factor].Element[i]);
-//                   if(!isfinite(V[factor][i])){
-//                 std::cerr << "V[" << i << "][" << factor << "] is not finite.
-//                 step = " << step
-//                           << ", err = " << err
-//                           << ", error = " << error
-//                           << ", K = " << K
-//                           << ", beta = " << beta
-//                           << ", alpha = " << alpha
-//                           << std::endl;
-//                 ParameterNaN = true;
-//                 break;
-//                 }
-//                 }
-//             }
-//             if(ParameterNaN)
-//               break;
-//       }//line end
-//       if(ParameterNaN)
-//         break;
-//       //loss /= X.rows();
-
-//       //std::cout << "FM: line end : " << step << std::endl;
-//       //std::cout << "FM: w : " << w << std::endl;
-//       //w_0 -= alpha;
-//       //目的関数値計算
-
-//       error = 0.0;
-//       double predict_error = 0.0;
-//       double linearerror = 0.0;
-//       double w_L2Norm = 0.0, v_L2Norm = 0.0;
-//       for (int line = 0; line < X.rows(); line++) {
-//           if(Y[line] != 0){
-//             predict_error = 0.0;
-//             linearerror = 0.0;
-
-//             // 線形項の計算
-//             for (int i = 0; i < X.cols(); i++) {
-//                 linearerror += w[i] * X[line][i];
-//                 w_L2Norm += w[i] * w[i];
-//             }
-
-//             // 交互作用項の計算
-//             for (int factor = 0; factor < K; factor++) {
-//                 sum[factor] = 0.0;
-//                 squareSum[factor] = 0.0;
-//                 for (int i = 0; i < X.cols(); i++) {
-//                     sum[factor] += V[factor][i] * X[line][i];
-//                     squareSum[factor] += V[factor][i] * V[factor][i] *
-//                     X[line][i] * X[line][i];
-//                 }
-//                 v_L2Norm += V[factor] * V[factor];
-//                 //interactionTerms[factor] = 0.5 * (sum * sum - squareSum);
-//                 predict_error += 0.5 * (sum[factor] * sum[factor] -
-//                 squareSum[factor]);
-//             }
-//             //
-
-//             // 予測値と誤差の計算
-//             predict_error += linearerror;
-//             predict_error += w_0;
-//             error += pow(Y[line] - predict_error,2);
-//             //std::cout << "Y[line] " << Y[line]  <<" predict_error"<<
-//             predict_error<< std::endl;
-//           }
-//       }
-
-//       //収束判定
-//       //if(fabs(prev_error - error) < 1.0E-5){
-//       //if(prev_error < error){
-
-//       double diff_v = frobenius_norm(prev_V - V);
-//       double diff_w = squared_norm(prev_w - w);
-//       double diff_w_0 = abs(prev_w_0 - w_0);
-//       double diff = diff_v + diff_w + diff_w_0;
-
-//       //diff出力
-//       std::cout << "diff_v:" << diff_v << " ";
-//       std::cout << "diff_w:" << diff_w << " ";
-//       std::cout << "diff_w_0:" << diff_w_0 << " ";
-//       std::cout << "diff:" << diff << " ";
-//       std::cout <<"error:" <<error/X.rows() << " step" << step << std::endl;
-
-//       if(diff<0.011 && step >= 50){
-//         break;
-//       }
-//       prev_V = V;
-//       prev_w = w;
-//       prev_w_0 = w_0;
-
-//       if(step == steps - 1){
-//           std::cout<< "step = " << step << ", error = " << error
-//                     << ", K: " << K_percent << "%, beta = " << beta
-//                     << ", alpha = " << alpha << std::endl;
-//         //ParameterNaN = true;
-//       }
-//       //prev_error = error;
-//     }//step end
-//     if(ParameterNaN){
-//       NaNcount++;
-//       //初期値全部{NaN出た or step上限回更新して収束しなかった} =>
-//       1を返して終了 if(NaNcount == trialLimit){
-//         return 1;
-//       }
-//     } else {
-//       best_error = error;
-//     Vector Pr(Y.size());
-//     for (int line = 0; line < X.rows(); line++) {
-//       prediction = 0.0;
-//       linearTerm = 0.0;
-//       // 線形項の計算
-//       for (int i = 0; i < X.cols(); i++) {
-//         linearTerm += w[i] * X[line][i];
-//       }
-
-//       // 交互作用項の計算
-//       for (int factor = 0; factor < K; factor++) {
-//         sum[factor] = 0.0;
-//         squareSum[factor] = 0.0;
-//         for (int i = 0; i < X.cols(); i++) {
-//           sum[factor] += V[factor][i] * X[line][i];
-//           squareSum[factor] += V[factor][i] * V[factor][i] * X[line][i] *
-//           X[line][i];
-//         }
-//         prediction += 0.5 * (sum[factor] * sum[factor] - squareSum[factor]);
-//       }
-//       // 予測値と誤差の計算
-//       prediction += linearTerm;
-//       Pr[line] = prediction + w_0;
-//     }
-
-//     //std::cout << " Pr \n" << Pr << std::endl;
-
-//       Matrix Pre(return_user_number(), return_item_number());
-//       int line_i = 0;
-//       for(int i = 0; i < return_user_number(); i++){
-//         for(int j = 0; j < return_item_number(); j++){
-//               Pre[i][j] = Pr[line_i];
-//               line_i++;
-//               //std::cout << "w[k]" << w[k] << std::endl;
-//         }
-//       }
-
-//       for(int index = 0; index < Missing; index++){
-//         Prediction[index] =
-//         Pre[KessonIndex[index][0]][KessonIndex[index][1]]; std::cout
-//         <<"Prediction:"<<Prediction[index]<< " SparseCorrectData:" <<
-//         SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1])
-//         <<std::endl;
-
-//       }
-//       std::cout << "error < best_error" << std::endl;
-//     }
-
-//   } //初期値ループ
-
-//   return 0;
-// }
-
-int Recom::fm_test_pred(std::string dir, double K_percent, double beta,
-                        double alpha,
+int Recom::fm_test_pred(std::string dir, double K_percent, double beta, double alpha,
                         int steps)  // K以外は初期値有なので指定無しでも可
 {
     int K;
@@ -4934,11 +4132,9 @@ int Recom::fm_test_pred(std::string dir, double K_percent, double beta,
                         squareSum[factor] = 0.0;
                         for (int i = 0; i < X.cols(); i++) {
                             sum[factor] += V[factor][i] * X[line][i];
-                            squareSum[factor] += V[factor][i] * V[factor][i] *
-                                                 X[line][i] * X[line][i];
+                            squareSum[factor] += V[factor][i] * V[factor][i] * X[line][i] * X[line][i];
                         }
-                        prediction += 0.5 * (sum[factor] * sum[factor] -
-                                             squareSum[factor]);
+                        prediction += 0.5 * (sum[factor] * sum[factor] - squareSum[factor]);
                     }
 
                     // 予測値と誤差の計算
@@ -4953,12 +4149,8 @@ int Recom::fm_test_pred(std::string dir, double K_percent, double beta,
                         // std::cout << "alpha * X[line][i] * err: " << alpha *
                         // X[line][i] * err << std::endl;
                         if (!isfinite(w[i])) {
-                            std::cerr << "w[" << i
-                                      << "] is not finite. step = " << step
-                                      << ", err = " << err
-                                      << ", error = " << error << ", K = " << K
-                                      << ", beta = " << beta
-                                      << ", alpha = " << alpha << std::endl;
+                            std::cerr << "w[" << i << "] is not finite. step = " << step << ", err = " << err << ", error = " << error
+                                      << ", K = " << K << ", beta = " << beta << ", alpha = " << alpha << std::endl;
                             ParameterNaN = true;
                             break;
                         }
@@ -4967,13 +4159,8 @@ int Recom::fm_test_pred(std::string dir, double K_percent, double beta,
                             // sum[factor]  - V[factor][i] * X[line][i] *
                             // X[line][i] ) - reg_v*V[factor][i]);
                             if (!isfinite(V[factor][i])) {
-                                std::cerr << "V[" << i << "][" << factor
-                                          << "] is not finite. step = " << step
-                                          << ", err = " << err
-                                          << ", error = " << error
-                                          << ", K = " << K
-                                          << ", beta = " << beta
-                                          << ", alpha = " << alpha << std::endl;
+                                std::cerr << "V[" << i << "][" << factor << "] is not finite. step = " << step << ", err = " << err
+                                          << ", error = " << error << ", K = " << K << ", beta = " << beta << ", alpha = " << alpha << std::endl;
                                 ParameterNaN = true;
                                 break;
                             }
@@ -5056,9 +4243,8 @@ int Recom::fm_test_pred(std::string dir, double K_percent, double beta,
             prev_w_0 = w_0;
 
             if (step == steps - 1) {
-                std::cout << "step = " << step << ", error = " << error
-                          << ", K: " << K_percent << "%, beta = " << beta
-                          << ", alpha = " << alpha << std::endl;
+                std::cout << "step = " << step << ", error = " << error << ", K: " << K_percent << "%, beta = " << beta << ", alpha = " << alpha
+                          << std::endl;
                 // ParameterNaN = true;
             }
             // prev_error = error;
@@ -5095,11 +4281,9 @@ int Recom::fm_test_pred(std::string dir, double K_percent, double beta,
                     squareSum[factor] = 0.0;
                     for (int i = 0; i < X.cols(); i++) {
                         sum[factor] += V[factor][i] * X[line][i];
-                        squareSum[factor] += V[factor][i] * V[factor][i] *
-                                             X[line][i] * X[line][i];
+                        squareSum[factor] += V[factor][i] * V[factor][i] * X[line][i] * X[line][i];
                     }
-                    prediction +=
-                        0.5 * (sum[factor] * sum[factor] - squareSum[factor]);
+                    prediction += 0.5 * (sum[factor] * sum[factor] - squareSum[factor]);
                 }
                 // 予測値と誤差の計算
                 prediction += linearTerm;
@@ -5208,8 +4392,7 @@ void Recom::UbukataForSphericalData(int clusters_number) {
             // <<index<<"\t"<<SparseCorrectData[KessonIndex[index][0]].elementIndex(SparseIndex[index])<<
             // "\t" <<Prediction[index]<< std::endl;
         }
-        Prediction[index] =
-            prediction[KessonIndex[index][1]] / squared_norm(prediction);
+        Prediction[index] = prediction[KessonIndex[index][1]] / squared_norm(prediction);
         // std::cout <<index<<"\t"<<
         // KessonIndex[index][0]<<":"<<KessonIndex[index][1]<<"\t"<<SparseCorrectData[KessonIndex[index][0]].elementIndex(SparseIndex[index])<<
         // "\t" <<Prediction[index]<< std::endl; std::cout << Prediction[index]
@@ -5281,8 +4464,7 @@ void Recom::Ubukata_CentersSim(int clusters_number) {
     Matrix Similarity_Centers(clusters_number, clusters_number);
     for (int user1 = 0; user1 < clusters_number; user1++) {
         for (int user2 = 0; user2 < clusters_number; user2++) {
-            double psum = 0.0, sum1 = 0.0, sum2 = 0.0, sum1sq = 0.0,
-                   sum2sq = 0.0;
+            double psum = 0.0, sum1 = 0.0, sum2 = 0.0, sum1sq = 0.0, sum2sq = 0.0;
             double hyokasu = 0.0;
             /*ユーザ1がユーザ2である場合*/
             if (user1 == user2) {
@@ -5303,8 +4485,7 @@ void Recom::Ubukata_CentersSim(int clusters_number) {
                     sum2sq += pow(user2_element, 2.0);
                 }
                 double numerator = psum - (sum1 * sum2 / hyokasu);
-                double denominator = sqrt((sum1sq - pow(sum1, 2.0) / hyokasu) *
-                                          (sum2sq - pow(sum2, 2.0) / hyokasu));
+                double denominator = sqrt((sum1sq - pow(sum1, 2.0) / hyokasu) * (sum2sq - pow(sum2, 2.0) / hyokasu));
                 if (denominator == 0 || std::isnan(denominator))
                     Similarity_Centers[user1][user2] = 0.0;
                 else
@@ -5314,8 +4495,7 @@ void Recom::Ubukata_CentersSim(int clusters_number) {
                 // user2<<"\t"<<Similarity[user1][user2]<<std::endl;
                 // std::cout<<Similarity[user1][user2]<<"\t"<<std::flush;
             }
-            std::cout << user1 << "\t" << user2 << "\t"
-                      << Similarity_Centers[user1][user2] << std::endl;
+            std::cout << user1 << "\t" << user2 << "\t" << Similarity_Centers[user1][user2] << std::endl;
         }
     }
 
@@ -5325,8 +4505,7 @@ void Recom::Ubukata_CentersSim(int clusters_number) {
     for (int index = 0; index < Missing; index++) {
         int TopCluster = 0;
         for (int c = 1; c < clusters_number; c++) {
-            if (Mem[c][KessonIndex[index][0]] >
-                Mem[TopCluster][KessonIndex[index][0]]) {
+            if (Mem[c][KessonIndex[index][0]] > Mem[TopCluster][KessonIndex[index][0]]) {
                 TopCluster = c;
             }
         }
@@ -5363,8 +4542,7 @@ void Recom::UbukataForSphericalData_CentersSim(int clusters_number) {
     Matrix Similarity_Centers(clusters_number, clusters_number);
     for (int user1 = 0; user1 < clusters_number; user1++) {
         for (int user2 = 0; user2 < clusters_number; user2++) {
-            double psum = 0.0, sum1 = 0.0, sum2 = 0.0, sum1sq = 0.0,
-                   sum2sq = 0.0;
+            double psum = 0.0, sum1 = 0.0, sum2 = 0.0, sum1sq = 0.0, sum2sq = 0.0;
             double hyokasu = 0.0;
             /*ユーザ1がユーザ2である場合*/
             if (user1 == user2) {
@@ -5385,8 +4563,7 @@ void Recom::UbukataForSphericalData_CentersSim(int clusters_number) {
                     sum2sq += pow(user2_element, 2.0);
                 }
                 double numerator = psum - (sum1 * sum2 / hyokasu);
-                double denominator = sqrt((sum1sq - pow(sum1, 2.0) / hyokasu) *
-                                          (sum2sq - pow(sum2, 2.0) / hyokasu));
+                double denominator = sqrt((sum1sq - pow(sum1, 2.0) / hyokasu) * (sum2sq - pow(sum2, 2.0) / hyokasu));
                 if (denominator == 0 || std::isnan(denominator))
                     Similarity_Centers[user1][user2] = 0.0;
                 else
@@ -5407,8 +4584,7 @@ void Recom::UbukataForSphericalData_CentersSim(int clusters_number) {
     for (int index = 0; index < Missing; index++) {
         int TopCluster = 0;
         for (int c = 1; c < clusters_number; c++) {
-            if (Mem[c][KessonIndex[index][0]] >
-                Mem[TopCluster][KessonIndex[index][0]]) {
+            if (Mem[c][KessonIndex[index][0]] > Mem[TopCluster][KessonIndex[index][0]]) {
                 TopCluster = c;
             }
         }
@@ -5429,8 +4605,7 @@ void Recom::UbukataForSphericalData_CentersSim(int clusters_number) {
             // <<index<<"\t"<<SparseCorrectData[KessonIndex[index][0]].elementIndex(SparseIndex[index])<<
             // "\t" <<Prediction[index]<< std::endl;
         }
-        Prediction[index] = prediction[KessonIndex[index][1]] /
-                            (MemSum * squared_norm(prediction));
+        Prediction[index] = prediction[KessonIndex[index][1]] / (MemSum * squared_norm(prediction));
         // std::cout <<index<<"\t"<<
         // KessonIndex[index][0]<<":"<<KessonIndex[index][1]<<"\t"<<SparseCorrectData[KessonIndex[index][0]].elementIndex(SparseIndex[index])<<
         // "\t" <<Prediction[index]<< std::endl; std::cout << Prediction[index]
@@ -5443,20 +4618,15 @@ void Recom::UbukataForSphericalData_CentersSim(int clusters_number) {
 }
 
 void Recom::save_prediction(std::string dir) {
-    std::string prediction_STR = dir + "/prediction/" + METHOD_NAME_recom +
-                                 "prediction" + std::to_string(Missing) + "_" +
-                                 std::to_string(Current) + "_" +
-                                 std::to_string(CCurrent) + "sort.txt";
+    std::string prediction_STR = dir + "/prediction/" + METHOD_NAME_recom + "prediction" + std::to_string(Missing) + "_" + std::to_string(Current) +
+                                 "_" + std::to_string(CCurrent) + "sort.txt";
     std::ofstream ofs(prediction_STR, std::ios::app);
     if (!ofs)
         std::cerr << "ファイルオープン失敗(save_predicition)\n";
     else {
         for (int index = 0; index < Missing; index++) {
-            ofs << index << "\t" << KessonIndex[index][0] << "\t"
-                << KessonIndex[index][1] << "\t"
-                << SparseCorrectData[KessonIndex[index][0]].elementIndex(
-                       SparseIndex[index])
-                << "\t" << Prediction[index] << std::endl;
+            ofs << index << "\t" << KessonIndex[index][0] << "\t" << KessonIndex[index][1] << "\t"
+                << SparseCorrectData[KessonIndex[index][0]].elementIndex(SparseIndex[index]) << "\t" << Prediction[index] << std::endl;
         }
     }
     ofs.close();
@@ -5488,17 +4658,11 @@ double Recom::user_average(int index) {
 
 SparseMatrix Recom::sparsecorrectdata(void) const { return SparseCorrectData; }
 
-SparseVector &Recom::sparsecorrectdata(int index) {
-    return SparseCorrectData[index];
-}
+SparseVector &Recom::sparsecorrectdata(int index) { return SparseCorrectData[index]; }
 
-SparseMatrix Recom::sparseincompletedata(void) const {
-    return SparseIncompleteData;
-}
+SparseMatrix Recom::sparseincompletedata(void) const { return SparseIncompleteData; }
 
-SparseVector &Recom::sparseincompletedata(const int &index) {
-    return SparseIncompleteData[index];
-}
+SparseVector &Recom::sparseincompletedata(const int &index) { return SparseIncompleteData[index]; }
 
 void Recom::crisp(const Matrix &Membership) {
     for (int k = 0; k < return_user_number(); k++) {
@@ -5517,8 +4681,7 @@ void Recom::crisp(const Matrix &Membership) {
     return;
 }
 
-void Recom::copy_mem_cen(const Matrix &Membership,
-                         const Matrix &ItemMembership) {
+void Recom::copy_mem_cen(const Matrix &Membership, const Matrix &ItemMembership) {
     for (int k = 0; k < return_user_number(); k++) {
         for (int i = 0; i < Membership.rows(); i++) {
             Mem[i][k] = Membership[i][k];
@@ -5539,8 +4702,7 @@ void Recom::setMAE_h(void) {
     return;
 }
 
-void Recom::choiceMAE_h_art(std::vector<std::string> dir, double m,
-                            double lam) {
+void Recom::choiceMAE_h_art(std::vector<std::string> dir, double m, double lam) {
     double MAEsum = 0.0;
     for (int i = 0; i < (Current_end - Current_start + 1); i++) {
         MAEsum += choiceMAE[0][i];
@@ -5560,10 +4722,8 @@ void Recom::choiceMAE_h_art(std::vector<std::string> dir, double m,
             if (!ofs) {
                 std::cerr << "ファイルopen失敗: choiceMAE_h\n";
             } else {
-                ofs << Missing << " m=" << m << " lam=" << lam << " C"
-                    << Mem.rows()  // クラスタ中心の数
-                    << std::fixed << std::setprecision(10)
-                    << " LowestMAE=" << aveMAE_h << std::endl;
+                ofs << Missing << " m=" << m << " lam=" << lam << " C" << Mem.rows()  // クラスタ中心の数
+                    << std::fixed << std::setprecision(10) << " LowestMAE=" << aveMAE_h << std::endl;
             }
         } else {
             aveMAE_h = MAEsum / denominator;
@@ -5572,10 +4732,8 @@ void Recom::choiceMAE_h_art(std::vector<std::string> dir, double m,
             if (!ofs) {
                 std::cerr << "ファイルopen失敗: choiceMAE_h\n";
             } else {
-                ofs << Missing << " m=" << m << " lam=" << lam << " C"
-                    << Mem.rows()  // クラスタ中心の数
-                    << std::fixed << std::setprecision(10)
-                    << " LowestMAE=" << aveMAE_h << std::endl;
+                ofs << Missing << " m=" << m << " lam=" << lam << " C" << Mem.rows()  // クラスタ中心の数
+                    << std::fixed << std::setprecision(10) << " LowestMAE=" << aveMAE_h << std::endl;
             }
         }
     }
@@ -5605,8 +4763,7 @@ void Recom::setAUC_h(void) {
     return;
 }
 
-void Recom::choiceAUC_h_art(std::vector<std::string> dir, double m,
-                            double lam) {
+void Recom::choiceAUC_h_art(std::vector<std::string> dir, double m, double lam) {
     double AUCsum = 0.0;
     for (int i = 0; i < (Current_end - Current_start + 1); i++) {
         AUCsum += choiceAUC[0][i];
@@ -5626,10 +4783,8 @@ void Recom::choiceAUC_h_art(std::vector<std::string> dir, double m,
             if (!ofs) {
                 std::cerr << "ファイルopen失敗: choiceAUC_h\n";
             } else {
-                ofs << Missing << " m=" << m << " lam=" << lam << " C"
-                    << Mem.rows()  // クラスタ中心の数
-                    << std::fixed << std::setprecision(10)
-                    << " HightestAUC=" << aveAUC_h << std::endl;
+                ofs << Missing << " m=" << m << " lam=" << lam << " C" << Mem.rows()  // クラスタ中心の数
+                    << std::fixed << std::setprecision(10) << " HightestAUC=" << aveAUC_h << std::endl;
             }
         } else {
             aveAUC_h = AUCsum / denominator;
@@ -5638,10 +4793,8 @@ void Recom::choiceAUC_h_art(std::vector<std::string> dir, double m,
             if (!ofs) {
                 std::cerr << "ファイルopen失敗: choiceAUC_h\n";
             } else {
-                ofs << Missing << " m=" << m << " lam=" << lam << " C"
-                    << Mem.rows()  // クラスタ中心の数
-                    << std::fixed << std::setprecision(10)
-                    << " HightestAUC=" << aveAUC_h << std::endl;
+                ofs << Missing << " m=" << m << " lam=" << lam << " C" << Mem.rows()  // クラスタ中心の数
+                    << std::fixed << std::setprecision(10) << " HightestAUC=" << aveAUC_h << std::endl;
             }
         }
     }
@@ -5706,8 +4859,7 @@ int return_user_number() {
 #elif defined SAMPLE
     return 5;
 #else
-    std::cout
-        << "Error: In Function \"int return_user_number() (in recom.cxx)\"\n";
+    std::cout << "Error: In Function \"int return_user_number() (in recom.cxx)\"\n";
     exit(1);
 #endif
 }
@@ -5977,16 +5129,13 @@ void Rename(std::string filename, std::string newname) {
             std::cout << "\t"
                       << "1. " << newname << " Already exists" << std::endl
                       << "\t"
-                      << "2. " << newname << " Being used, not closed"
-                      << std::endl
+                      << "2. " << newname << " Being used, not closed" << std::endl
                       << "\t"
                       << "3. "
-                      << "You do not have permission to rename this file"
-                      << std::endl;
+                      << "You do not have permission to rename this file" << std::endl;
         }
     } else {  // The file does not exist
-        std::cout << "Rename failed. This file does not exitst:\n"
-                  << filename << std::endl;
+        std::cout << "Rename failed. This file does not exitst:\n" << filename << std::endl;
     }
     return;
 }
@@ -5997,8 +5146,7 @@ std::vector<std::string> MkdirFCCM(std::string method) {
     c_p = c_p + "/../../RESULT";
     mkdir(c_p.c_str(), 0755);
     for (int i = 0; i < (int)FCCM.size(); i++) {
-        std::string d = c_p + "/" + method + "_" + FCCM[i] + "_" +
-                        return_data_name() + std::to_string(KESSON);
+        std::string d = c_p + "/" + method + "_" + FCCM[i] + "_" + return_data_name() + std::to_string(KESSON);
         mkdir(d.c_str(), 0755);
         v.push_back(d);
     }
@@ -6011,8 +5159,7 @@ std::vector<std::string> MkdirFCS(std::string method, int kesson) {
     c_p = c_p + "/../../RESULT/" + method;
     mkdir(c_p.c_str(), 0755);
     for (int i = 0; i < (int)FCS.size(); i++) {
-        std::string d = c_p + "/" + method + "_" + FCS[i] + "_" +
-                        return_data_name() + std::to_string(kesson);
+        std::string d = c_p + "/" + method + "_" + FCS[i] + "_" + return_data_name() + std::to_string(kesson);
         mkdir(d.c_str(), 0755);
         v.push_back(d);
     }
@@ -6025,16 +5172,14 @@ std::vector<std::string> MkdirUBUKATA(std::string method) {
     c_p = c_p + "/../../RESULT";
     mkdir(c_p.c_str(), 0755);
     for (int i = 0; i < (int)UBUKATA.size(); i++) {
-        std::string d = c_p + "/" + method + "_" + UBUKATA[i] + "_" +
-                        return_data_name() + std::to_string(KESSON);
+        std::string d = c_p + "/" + method + "_" + UBUKATA[i] + "_" + return_data_name() + std::to_string(KESSON);
         mkdir(d.c_str(), 0755);
         v.push_back(d);
     }
     return v;
 }
 
-std::vector<std::string> Mkdir(std::vector<double> para, int c,
-                               std::vector<std::string> dirs) {
+std::vector<std::string> Mkdir(std::vector<double> para, int c, std::vector<std::string> dirs) {
     std::vector<std::string> v;
     std::string fuzzifier = "";
     for (int i = 0; i < (int)para.size(); i++) {
@@ -6044,8 +5189,7 @@ std::vector<std::string> Mkdir(std::vector<double> para, int c,
         fuzzifier += f + "_";
     }
     for (int i = 0; i < (int)dirs.size(); i++) {
-        const std::string dir =
-            dirs[i] + "/" + fuzzifier + "C" + std::to_string(c);
+        const std::string dir = dirs[i] + "/" + fuzzifier + "C" + std::to_string(c);
         v.push_back(dir);
         mkdir(dir.c_str(), 0755);
         // predictionフォルダ作成
@@ -6067,8 +5211,7 @@ std::vector<std::string> Mkdir(std::vector<std::string> methods, int kesson) {
     c_p = c_p + "/../../RESULT/" + methods[0];
     mkdir(c_p.c_str(), 0755);
     for (int i = 0; i < (int)methods.size(); i++) {
-        std::string d = c_p + "/" + methods[i] + "_" + return_data_name() +
-                        std::to_string(kesson);
+        std::string d = c_p + "/" + methods[i] + "_" + return_data_name() + std::to_string(kesson);
         mkdir(d.c_str(), 0755);
         // ROCフォルダ作成
         const std::string roc = d + "/ROC";
@@ -6081,8 +5224,7 @@ std::vector<std::string> Mkdir(std::vector<std::string> methods, int kesson) {
     return v;
 }
 
-std::vector<std::string> MkdirMF(std::vector<std::string> methods,
-                                 std::vector<double> para, int kesson) {
+std::vector<std::string> MkdirMF(std::vector<std::string> methods, std::vector<double> para, int kesson) {
     if (return_user_number() > return_item_number()) {  // 実データ
         // if(return_user_number() < return_item_number()){ //人工
         para[0] = std::round(return_item_number() * para[0] / 100);
@@ -6094,8 +5236,7 @@ std::vector<std::string> MkdirMF(std::vector<std::string> methods,
     c_p = c_p + "/../../RESULT/" + methods[0];
     mkdir(c_p.c_str(), 0755);
     for (int i = 0; i < (int)methods.size(); i++) {
-        std::string d = c_p + "/" + methods[i] + "_" + return_data_name() +
-                        std::to_string(kesson);
+        std::string d = c_p + "/" + methods[i] + "_" + return_data_name() + std::to_string(kesson);
         mkdir(d.c_str(), 0755);
         std::string mf_para = "";
         for (int i = 0; i < (int)para.size(); i++) {
@@ -6121,8 +5262,7 @@ std::vector<std::string> MkdirMF(std::vector<std::string> methods,
     return v;
 }
 
-std::string MkdirMF_afterClustering(std::vector<std::string> dir,
-                                    std::vector<double> para) {
+std::string MkdirMF_afterClustering(std::vector<std::string> dir, std::vector<double> para) {
     std::string mf_para = "";
     for (int i = 0; i < (int)para.size(); i++) {
         std::ostringstream oss;

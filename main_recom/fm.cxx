@@ -80,7 +80,7 @@ int main(int argc, char *argv[]){
   for(int kesson = KESSON_BEGIN; kesson <= KESSON; kesson += KIZAMI){
   //MFのパラメータでループ
   for(double mf_k = din[0] ; mf_k <= din[1]; mf_k++){
-  for(double mf_beta = 0.0; mf_beta <= 0.13; mf_beta += 0.02){
+  for(double mf_beta = 0.0; mf_beta <= 0.13; mf_beta += 0.04){
     if(mf_beta==0.02) mf_beta = 0.01;
   //for(double mf_alpha = 0.001; mf_alpha >= 0.001; mf_alpha /= 10){
   for(double mf_alpha = 0.001; mf_alpha >= 0.001; mf_alpha /= 10){

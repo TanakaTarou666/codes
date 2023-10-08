@@ -4,6 +4,7 @@
 #include <numbers>
 #include<map>
 #include<filesystem>
+const double DIFF = 0.1;
 //欠損のさせ方を何通りにするか
  //#define MISSINGTRIALS 4
 //クラスタリングの初期値を何通りにするか

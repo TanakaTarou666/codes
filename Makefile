@@ -147,7 +147,7 @@ artificiality_nmf.out : $(objects) src/recom.cxx \
 main_recom/artificiality/nmf.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
 	-DARTIFICIALITY $(FS) -o $@
-artificiality_wnmf.out : $(objects) src/recom.cxx \
+.out/artificiality_wnmf.out : $(objects) src/recom.cxx \
 main_recom/artificiality/wnmf.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
 	-DARTIFICIALITY $(FS) -o $@

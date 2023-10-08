@@ -79,10 +79,11 @@ int main(int argc, char *argv[]){
   //欠損数ループ
   for(int kesson = KESSON_BEGIN; kesson <= KESSON; kesson += KIZAMI){
   //MFのパラメータでループ
-  for(int c=5;c<6;c++){
+  for(int c=2;c<9;c+=1){ 
+    if(c==3||c==6)c+=2;
   for(double mf_k = din[0] ; mf_k <= din[1]; mf_k++){
-    for(double Em=0.001;Em<=0.1;Em*= 10){
-	  for(double Lam=10;Lam<=1000;Lam*=10){
+    for(double Em=0.1;Em<=0.1;Em*= 10){
+	  for(double Lam=1000;Lam<=1000;Lam*=10){
     std::vector<double> para = {mf_k, (double)c, Lam,Em+1.0};
     std::vector<std::string> dirs = MkdirMF({METHOD_NAME}, para, kesson);
 

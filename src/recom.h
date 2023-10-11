@@ -1,18 +1,18 @@
 #include"sparseMatrix.h"
 #include"matrix.h"
 #include"vector3d.h"
-#include <numbers>
+//#include <numbers>
 #include<map>
 #include<filesystem>
 const double DIFF = 0.1;
 //欠損のさせ方を何通りにするか
  //#define MISSINGTRIALS 4
 //クラスタリングの初期値を何通りにするか
-#define CLUSTERINGTRIALS 5//4//1
+#define CLUSTERINGTRIALS 1//4//1
 //#define CLUSTERINGTRIALS 1
 //pearson, eicf, co-clustering
 #define METHOD_NUMBER 2
-#define MOVIE100K
+//#define MOVIE100K
 //BookCrossingは10240欠損させる
 //他は20480欠損させる
 //BEGINは最初の欠損数，ENDは最大の欠損数
@@ -38,8 +38,8 @@ const double DIFF = 0.1;
 #elif defined ARTIFICIALITY // uekara 7500 500 500
 //#define KESSON 5
 //#define KESSON_BEGIN 5
-#define KESSON 7000//500//2
-#define KESSON_BEGIN 7000//52
+#define KESSON 5000//500//2
+#define KESSON_BEGIN 5000//52
 #define KIZAMI 500
 #elif defined JESTER
 #define KESSON 100000
@@ -217,16 +217,20 @@ protected:
   int nmf_pred(std::string dir, double K,int steps = 2000);
   int wnmf_pred(std::string dir, double K,int steps = 2000);
   int nmf_pred_after_clustering(std::string dir, double K, int steps = 2000);
+  int wnmf_pred_after_clustering(std::string dir, double K, int steps = 2000);
   //予測値計算:QFCMF
   int qfcmf_pred(std::string dir, double K, int steps=2000, int C=2,double Lambda=100, double FuzzifierEm=1.01, double beta = 0.05, double alpha = 1.0E-2);
+  int qfcmf_a_pred(std::string dir, double K, int steps=2000, int C=2,double Lambda=100, double FuzzifierEm=1.01, double beta = 0.05, double alpha = 1.0E-2);
   //予測値計算:QFCNMF
   int qfcnmf_pred(std::string dir, double K, int steps = 2000, int C=2,double Lambda=100, double FuzzifierEm=1.01);
   int qfcwnmf_pred(std::string dir, double K, int steps = 2000, int C=2,double Lambda=100, double FuzzifierEm=1.01);
+  int qfcwnmf_a_pred(std::string dir, double K, int steps = 2000, int C=2,double Lambda=100, double FuzzifierEm=1.01);
   //予測値計算:MPBMF
   int mpbmf_pred(std::string dir, int K, int Scale, double D, double beta, double alpha = 1.0E-2, int steps = 2000);
   //予測値計算:FM
   int fm_pred(std::string dir, double K, double beta, double alpha = 1.0E-2, int steps = 2000);
   int fm_test_pred(std::string dir, double K, double beta, double alpha = 1.0E-2, int steps = 2000);
+  double fm_y_hat(SparseVector& x, double w0, Vector& w, Matrix& v);
   //予測値計算:Ubukata
   void Ubukata(int clusters_number);
   //予測値計算:Ubukata(球面データ用)

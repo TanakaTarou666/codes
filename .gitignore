@@ -2,5 +2,3 @@
 data/Source/NetflixPrize/archive.zip
 *.zip
 *.log
-*.o
-*.out

@@ -10,7 +10,7 @@ const std::string data_name=return_data_name();
 const std::string InputDataName="data/sparse_"+data_name
   +"_"+std::to_string(user_number)
   +"_"+std::to_string(item_number)+".txt";
-const std::string METHOD_NAME="QFCWNMF-test";
+const std::string METHOD_NAME="QFCWNMF";
 
 int main(int argc, char *argv[]){
 	auto start2=std::chrono::system_clock::now();
@@ -81,10 +81,10 @@ int main(int argc, char *argv[]){
   //λのループ
   //Mのループ
   //for(int c=2;c<6;c++){
-    for(int c=2;c<6;c++){
+    for(int c=4;c<5;c++){
   for(double mf_k = din[0] ; mf_k <= din[1]; mf_k++){
-    for(double Em=0.001;Em<=0.1;Em*= 10){
-	  for(double Lam=10;Lam<=1000;Lam*=10){
+    for(double Em=0.001;Em<=0.001;Em*= 1000){
+	  for(double Lam=1000;Lam<=1000;Lam*=10){
     //if(Lam==10000) Lam = DBL_MAX;
 
     std::vector<double> para = {mf_k, (double)c, Lam,Em+1.0};

@@ -10,7 +10,7 @@ const std::string data_name=return_data_name();
 const std::string InputDataName="data/sparse_"+data_name
   +"_"+std::to_string(user_number)
   +"_"+std::to_string(item_number)+".txt";
-const std::string METHOD_NAME="QFCMF";
+const std::string METHOD_NAME="TFCWNMF";
 
 int main(int argc, char *argv[]){
 	auto start2=std::chrono::system_clock::now();
@@ -72,44 +72,23 @@ int main(int argc, char *argv[]){
     std::cerr << "開始潜在次元%が終了潜在次元%を上回っています" << std::endl;
     exit(1);
   }
-
 	
   std::vector<int> firstKESSONSeed_main(0); //recomクラスのものをmain関数で保持する用
   //欠損数ループ
-  
+  for(int kesson = KESSON_BEGIN; kesson <= KESSON; kesson += KIZAMI){
   //MFのパラメータでループ
   //クラスタ数のループ
   //λのループ
   //Mのループ
-  
-  
-  /*
-  for(int c=2;c<5;c+=1){
-  
-  for(double Lam=10;Lam<=1000;Lam*=10){
-  for(double Em=0.001;Em<=1.001;Em+=0.3){
-  for(double mf_beta = 0.000; mf_beta < 0.1; mf_beta += 7.0){
-  for(double mf_alpha = 0.001; mf_alpha < 0.11; mf_alpha *=7 ){
-    for(double mf_k = din[0] ; mf_k <= din[1]; mf_k++){
-    for(int kesson = KESSON_BEGIN; kesson <= KESSON; kesson += KIZAMI){
-  */
-
-
-  for(int c=2;c<3;c+=1){
-  for(double Lam=10000;Lam<=10000;Lam*=10){
-  for(double Em=0.901;Em<=1.001;Em+=0.3){
-  for(double mf_beta = 0.0; mf_beta < 0.000001; mf_beta += 0.01){
-  for(double mf_alpha = 0.049; mf_alpha < 0.05; mf_alpha *=7 ){
-    for(double mf_k = din[0] ; mf_k <= din[1]; mf_k++){
-    for(int kesson = KESSON_BEGIN; kesson <= KESSON; kesson += KIZAMI){
-    
+  //for(int c=2;c<6;c++){
+    for(int c=4;c<5;c++){
+  for(double mf_k = din[0] ; mf_k <= din[1]; mf_k++){
+    for(double Em=0.001;Em<=0.1;Em*= 1000){
+	  for(double Lam=1000;Lam<=1000;Lam*=10){
     //if(Lam==10000) Lam = DBL_MAX;
 
-
-    std::vector<double> para = {mf_k, (double)c, Lam, Em+1.0, mf_beta, mf_alpha};
+    std::vector<double> para = {mf_k, (double)c, Lam,Em+1.0};
     std::vector<std::string> dirs = MkdirMF({METHOD_NAME}, para, kesson);
-
-    //std::cout <<dirs << std::endl;
 
   //Recomクラスの生成
   Recom recom(user_number, item_number, 0, 0, kesson, cin[0], cin[1]);
@@ -144,8 +123,8 @@ int main(int argc, char *argv[]){
     recom.reset2();
     //動作確認用
     //std::cout << "Initial Similarities:\n" << recom.similarity() << std::endl;
-    //QFCNMF: 潜在次元, 更新回数上限(指定無いと2000),クラスタ数, ファジィ化パラメータ, ファジィ化パラメータ
-    if(recom.qfcmf_pred(dirs[0], mf_k, 4000,c,Lam,Em+1.0, mf_beta, mf_alpha) == 1){
+    //QFCWNMF: 潜在次元, 更新回数上限(指定無いと2000),クラスタ数, ファジィ化パラメータ, ファジィ化パラメータ
+    if(recom.tfcwnmf_pred(dirs[0], mf_k, 2000,c,Lam,Em+1.0) == 1){
       mf_nan = true;
       recom.SeedSet2();
       break;
@@ -184,12 +163,10 @@ int main(int argc, char *argv[]){
   std::cout << "K = " << mf_k <<  " is done." << std::endl;
   // if(!mf_nan)
   //   break; //最大のalphaのみで実験するためのbreak
-  }//alpha
-  }//beta
-  }//Em
-  }//Lam
+  }
+  }
+  }
   }//mf_k
-  }//c
   }//kesson
 
 	auto end2=std::chrono::system_clock::now();

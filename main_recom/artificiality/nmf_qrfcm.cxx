@@ -88,7 +88,11 @@ int main(int argc, char *argv[]){
   std::vector<std::string> dirs = MkdirFCS(METHOD_NAME, kesson);
   
   //クラスタ数でループ
-  for(int clusters_number=4;clusters_number<=4;clusters_number+=10){
+  for(int clusters_number=2;clusters_number<=4;clusters_number+=1){
+	if(clusters_number==4){
+		clusters_number=5;
+	}
+
     //Recomクラスの生成
     Recom recom(user_number, item_number,
 	clusters_number, clusters_number, kesson, cin[0], cin[1]);

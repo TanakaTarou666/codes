@@ -1,0 +1,3 @@
+VScodeを使っているとき↓
+
+https://blog.kapiecii.com/posts/2023/05/14/resolving-unc-host-wsl-localhost-access-denied-error/

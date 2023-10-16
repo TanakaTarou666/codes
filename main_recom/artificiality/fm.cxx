@@ -81,10 +81,10 @@ int main(int argc, char *argv[]){
   //MFのパラメータでループ
   for(double mf_k = din[0] ; mf_k <= din[1]; mf_k++){
 
-  for(double mf_beta = 0.0; mf_beta <0.20; mf_beta += 0.02){
-    if(mf_beta==0.02) mf_beta = 0.01;
+  for(double mf_beta = 0.0000001; mf_beta <0.0001; mf_beta *= 10){
+    //if(mf_beta==0.02) mf_beta = 0.01;
   //for(double mf_alpha = 0.001; mf_alpha >= 0.001; mf_alpha /= 10){
-  for(double mf_alpha = 0.001; mf_alpha < 0.026; mf_alpha *= 5){
+  for(double mf_alpha = 0.001; mf_alpha < 0.006; mf_alpha *= 5){
     std::vector<double> para = {mf_k, mf_beta, mf_alpha};
     std::vector<std::string> dirs = MkdirMF({METHOD_NAME}, para, kesson);
 

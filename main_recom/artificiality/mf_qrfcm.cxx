@@ -88,7 +88,10 @@ int main(int argc, char *argv[]){
   std::vector<std::string> dirs = MkdirFCS(METHOD_NAME, kesson);
   
   //クラスタ数でループ
-  for(int clusters_number=4;clusters_number<=4;clusters_number+=10){
+	for(int clusters_number=2;clusters_number<=4;clusters_number+=1){
+	if(clusters_number==4){
+		clusters_number=5;
+	}
     //Recomクラスの生成
     Recom recom(user_number, item_number,
 		clusters_number, clusters_number, kesson, cin[0], cin[1]);
@@ -96,7 +99,7 @@ int main(int argc, char *argv[]){
 	recom.FIRST_KESSON_SEED() = firstKESSONSeed_main;
 	//recom.setMAE_h();
 	//recom.setAUC_h();
-    for(double m=0.2;m<=0.9;m+= 0.1){
+    for(double m=0.001;m<=0.1;m*= 10){
 	  for(double lambda=10;lambda<=1000;lambda*=1000){
 
 	  //時間計測

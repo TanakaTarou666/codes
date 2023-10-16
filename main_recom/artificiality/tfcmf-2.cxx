@@ -10,7 +10,7 @@ const std::string data_name=return_data_name();
 const std::string InputDataName="data/sparse_"+data_name
   +"_"+std::to_string(user_number)
   +"_"+std::to_string(item_number)+".txt";
-const std::string METHOD_NAME="QFCMF";
+const std::string METHOD_NAME="TFCMF-new";
 
 int main(int argc, char *argv[]){
 	auto start2=std::chrono::system_clock::now();
@@ -95,14 +95,14 @@ int main(int argc, char *argv[]){
   */
 
 
-  for(int c=2;c<3;c+=1){
-  for(double Lam=10000;Lam<=10000;Lam*=10){
-  for(double Em=0.901;Em<=1.001;Em+=0.3){
-  for(double mf_beta = 0.0; mf_beta < 0.000001; mf_beta += 0.01){
-  for(double mf_alpha = 0.049; mf_alpha < 0.05; mf_alpha *=7 ){
+  for(double mf_alpha = 0.001; mf_alpha < 0.003; mf_alpha *=5 ){
+  for(double mf_beta = 0.15; mf_beta < 0.20; mf_beta += 0.02){
+  for(double Lam=10;Lam<=1000;Lam*=10){
+  for(double Em=0.001;Em<=0.1;Em*=10){
+  for(int c=2;c<6;c+=1){ 
     for(double mf_k = din[0] ; mf_k <= din[1]; mf_k++){
     for(int kesson = KESSON_BEGIN; kesson <= KESSON; kesson += KIZAMI){
-    
+
     //if(Lam==10000) Lam = DBL_MAX;
 
 
@@ -144,8 +144,8 @@ int main(int argc, char *argv[]){
     recom.reset2();
     //動作確認用
     //std::cout << "Initial Similarities:\n" << recom.similarity() << std::endl;
-    //QFCNMF: 潜在次元, 更新回数上限(指定無いと2000),クラスタ数, ファジィ化パラメータ, ファジィ化パラメータ
-    if(recom.qfcmf_pred(dirs[0], mf_k, 4000,c,Lam,Em+1.0, mf_beta, mf_alpha) == 1){
+    //TFCNMF: 潜在次元, 更新回数上限(指定無いと2000),クラスタ数, ファジィ化パラメータ, ファジィ化パラメータ
+    if(recom.tfcmf_pred(dirs[0], mf_k, 4000,c,Lam,Em+1.0, mf_beta, mf_alpha) == 1){
       mf_nan = true;
       recom.SeedSet2();
       break;

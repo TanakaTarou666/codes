@@ -2049,7 +2049,9 @@ int Recom::mf_pred(std::string dir, double K_percent, double beta, double alpha,
     std::cerr << "MF: \"step\" should be 50 or more.";
     return 1;
   }
+  #if defined ARTIFICIALITY
   K = K_percent;
+  #endif
   /*
       std::cout <<"K:"<<K<<std::endl;
   std::cout << "MF: 0.essencialSize :" << SparseIncompleteData[0].essencialSize() << std::endl;
@@ -2498,8 +2500,9 @@ int Recom::tfcmf_pred(std::string dir, double K_percent, int steps, int C,double
     std::cerr << "MF: \"step\" should be 50 or more.";
     return 1;
   }
-
+  #if defined ARTIFICIALITY
   K = K_percent;
+  #endif
 
 
   Matrix Membership(C,return_user_number(),1.0/(double)C);
@@ -2600,9 +2603,9 @@ int Recom::tfcmf_pred(std::string dir, double K_percent, int steps, int C,double
                                                     }
                   }//k
                 }//not data
-              //std::cout << "QFCMF: j end" << j << std::endl;
+              //std::cout << "TFCMF: j end" << j << std::endl;
             }//j
-            //std::cout << "QFCMF: i end" << i << std::endl;
+            //std::cout << "TFCMF: i end" << i << std::endl;
         }//i
 
         //    P_L2Norm = 0.0, Q_L2Norm = 0.0;
@@ -2720,7 +2723,9 @@ int Recom::qfcmf_pred(std::string dir, double K_percent, int steps, int C,double
   if(K == 0){
       K = 1;
   }
+  #if defined ARTIFICIALITY
   K = K_percent;  // 人工用
+  #endif
 
   if(steps < 50){
     std::cerr << "MF: \"step\" should be 50 or more.";
@@ -2741,7 +2746,7 @@ int Recom::qfcmf_pred(std::string dir, double K_percent, int steps, int C,double
   Matrix Dissimilarities(C,return_user_number(),0);
   Matrix prev_Membership(C,return_user_number(),1/(double)C);
   Vector3d P(C,return_user_number(), K), Q(C,return_item_number(), K);
-  Vector clusters_size(C,1.0,"all");
+  Vector clusters_size(C,1.0/C,"all");
   Vector prev_clusters_size(C,0.0,"all");
 
   double best_error = DBL_MAX;
@@ -2750,7 +2755,7 @@ int Recom::qfcmf_pred(std::string dir, double K_percent, int steps, int C,double
   int mf_seed = 0;
   // trialLimit = 1; //debug
   for(int rand_mf_trial = 0; rand_mf_trial < trialLimit; rand_mf_trial++){
-    std::cout << "QFCMF_a: initial setting " << rand_mf_trial << std::endl;
+    std::cout << "QFCMF: initial setting " << rand_mf_trial << std::endl;
     //P, Qの初期値を乱数で決定
     //疑問:k次元の初期値の設定の仕方は同じでいいのか。
     std::mt19937_64 mt;
@@ -2810,8 +2815,8 @@ int Recom::qfcmf_pred(std::string dir, double K_percent, int steps, int C,double
     bool ParameterNaN = false;
 
     //初期値確認
-    /*
     
+    /*
     std::cout << "alpha:\n" << alpha << std::endl;
     std::cout << "FuzzifierEm:\n" << FuzzifierEm << std::endl;
     std::cout << "beta:\n" << beta << std::endl; 
@@ -2852,6 +2857,9 @@ int Recom::qfcmf_pred(std::string dir, double K_percent, int steps, int C,double
             //std::cout << "QFCMF: i end" << i << std::endl;
         }//i
 
+        //std::cout << "p_c:\n" << P[c] << std::endl;
+        //std::cout << "q_c:\n" << Q[c] << std::endl;
+
            P_L2Norm = 0.0, Q_L2Norm = 0.0;
           for(int i = 0; i < return_user_number(); i++){
             P_L2Norm +=P[c][i] * P[c][i];
@@ -2873,7 +2881,11 @@ int Recom::qfcmf_pred(std::string dir, double K_percent, int steps, int C,double
             }
           }
       }//C
-
+      /*
+      std::cout << "p:\n" << P << std::endl;
+      std::cout << "q:\n" << Q << std::endl;
+      std::cout << "d:\n" << Dissimilarities << std::endl;
+      */
       //ここからuの更新
       /*
       prev_Membership=Membership;
@@ -2899,12 +2911,11 @@ int Recom::qfcmf_pred(std::string dir, double K_percent, int steps, int C,double
         if(Dissimilarities[i][k]!=0.0){
 	        double denominator=0.0;
           for(int j=0;j<C;j++){
-            if(clusters_size[j] != 0 && clusters_size[i] != 0){
+            if(clusters_size[j] != 0 && clusters_size[i] != 0 ){
               denominator += (clusters_size[j] / clusters_size[i])*pow((1.0-Lambda*(1-FuzzifierEm)*Dissimilarities[j][k])/(1.0-Lambda*(1-FuzzifierEm)*Dissimilarities[i][k]), 1.0/(1.0-FuzzifierEm));
               //std::cout << "c:" << pow((1.0-Lambda*(1-FuzzifierEm)*Dissimilarities[j][k])/(1.0-Lambda*(1-FuzzifierEm)*Dissimilarities[i][k]), 1.0/(1.0-FuzzifierEm)) << std::endl;
             }
           }
-          
 	        Membership[i][k]=1.0/denominator;
         }
       }
@@ -2913,35 +2924,21 @@ int Recom::qfcmf_pred(std::string dir, double K_percent, int steps, int C,double
 
       //ここからaの更新
     prev_clusters_size=clusters_size;
-    /*
-    for(int k=0;k<return_user_number();k++){
-        for(int i=0;i<C;i++){
-          if((Dissimilarities[i][k]!=0.0) && (Membership[i][k]!=0.0)){
-            double denominator=0.0;
-            for(int j=0;j<C;j++){
-              denominator+= pow(pow(Membership[j][k],FuzzifierEm)*(1-Lambda*(1-FuzzifierEm)*Dissimilarities[j][k])
-                                /pow(Membership[i][k],FuzzifierEm)*(1-Lambda*(1-FuzzifierEm)*Dissimilarities[i][k]), 1.0/(FuzzifierEm));
-            }
-          clusters_size[i]=1.0/denominator;
-          }
-        }
-    }//k  
-    */
     Vector num(C, 0.0, "all");
     for(int i=0;i<C;i++){
-    for(int k=0;k<return_user_number();k++){
-      num[i]+=pow(Membership[i][k], FuzzifierEm)*(1.0-Lambda*(1.0-FuzzifierEm)*Dissimilarities[i][k]);
+      for(int k=0;k<return_user_number();k++){
+        num[i]+=pow(Membership[i][k], FuzzifierEm)*(1.0-Lambda*(1.0-FuzzifierEm)*Dissimilarities[i][k]);
+      }
     }
-  }
-  for(int i=0;i<C;i++){
+    for(int i=0;i<C;i++){
     double denominator=0.0;
-    if(num[i]!=0.0){
-    for(int j=0;j<C;j++){
-      denominator+=pow(num[j]/num[i], 1.0/FuzzifierEm);
-    }
-    }
+      if(num[i]!=0.0){
+        for(int j=0;j<C;j++){
+          denominator+=pow(num[j]/num[i], 1.0/FuzzifierEm);
+        }
+      }
     clusters_size[i]=1.0/denominator;
-  } 
+    } 
     
     std::cout << "a:\n" << clusters_size << std::endl;
 
@@ -3006,7 +3003,6 @@ int Recom::qfcmf_pred(std::string dir, double K_percent, int steps, int C,double
         for(int i=0;i<C;i++){
           for(int u=0;u<return_user_number();u++){
             for(int j=0;j<return_item_number();j++){
-              //Pre[u][j] += pow(clusters_size[i],FuzzifierEm)*Membership[i][u]*P[i][u][p] * Q[i][j][p];
               Pre[u][j] += Membership[i][u]*P[i][u][p] * Q[i][j][p];
             }
           }
@@ -3054,10 +3050,9 @@ int Recom::qfcmf_pred(std::string dir, double K_percent, int steps, int C,double
         for(int p=0;p<K;p++){
         for(int i=0;i<C;i++){
         Prediction[index] += Membership[i][KessonIndex[index][0]]*P[i][KessonIndex[index][0]][p] * Q[i][KessonIndex[index][1]][p];
-        //Prediction[index] += pow(clusters_size[i],FuzzifierEm)*Membership[i][KessonIndex[index][0]]*P[i][KessonIndex[index][0]][p] * Q[i][KessonIndex[index][1]][p];
+       }
         }
-        }
-        //std::cout <<"Prediction:"<<Prediction[index]<< " SparseCorrectData:" << SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1]) <<std::endl;
+        std::cout <<"Prediction:"<<Prediction[index]<< " SparseCorrectData:" << SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1]) <<std::endl;
       }
       }
   }
@@ -3076,8 +3071,9 @@ int Recom::nmf_pred(std::string dir, double K_percent, int steps)
     std::cerr << "MF: \"step\" should be 50 or more.";
     return 1;
   }
-
+  #if defined ARTIFICIALITY
   K = K_percent;  // 人工用
+  #endif
 
   Matrix IncompleteData(return_user_number(),return_item_number(),0.0);
 
@@ -3221,164 +3217,156 @@ int Recom::nmf_pred(std::string dir, double K_percent, int steps)
   return 0;
 }
 
-int Recom::wnmf_pred(std::string dir, double K_percent, int steps) 
-{//K以外は初期値有なので指定無しでも可 betaは熱田先輩のやつでいうγ　alphaは学習率　kは潜在次元数？ 　dirも謎
- int K;
-  if(return_user_number() > return_item_number()){
-    K = std::round(return_item_number() * K_percent / 100);
-  } else {
-    K = std::round(return_user_number() * K_percent / 100);
-  }
-  if(steps < 50){
-    std::cerr << "WNMF: \"step\" should be 50 or more.";
-    return 1;
-  }
-
-  K = K_percent;  // 人工用
-
-  Matrix IncompleteData(return_user_number(),return_item_number(),0.0);
-  //Matrix test_x(return_user_number(),return_item_number(),1.0);
-  //std::cout<< Hadamard(SparseIncompleteData,test_x) <<std::endl;
-  
-  //std::cout<< SparseIncompleteData <<std::endl;
-
-  Matrix Sij(return_user_number(), return_item_number(), 1.0);
-
-  //欠損場所をSijに与える
-  for(int i=0;i<SparseIncompleteData.rows();i++){
-    for(int j=0;j<return_item_number();j++){
-      if(SparseIncompleteData[i].elementIndex(j) == 0)
-        Sij[i][j] = 0.0;
+int Recom::wnmf_pred(std::string dir, double K_percent, int steps) {
+    // K以外は初期値有なので指定無しでも可 betaは熱田先輩のやつでいうγ
+    // alphaは学習率 kは潜在次元割合(％)
+    int K;
+    if (return_user_number() > return_item_number()) {
+        K = std::round(return_item_number() * K_percent / 100);
+    } else {
+        K = std::round(return_user_number() * K_percent / 100);
     }
-    
-  }
-  //std::cout<< Sij <<std::endl;
-
-
-  Matrix P(return_user_number(), K), Q(return_item_number(), K);
-  double best_error = DBL_MAX;
-  int NaNcount = 0;
-  int trialLimit = CLUSTERINGTRIALS;
-  int mf_seed = 0;
-  // trialLimit = 1; //debug
-  for(int rand_mf_trial  = 0; rand_mf_trial < trialLimit; rand_mf_trial++){
-    std::cout << "WNMF: initial setting " << rand_mf_trial << std::endl;
-    //P, Qの初期値を乱数で決定
-    std::mt19937_64 mt;
-    for(int k_i = 0; k_i < K; k_i++){
-      for(int i = 0; i < P.rows(); i++){
-        mt.seed(mf_seed);
-        std::uniform_real_distribution<>
-            rand_p(0.001, 1.0);
-        //ランダムに値生成
-        P[i][k_i] = rand_p(mt);
-        mf_seed++;
-      }
-      for(int j = 0; j < Q.rows(); j++){
-        mt.seed(mf_seed);
-        std::uniform_real_distribution<>
-            rand_q(0.001, 1.0);
-        //ランダムに値生成
-        Q[j][k_i] = rand_q(mt);
-        mf_seed++;
-      }
-      //std::cout << "P:\n" << P << "\nQ:\n" << Q << std::endl;
-    }
-
-    double error = 0.0;
-      Matrix prev_P(P.rows(), P.cols(), 0.0);
-      Matrix prev_Q(Q.rows(), Q.cols(), 0.0);
-      bool ParameterNaN = false;
-    for(int step = 0; step < steps; step++){
-    //ここから変更 データの変数名がわからん。仮置きとしてDataとしてる
-    //transposeがmatrix.cxxにない可能性あり。
-    
-    //更新式W
-    Matrix P_numerator;
-    Matrix P_denominator;
-      P_numerator=Hadamard(SparseIncompleteData,Sij)*Q;
-      P_denominator=M_Hadamard(P*transpose(Q),Sij)*Q;
-      //std::cout<< "P_n:\n" << P_numerator <<std::endl;
-      //std::cout<< "P_S:\n" << M_Hadamard(P*transpose(Q),Sij) <<std::endl;
-      //std::cout<< "P_d:\n" << P_denominator <<std::endl;
-      for(int row=0;row<P.rows();row++){
-        for(int col=0;col<P.cols();col++){
-          if(P[row][col]>0.000000001){
-          P[row][col]*=(P_numerator[row][col]/P_denominator[row][col]);
-
-          }
-      }
-    }
-  //std::cout<< "P:\n" << P <<std::endl;
-
-    //更新式H
-    Matrix Q_numerator;
-    Matrix Q_denominator;
-    Q_numerator=transpose(P)*Hadamard(SparseIncompleteData,Sij);
-    Q_denominator=transpose(P)*M_Hadamard(P*transpose(Q),Sij);
-
-    for(int row=0;row<Q.rows();row++){
-      for(int col=0;col<Q.cols();col++){
-        if(Q_denominator[col][row]>0.000000001) {
-          Q[row][col]*=(Q_numerator[col][row]/Q_denominator[col][row]);
-          }
-        }
-    }
-    //std::cout<< Q <<std::endl;
-    
-    
-    if(ParameterNaN)
-        break;
-      //目的関数値計算
-      
-    error = 0;
-      for(int i = 0; i < P.rows(); i++){
-        for(int j = 0; j < SparseIncompleteData[i].essencialSize(); j++){
-          if(SparseIncompleteData[i].elementIndex(j) != 0){
-          error += Sij[i][j]*pow(SparseIncompleteData[i].elementIndex(j)
-                    - (P[i] * Q[SparseIncompleteData[i].indexIndex(j)])
-                    , 2);
-          }
-        }
-      }
-      //std::cout<< error <<std::endl;
-
-      //error += (beta/2.0) * (P_L2Norm + Q_L2Norm);
-
-      double diff = frobenius_norm(prev_P - P) + frobenius_norm(prev_Q - Q);
-
-      // if(false){ //diff出力用
-        if(diff < 0.011 && step >= 50){
-        break;
-      }
-
-      prev_P = P;
-      prev_Q = Q;
-      if(step == steps - 1){
-          std::cout<< "step = " << step << ", error = " << error 
-                    << ", K: " << K_percent  << std::endl;
-        ParameterNaN = true;
-      }
-    }//stepのループ
-    
-     
-    if(ParameterNaN){
-      NaNcount++;
-      //初期値全部{NaN出た or step上限回更新して収束しなかった} => 1を返して終了
-      if(NaNcount == trialLimit){
+    if (steps < 50) {
+        std::cerr << "WNMF: \"step\" should be 50 or more.";
         return 1;
-      }
-    } else if(error < best_error){
-      best_error = error;
-      //計算済みのP, Qから評価値予測を実行
-      for(int index = 0; index < Missing; index++){
-        //欠損箇所だけ計算
-        Prediction[index] = P[KessonIndex[index][0]] * Q[KessonIndex[index][1]];
-       //std::cout <<"Prediction:"<<Prediction[index]<< " SparseCorrectData:" << SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1]) <<std::endl;
-      }
     }
-  }
-  return 0;
+  #if defined ARTIFICIALITY
+    K = K_percent;  // 人工用
+    #endif
+    Matrix Sij(return_user_number(), return_item_number(), 0.0);
+
+    // 欠損場所をSijに与える
+    for (int i = 0; i < SparseIncompleteData.rows(); i++) {
+        for (int j = 0; j < SparseIncompleteData[i].essencialSize(); j++) {
+            if (SparseIncompleteData[i].elementIndex(j) != 0) Sij[i][SparseIncompleteData[i].indexIndex(j)] = 1.0;
+        }
+    }
+
+    Matrix P(return_user_number(), K), Q(return_item_number(), K);
+    double best_error = DBL_MAX;
+    int NaNcount = 0;
+    int trialLimit = CLUSTERINGTRIALS;
+    int mf_seed = 0;
+
+    // trialLimit = 1; //debug
+    for (int rand_mf_trial = 0; rand_mf_trial < trialLimit; rand_mf_trial++) {
+        std::cout << "WNMF: initial setting " << rand_mf_trial << std::endl;
+        // P, Qの初期値を乱数で決定
+        std::mt19937_64 mt;
+        for (int k_i = 0; k_i < K; k_i++) {
+            for (int i = 0; i < P.rows(); i++) {
+                mt.seed(mf_seed);
+                std::uniform_real_distribution<> rand_p(0.001, 1.0);
+                // ランダムに値生成
+                P[i][k_i] = rand_p(mt);
+                mf_seed++;
+            }
+            for (int j = 0; j < Q.rows(); j++) {
+                mt.seed(mf_seed);
+                std::uniform_real_distribution<> rand_q(0.001, 1.0);
+                // ランダムに値生成
+                Q[j][k_i] = rand_q(mt);
+                mf_seed++;
+            }
+        }
+
+        double error = 0.0;
+        Matrix prev_P(P.rows(), P.cols(), 0.0);
+        Matrix prev_Q(Q.rows(), Q.cols(), 0.0);
+        bool ParameterNaN = false;
+
+        SparseMatrix SMData = S_Hadamard(SparseIncompleteData, Sij);
+        SparseMatrix transpose_SMData = S_Hadamard(transpose(SparseIncompleteData), transpose(Sij));
+
+        SparseMatrix S_PQ = S_Hadamard(Sij, Sij);
+        SparseMatrix transpose_S_PQ = S_Hadamard(transpose(Sij), transpose(Sij));
+
+        for (int step = 0; step < steps; step++) {
+            prev_P = P;
+            prev_Q = Q;
+            // 更新式W
+            Matrix P_numerator;
+            Matrix P_denominator;
+            for (int i = 0; i < S_PQ.rows(); i++) {
+                for (int j = 0; j < S_PQ.Element[i].essencialSize(); j++) {
+                    S_PQ.Element[i].Element[j] = P[i] * Q[S_PQ.Element[i].Index[j]];
+                }
+            }
+            P_numerator = SMData * Q;
+            P_denominator = S_PQ * Q;
+            for (int row = 0; row < P.rows(); row++) {
+                for (int col = 0; col < P.cols(); col++) {
+                    if (P_denominator.Element[row].Element[col] == 0.0) P_denominator.Element[row].Element[col] = 1.0e-07;
+                    P.Element[row].Element[col] *= (P_numerator.Element[row].Element[col] / P_denominator.Element[row].Element[col]);
+                }
+            }
+            // 更新式H
+            Matrix Q_numerator;
+            Matrix Q_denominator;
+            for (int i = 0; i < transpose_S_PQ.rows(); i++) {
+                for (int j = 0; j < transpose_S_PQ.Element[i].essencialSize(); j++) {
+                    transpose_S_PQ.Element[i].Element[j] = P[transpose_S_PQ.Element[i].Index[j]] * Q[i];
+                }
+            }
+            Q_numerator = transpose_SMData * P;
+            Q_denominator = transpose_S_PQ * P;
+            for (int row = 0; row < Q.rows(); row++) {
+                for (int col = 0; col < Q.cols(); col++) {
+                    if (Q_denominator.Element[row].Element[col] == 0.0) Q_denominator.Element[row].Element[col] = 1.0e-07;
+                    Q.Element[row].Element[col] *= (Q_numerator.Element[row].Element[col] / Q_denominator.Element[row].Element[col]);
+                }
+            }
+
+            double err_num = 0;
+            error = 0;
+            for (int i = 0; i < P.rows(); i++) {
+                for (int j = 0; j < SparseIncompleteData[i].essencialSize(); j++) {
+                    if (SparseIncompleteData[i].elementIndex(j) != 0) {
+                        err_num++;
+                        error += pow(SparseIncompleteData[i].elementIndex(j) - (P[i] * Q[SparseIncompleteData[i].indexIndex(j)]), 2);
+                    }
+                }
+            }
+
+            double diff = frobenius_norm(prev_P - P) + frobenius_norm(prev_Q - Q);
+            std::cout << "step:" << step << " diff:" << diff << " error:" << error << " error_ave:" << error / err_num << std::endl;
+
+            if (diff < DIFF && step >= 50) {
+                break;
+            }
+
+            if (step == steps - 1) {
+                std::cout << "step = " << step << ", error = " << error << ", K: " << K_percent << std::endl;
+                ParameterNaN = true;
+            }
+        }  // stepのループ
+
+        error = 0;
+        for (int i = 0; i < P.rows(); i++) {
+            for (int j = 0; j < SparseIncompleteData[i].essencialSize(); j++) {
+                if (SparseIncompleteData[i].elementIndex(j) != 0) {
+                    error += pow(SparseIncompleteData[i].elementIndex(j) - (P[i] * Q[SparseIncompleteData[i].indexIndex(j)]), 2);
+                }
+            }
+        }
+
+        if (ParameterNaN) {
+            NaNcount++;
+            // 初期値全部{NaN出た or step上限回更新して収束しなかった} =>
+            // 1を返して終了
+            if (NaNcount == trialLimit) {
+                return 1;
+            }
+        } else if (error < best_error) {
+            best_error = error;
+            // 計算済みのP, Qから評価値予測を実行
+            for (int index = 0; index < Missing; index++) {
+                // 欠損箇所だけ計算
+                Prediction[index] = P[KessonIndex[index][0]] * Q[KessonIndex[index][1]];
+            }
+        }
+    }
+    return 0;
 }
 
 int Recom::nmf_pred_after_clustering(std::string dir, double K_percent, int steps) //K以外は初期値有なので指定無しでも可
@@ -3431,8 +3419,6 @@ int Recom::nmf_pred_after_clustering(std::string dir, double K_percent, int step
       return 1;
     }
     std::cout <<"QRFCM+NMF || K:"<<K<<std::endl;
-
-    K = K_percent;
 
   //ユーザーの平均値計算
   double user_average ;
@@ -3626,7 +3612,9 @@ int Recom::qfcnmf_pred(std::string dir, double K_percent, int steps, int C,doubl
     return 1;
   }
 
+ #if defined ARTIFICIALITY
     K = K_percent;  // 人工用
+    #endif
 
   Matrix IncompleteData(return_user_number(),return_item_number(),0.0);
 
@@ -3937,7 +3925,7 @@ int Recom::qfcnmf_pred(std::string dir, double K_percent, int steps, int C,doubl
     } else if(error < best_error){
       best_error = error;
       //計算済みのP, Qから評価値予測を実行
-      /*
+      
       for(int index = 0; index < Missing; index++){
         Prediction[index]=0.0;
         //欠損箇所だけ計算
@@ -3946,9 +3934,9 @@ int Recom::qfcnmf_pred(std::string dir, double K_percent, int steps, int C,doubl
         Prediction[index] += Membership[i][KessonIndex[index][0]]*W[i][KessonIndex[index][0]][p] * H[i][p][KessonIndex[index][1]];
         }
         }
-        std::cout <<"Prediction:"<<Prediction[index]<< " SparseCorrectData:" << SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1]) <<std::endl;
+        //std::cout <<"Prediction:"<<Prediction[index]<< " SparseCorrectData:" << SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1]) <<std::endl;
       }
-      */
+      
     }
     
   }
@@ -3971,6 +3959,9 @@ int Recom::qfcwnmf_pred(std::string dir, double K_percent, int steps, int C,doub
         std::cerr << "QFCWNMF: \"step\" should be 50 or more.";
         return 1;
     }
+    #if defined ARTIFICIALITY
+    K = K_percent;
+    #endif
 
     Matrix Sij(return_user_number(), return_item_number(), 0.0);
     // 欠損場所をSijに与える
@@ -4179,7 +4170,7 @@ int Recom::qfcwnmf_pred(std::string dir, double K_percent, int steps, int C,doub
             if (!isfinite(diff)) {
                 break;
             }
-            if (diff < DIFF && step >= 50) {
+            if (diff < 0.011 && step >= 50) {
                 break;
             }
         }
@@ -4242,8 +4233,9 @@ int Recom::tfcnmf_pred(std::string dir, double K_percent, int steps, int C,doubl
     std::cerr << "QFCNMF: \"step\" should be 50 or more.";
     return 1;
   }
-
+  #if defined ARTIFICIALITY
     K = K_percent;  // 人工用
+    #endif
 
   Matrix IncompleteData(return_user_number(),return_item_number(),0.0);
 
@@ -4453,16 +4445,7 @@ int Recom::tfcnmf_pred(std::string dir, double K_percent, int steps, int C,doubl
       break;
     }
 
-        for(int index = 0; index < Missing; index++){
-          Prediction[index]=0.0;
-        for(int p=0;p<K;p++){
-        for(int i=0;i<C;i++){
-        Prediction[index] += Membership[i][KessonIndex[index][0]]*W[i][KessonIndex[index][0]][p] * H[i][p][KessonIndex[index][1]];
-        }
-        }
-        std::cout <<"Prediction:"<<Prediction[index]<< " SparseCorrectData:" << SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1]) <<std::endl;
-      }
-
+        
     /*
     std::cout << "#diff:" << diff << "\t";
     std::cout << "#diff_u:" << diff_u << "\t";
@@ -4515,10 +4498,8 @@ int Recom::tfcnmf_pred(std::string dir, double K_percent, int steps, int C,doubl
     } else if(error < best_error){
       best_error = error;
       //計算済みのP, Qから評価値予測を実行
-      /*
       for(int index = 0; index < Missing; index++){
-        Prediction[index]=0.0;
-        //欠損箇所だけ計算
+          Prediction[index]=0.0;
         for(int p=0;p<K;p++){
         for(int i=0;i<C;i++){
         Prediction[index] += Membership[i][KessonIndex[index][0]]*W[i][KessonIndex[index][0]][p] * H[i][p][KessonIndex[index][1]];
@@ -4526,7 +4507,7 @@ int Recom::tfcnmf_pred(std::string dir, double K_percent, int steps, int C,doubl
         }
         std::cout <<"Prediction:"<<Prediction[index]<< " SparseCorrectData:" << SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1]) <<std::endl;
       }
-      */
+
     }
     
   }
@@ -4549,6 +4530,9 @@ int Recom::tfcwnmf_pred(std::string dir, double K_percent, int steps, int C, dou
         std::cerr << "QFCWNMF: \"step\" should be 50 or more.";
         return 1;
     }
+    #if defined ARTIFICIALITY
+    K = K_percent;
+    #endif
 
     Matrix Sij(return_user_number(), return_item_number(), 0.0);
     // 欠損場所をSijに与える
@@ -4729,7 +4713,7 @@ int Recom::tfcwnmf_pred(std::string dir, double K_percent, int steps, int C, dou
             if (!isfinite(diff)) {
                 break;
             }
-            if (diff < DIFF && step >= 50) {
+            if (diff < 0.011 && step >= 50) {
                 break;
             }
         }
@@ -5161,7 +5145,9 @@ int Recom::fm_pred(std::string dir, double K_percent, double beta, double alpha,
   } else {
     K = std::round(return_user_number() * K_percent / 10);
   }
+  #if defined ARTIFICIALITY
   K = K_percent;
+  #endif
   if(steps < 50){
     std::cerr << "MF: \"step\" should be 50 or more.";
     return 1;
@@ -5467,7 +5453,9 @@ int Recom::fm_als_pred(std::string dir, double K_percent, double beta, double al
   } else {
     K = std::round(return_user_number() * K_percent / 10);
   }
+  #if defined ARTIFICIALITY
   K = K_percent;
+  #endif
   if(steps < 50){
     std::cerr << "MF: \"step\" should be 50 or more.";
     return 1;
@@ -6307,7 +6295,7 @@ int return_item_number()
 #elif defined ARTIFICIALITY //人工設定
   return 100;//5;//100
 #elif defined TEST // 動作確認用テストデータ
-  return 4;
+  return 5;
 #elif defined SAMPLE
   return 4;
 #else

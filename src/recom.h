@@ -4,7 +4,7 @@
 #include <numbers>
 #include<map>
 #include<filesystem>
-#define DIFF 0.1
+#define DIFF 0.011
 //欠損のさせ方を何通りにするか
  //#define MISSINGTRIALS 4
 //クラスタリングの初期値を何通りにするか
@@ -34,8 +34,8 @@
 #elif defined ARTIFICIALITY // uekara 7500 500 500
 // #define KESSON 0
 // #define KESSON_BEGIN 0
-#define KESSON 7500//500//2
-#define KESSON_BEGIN 5000//52
+#define KESSON 7005//500//2
+#define KESSON_BEGIN 7000//52
 #define KIZAMI 500
 #elif defined JESTER
 #define KESSON 100000

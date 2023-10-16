@@ -23,8 +23,8 @@
 # 人工データの場合:
 # $ make ターゲット
 CXX = g++
-#CXXFLAGS = -O3 -Wall -Wextra -std=c++17
-CXXFLAGS =  -g -Wall -Wextra -std=c++17
+CXXFLAGS = -O3 -Wall -Wextra -std=c++17
+#CXXFLAGS =  -g -Wall -Wextra -std=c++17 #debug用
 # CXXFLAGS = -O0 -Wall -Wextra -std=c++17 -g  # debug用(計算時間がかなり増加するので注意)
 FS = -lstdc++fs
 objects = .o/vector.o .o/svector.o .o/matrix.o .o/smatrix.o .o/vector3d.o
@@ -198,6 +198,10 @@ artificiality_mf_qrfcm.out : $(qrfcm) src/recom.cxx \
 main_recom/artificiality/mf_qrfcm.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
 	-DARTIFICIALITY $(FS) -o $@
+artificiality_mf_qrfcm_2.out : $(qrfcm) src/recom.cxx \
+main_recom/artificiality/mf_qrfcm.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@
 artificiality_nmf.out : $(objects) src/recom.cxx \
 main_recom/artificiality/nmf.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
@@ -210,116 +214,120 @@ artificiality_nmf_qrfcm.out : $(qrfcm) src/recom.cxx \
 main_recom/artificiality/nmf_qrfcm.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
 	-DARTIFICIALITY $(FS) -o $@	
+artificiality_nmf_qrfcm_2.out : $(qrfcm) src/recom.cxx \
+main_recom/artificiality/nmf_qrfcm.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@	
 artificiality_bfcnmf.out : $(objects) src/recom.cxx \
 main_recom/artificiality/bfcnmf.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
 	-DARTIFICIALITY $(FS) -o $@
-artificiality_qfcnmf_a.out : $(objects) src/recom.cxx \
-main_recom/artificiality/qfcnmf_a.cxx
-	$(CXX) $(CXXFLAGS)  $^ \
-	-DARTIFICIALITY $(FS) -o $@	
-artificiality_qfcwnmf_a.out : $(objects) src/recom.cxx \
-main_recom/artificiality/qfcwnmf_a.cxx
-	$(CXX) $(CXXFLAGS)  $^ \
-	-DARTIFICIALITY $(FS) -o $@				
 artificiality_qfcnmf.out : $(objects) src/recom.cxx \
 main_recom/artificiality/qfcnmf.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
-	-DARTIFICIALITY $(FS) -o $@		
-artificiality_qfcnmf-2.out : $(objects) src/recom.cxx \
-main_recom/artificiality/qfcnmf.cxx
-	$(CXX) $(CXXFLAGS)  $^ \
-	-DARTIFICIALITY $(FS) -o $@		
-artificiality_qfcnmf-3.out : $(objects) src/recom.cxx \
-main_recom/artificiality/qfcnmf.cxx
-	$(CXX) $(CXXFLAGS)  $^ \
-	-DARTIFICIALITY $(FS) -o $@		
-artificiality_qfcnmf-4.out : $(objects) src/recom.cxx \
-main_recom/artificiality/qfcnmf.cxx
-	$(CXX) $(CXXFLAGS)  $^ \
-	-DARTIFICIALITY $(FS) -o $@		
+	-DARTIFICIALITY $(FS) -o $@	
 artificiality_qfcwnmf.out : $(objects) src/recom.cxx \
 main_recom/artificiality/qfcwnmf.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
-	-DARTIFICIALITY $(FS) -o $@		
-artificiality_qfcwnmf-2.out : $(objects) src/recom.cxx \
-main_recom/artificiality/qfcwnmf.cxx
+	-DARTIFICIALITY $(FS) -o $@				
+artificiality_tfcnmf.out : $(objects) src/recom.cxx \
+main_recom/artificiality/tfcnmf.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
 	-DARTIFICIALITY $(FS) -o $@		
-artificiality_qfcwnmf-3.out : $(objects) src/recom.cxx \
-main_recom/artificiality/qfcwnmf.cxx
+artificiality_tfcnmf-2.out : $(objects) src/recom.cxx \
+main_recom/artificiality/tfcnmf.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
 	-DARTIFICIALITY $(FS) -o $@		
-artificiality_qfcwnmf-4.out : $(objects) src/recom.cxx \
-main_recom/artificiality/qfcwnmf.cxx
+artificiality_tfcnmf-3.out : $(objects) src/recom.cxx \
+main_recom/artificiality/tfcnmf.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@		
+artificiality_tfcnmf-4.out : $(objects) src/recom.cxx \
+main_recom/artificiality/tfcnmf.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@		
+artificiality_tfcwnmf.out : $(objects) src/recom.cxx \
+main_recom/artificiality/tfcwnmf.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@		
+artificiality_tfcwnmf-2.out : $(objects) src/recom.cxx \
+main_recom/artificiality/tfcwnmf.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@		
+artificiality_tfcwnmf-3.out : $(objects) src/recom.cxx \
+main_recom/artificiality/tfcwnmf.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@		
+artificiality_tfcwnmf-4.out : $(objects) src/recom.cxx \
+main_recom/artificiality/tfcwnmf.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
 	-DARTIFICIALITY $(FS) -o $@	
-artificiality_qfcmf_a.out : $(objects) src/recom.cxx \
-main_recom/artificiality/qfcmf_a.cxx
-	$(CXX) $(CXXFLAGS)  $^ \
-	-DARTIFICIALITY $(FS) -o $@		
 artificiality_qfcmf.out : $(objects) src/recom.cxx \
 main_recom/artificiality/qfcmf.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
 	-DARTIFICIALITY $(FS) -o $@		
-artificiality_qfcmf-2.out : $(objects) src/recom.cxx \
-main_recom/artificiality/qfcmf.cxx
-	$(CXX) $(CXXFLAGS)  $^ \
-	-DARTIFICIALITY $(FS) -o $@
-artificiality_qfcmf-3.out : $(objects) src/recom.cxx \
-main_recom/artificiality/qfcmf.cxx
-	$(CXX) $(CXXFLAGS)  $^ \
-	-DARTIFICIALITY $(FS) -o $@
-artificiality_qfcmf-4.out : $(objects) src/recom.cxx \
-main_recom/artificiality/qfcmf.cxx
-	$(CXX) $(CXXFLAGS)  $^ \
-	-DARTIFICIALITY $(FS) -o $@
-artificiality_qfcmf-5.out : $(objects) src/recom.cxx \
-main_recom/artificiality/qfcmf.cxx
-	$(CXX) $(CXXFLAGS)  $^ \
-	-DARTIFICIALITY $(FS) -o $@
-artificiality_qfcmf-6.out : $(objects) src/recom.cxx \
-main_recom/artificiality/qfcmf.cxx
-	$(CXX) $(CXXFLAGS)  $^ \
-	-DARTIFICIALITY $(FS) -o $@
-artificiality_qfcmf-7.out : $(objects) src/recom.cxx \
-main_recom/artificiality/qfcmf.cxx
-	$(CXX) $(CXXFLAGS)  $^ \
-	-DARTIFICIALITY $(FS) -o $@
-artificiality_qfcmf-8.out : $(objects) src/recom.cxx \
-main_recom/artificiality/qfcmf.cxx
-	$(CXX) $(CXXFLAGS)  $^ \
-	-DARTIFICIALITY $(FS) -o $@
-artificiality_qfcmf-2-1.out : $(objects) src/recom.cxx \
-main_recom/artificiality/qfcmf-2.cxx
+artificiality_tfcmf.out : $(objects) src/recom.cxx \
+main_recom/artificiality/tfcmf.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
 	-DARTIFICIALITY $(FS) -o $@		
-artificiality_qfcmf-2-2.out : $(objects) src/recom.cxx \
-main_recom/artificiality/qfcmf-2.cxx
+artificiality_tfcmf-2.out : $(objects) src/recom.cxx \
+main_recom/artificiality/tfcmf.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
 	-DARTIFICIALITY $(FS) -o $@
-artificiality_qfcmf-2-3.out : $(objects) src/recom.cxx \
-main_recom/artificiality/qfcmf-2.cxx
+artificiality_tfcmf-3.out : $(objects) src/recom.cxx \
+main_recom/artificiality/tfcmf.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
 	-DARTIFICIALITY $(FS) -o $@
-artificiality_qfcmf-2-4.out : $(objects) src/recom.cxx \
-main_recom/artificiality/qfcmf-2.cxx
+artificiality_tfcmf-4.out : $(objects) src/recom.cxx \
+main_recom/artificiality/tfcmf.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
 	-DARTIFICIALITY $(FS) -o $@
-artificiality_qfcmf-2-5.out : $(objects) src/recom.cxx \
-main_recom/artificiality/qfcmf-2.cxx
+artificiality_tfcmf-5.out : $(objects) src/recom.cxx \
+main_recom/artificiality/tfcmf.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
 	-DARTIFICIALITY $(FS) -o $@
-artificiality_qfcmf-2-6.out : $(objects) src/recom.cxx \
-main_recom/artificiality/qfcmf-2.cxx
+artificiality_tfcmf-6.out : $(objects) src/recom.cxx \
+main_recom/artificiality/tfcmf.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
 	-DARTIFICIALITY $(FS) -o $@
-artificiality_qfcmf-2-7.out : $(objects) src/recom.cxx \
-main_recom/artificiality/qfcmf-2.cxx
+artificiality_tfcmf-7.out : $(objects) src/recom.cxx \
+main_recom/artificiality/tfcmf.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
 	-DARTIFICIALITY $(FS) -o $@
-artificiality_qfcmf-2-8.out : $(objects) src/recom.cxx \
-main_recom/artificiality/qfcmf-2.cxx
+artificiality_tfcmf-8.out : $(objects) src/recom.cxx \
+main_recom/artificiality/tfcmf.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@
+artificiality_tfcmf-2-1.out : $(objects) src/recom.cxx \
+main_recom/artificiality/tfcmf-2.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@		
+artificiality_tfcmf-2-2.out : $(objects) src/recom.cxx \
+main_recom/artificiality/tfcmf-2.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@
+artificiality_tfcmf-2-3.out : $(objects) src/recom.cxx \
+main_recom/artificiality/tfcmf-2.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@
+artificiality_tfcmf-2-4.out : $(objects) src/recom.cxx \
+main_recom/artificiality/tfcmf-2.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@
+artificiality_tfcmf-2-5.out : $(objects) src/recom.cxx \
+main_recom/artificiality/tfcmf-2.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@
+artificiality_tfcmf-2-6.out : $(objects) src/recom.cxx \
+main_recom/artificiality/tfcmf-2.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@
+artificiality_tfcmf-2-7.out : $(objects) src/recom.cxx \
+main_recom/artificiality/tfcmf-2.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@
+artificiality_tfcmf-2-8.out : $(objects) src/recom.cxx \
+main_recom/artificiality/tfcmf-2.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
 	-DARTIFICIALITY $(FS) -o $@	
 artificiality_mpbmf.out : $(mpbmf) src/recom.cxx \

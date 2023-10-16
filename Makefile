@@ -234,6 +234,10 @@ artificiality_tfcnmf.out : $(objects) src/recom.cxx \
 main_recom/artificiality/tfcnmf.cxx
 	$(CXX) $(CXXFLAGS)  $^ \
 	-DARTIFICIALITY $(FS) -o $@		
+artificiality_tfcfm_als.out : $(objects) src/recom.cxx \
+main_recom/artificiality/tfcfm_als.cxx
+	$(CXX) $(CXXFLAGS)  $^ \
+	-DARTIFICIALITY $(FS) -o $@			
 artificiality_tfcnmf-2.out : $(objects) src/recom.cxx \
 main_recom/artificiality/tfcnmf.cxx
 	$(CXX) $(CXXFLAGS)  $^ \

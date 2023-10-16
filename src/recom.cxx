@@ -1,5 +1,5 @@
 #include "recom.h"
-#include <numbers>
+//#include <numbers>
 
 Recom::Recom(int user,
              int item,
@@ -5678,25 +5678,239 @@ double Recom::fm_y_hat(SparseVector& x, double w0, Vector& w, Matrix& v){
     return result;
 }
 
-/*
-void Recom::Ubukata(int clusters_number){
-  for(int index=0;index<Missing;index++){
-    Prediction[index]=0;
-    //std::cout << KessonIndex[index][0]<<"\t"<<KessonIndex[index][1] << std::endl;
-    for(int i=0;i<clusters_number;i++){
-      Prediction[index]+=Mem[i][KessonIndex[index][0]]*ItemMem[i][KessonIndex[index][1]];
-      //std::cout << Membership[i][KessonIndex[index][0]]<<"\t" << Centers[i][KessonIndex[index][1]]<<"\t" << Membership[i][KessonIndex[index][0]]*Centers[i][KessonIndex[index][1]]<< "\t" << Prediction[index]<< std::endl;
-      //std::cout <<index<<"\t"<<SparseCorrectData[KessonIndex[index][0]].elementIndex(SparseIndex[index])<< "\t" <<Prediction[index]<< std::endl;
-    }
-    std::cout <<index<<"\t"<< KessonIndex[index][0]<<":"<<KessonIndex[index][1]<<"\t"<<SparseCorrectData[KessonIndex[index][0]].elementIndex(SparseIndex[index])<< "\t" <<Prediction[index]<< std::endl;
-    //std::cout << Prediction[index] << std::endl;
-
-
+int Recom::tfcfm_als_pred(std::string dir, double K_percent, double beta, double alpha, int steps, int C,double Lambda, double FuzzifierEm)
+{
+  int K;
+  if(return_user_number() > return_item_number()){
+    K = std::round(return_item_number() * K_percent / 10);
+  } else {
+    K = std::round(return_user_number() * K_percent / 10);
   }
-  //std::cout << std::endl;
-  return;
+  #if defined ARTIFICIALITY
+  K = K_percent;
+  #endif
+  if(steps < 50){
+    std::cerr << "MF: \"step\" should be 50 or more.";
+    return 1;
+  }
+
+  int data_num = 0;
+  int n=return_user_number()+return_item_number();
+  int row_datas_num[n]={};
+  for (int i=0; i < return_user_number(); i++){
+    for(int j = 0; j < SparseIncompleteData[i].essencialSize(); j++){
+      if(SparseIncompleteData[i].elementIndex(j)!=0){
+      data_num++;
+      row_datas_num[i]++;
+      row_datas_num[return_user_number()+SparseIncompleteData[i].indexIndex(j)]++;
+      }
+    }
+  }
+  SparseMatrix X(data_num,n);  
+  SparseMatrix t_X(n,data_num);
+  double Y[data_num];
+
+  for (int i=0; i < data_num; i++){
+    SparseVector tmp_xv(data_num,2);
+    X[i]=tmp_xv;
+  }
+  
+  for (int i=0; i < n; i++){
+    SparseVector tmp_xv(data_num,row_datas_num[i]);
+    t_X[i]=tmp_xv;
+  }
+
+  int tmp_row_datas_num[n]={};
+  int tmp=0;
+  for (int i=0; i < return_user_number(); i++){
+    for(int j = 0; j < SparseIncompleteData[i].essencialSize(); j++){
+     if(SparseIncompleteData[i].elementIndex(j)!=0){
+      Y[tmp]=SparseIncompleteData[i].elementIndex(j);
+      X[tmp].elementIndex(0)=1;
+      X[tmp].indexIndex(0)=i;
+      X[tmp].elementIndex(1)=1;
+      X[tmp].indexIndex(1)=return_user_number()+SparseIncompleteData[i].indexIndex(j);
+      t_X[i].elementIndex(tmp_row_datas_num[i])=1;
+      t_X[i].indexIndex(tmp_row_datas_num[i])=tmp;
+      tmp_row_datas_num[i]+=1;
+      t_X[return_user_number()+SparseIncompleteData[i].indexIndex(j)].elementIndex(tmp_row_datas_num[return_user_number()+SparseIncompleteData[i].indexIndex(j)])=1;
+      t_X[return_user_number()+SparseIncompleteData[i].indexIndex(j)].indexIndex(tmp_row_datas_num[return_user_number()+SparseIncompleteData[i].indexIndex(j)])=tmp;
+      tmp_row_datas_num[return_user_number()+SparseIncompleteData[i].indexIndex(j)]+=1;
+      tmp++;
+     }
+     }
+  } 
+  
+  std::cout<<"x"<<std::endl;
+  std::cout<<X<<std::endl;
+  
+  Vector w0(C,0.0,"all"); 
+  Vector prev_w0(C,0.0,"all"); 
+  Matrix prev_w(n,C,0.0); 
+  Matrix w(n,C,0.0); 
+  Vector3d v(C,n,K,0.0);
+  Vector3d prev_v(C,n,K,0.0);
+  Matrix Membership(C, return_user_number(), 1 / (double)C);
+  Matrix prev_Membership(C, return_user_number(), 1 / (double)C);
+  double best_error = DBL_MAX;
+  int NaNcount = 0;
+  int trialLimit = CLUSTERINGTRIALS;
+  int mf_seed = 0;
+  for(int rand_mf_trial = 0; rand_mf_trial < trialLimit; rand_mf_trial++){
+  std::cout << "FM: initial setting " << rand_mf_trial << std::endl;
+    //vの初期値を乱数で決定
+  std::mt19937_64 mt;
+  for(int c = 0; c < C; c++){
+  for(int k_i = 0; k_i < K; k_i++){
+      for(int i = 0; i < n; i++){
+        mt.seed(mf_seed);
+        std::uniform_real_distribution<>
+            rand_v(0.0, 0.001);
+        //ランダムに値生成
+        //v[i][k_i] = rand_v(mt);
+        v[c][i][k_i] = 1.0;
+        mf_seed++;
+      }
+    }
+  }
+  Matrix e(C,data_num,0.0); 
+  Vector3d q(C,data_num,K,0.0);
+
+  //precompute関数
+  for (int c = 0; c < C; ++c) {
+  for (int l = 0; l < data_num; ++l) {
+        e[c][l] = fm_y_hat(X[l], w0[c], w[c], v[c]) - Y[l];
+        for (int f = 0; f < K; ++f) {
+            q[c][l][f] = 0.0;
+            for (int j_ = 0; j_ < X[l].essencialSize(); ++j_) {
+                q[c][l][f] += X[l].elementIndex(j_) * v[c][X[l].indexIndex(j_)][f];
+            }
+        }
+    }
+  }
+    
+    double error = 0.0;
+    bool ParameterNaN = false;
+
+    for(int step = 0; step < steps; step++){
+
+    prev_w = w;
+      prev_w = w;
+      prev_w0 = w0;
+for(int c=0;c<C;c++){
+      double sum_e=0;
+      for(int i=0;i<data_num;i++) 
+        sum_e+=e[c][i];
+      double w0a = -(sum_e - data_num * w0[c]) / data_num;
+
+      for (int l = 0; l < data_num; ++l) 
+        e[c][l] += (w0a - w0[c]);  
+      w0[c] = w0a;
+
+      //1-way interactions
+      for (int j = 0; j < n; ++j) {
+        double sum_e_times_x = 0.0;
+        double sum_x_squared = 0.0;
+        for (int i_ = 0; i_ < t_X[j].essencialSize(); ++i_) {
+          sum_e_times_x += (e[c][t_X[j].indexIndex(i_)] - w[c][j] * t_X[j].elementIndex(i_)) *t_X[j].elementIndex(i_);
+          sum_x_squared += t_X[j].elementIndex(i_) * t_X[j].elementIndex(i_);
+        }
+        double wa = -sum_e_times_x / (sum_x_squared + beta);
+        for (int i_ = 0; i_ < t_X[j].essencialSize(); ++i_) {
+          e[c][t_X[j].indexIndex(i_)]  += (wa - w[c][j]) * t_X[j].elementIndex(i_);
+        }
+        w[c][j] = wa;
+      }
+
+      //2-way interactions
+      for (int f = 0; f < K; ++f) {
+        for (int j = 0; j < n; ++j) {
+          double h_value[t_X[j].essencialSize()];
+          for (int i_ = 0; i_ < t_X[j].essencialSize(); ++i_) {
+            h_value[i_] = - t_X[j].elementIndex(i_) * ( t_X[j].elementIndex(i_) * v[c][j][f]- q[c][t_X[j].indexIndex(i_)][f]);
+          }
+          double sum_e_times_h = 0.0;
+          double sum_h_squared = 0.0;
+          for (int i_ = 0; i_ < t_X[j].essencialSize(); ++i_) {
+            sum_e_times_h += (e[c][t_X[j].indexIndex(i_)] - v[c][j][f]* h_value[i_]) * h_value[i_];
+            sum_h_squared += h_value[i_] * h_value[i_];
+          }
+          double va = -sum_e_times_h / (sum_h_squared + beta);
+          for (int i_ = 0; i_ < t_X[j].essencialSize(); ++i_) {
+            e[c][t_X[j].indexIndex(i_)] += (va - v[c][j][f]) * h_value[i_];
+            q[c][t_X[j].indexIndex(i_)][f] += (va - v[c][j][f]) * t_X[j].elementIndex(i_);
+          }
+          v[c][j][f] = va;
+        }
+      }
 }
-*/
+//ここからuの更新
+      prev_Membership=Membership;
+      for(int c=0;c<C;c++){
+      for(int i=0;i<return_user_number();i++){
+          if(Dissimilarities.Element[c].Element[i]!=0.0){
+          double denominator=0.0;
+          for(int j=0;j<C;j++){
+            denominator+=pow((1-Lambda*(1-FuzzifierEm)*Dissimilarities.Element[c].Element[i])/(1-Lambda*(1-FuzzifierEm)*Dissimilarities.Element[j].Element[i]),1.0/(FuzzifierEm-1));    
+            }
+            Membership.Element[c].Element[i]=1.0/(denominator);
+          }
+        }
+      }
+      double diff_u=frobenius_norm(prev_Membership-Membership);
+      double diff_v=frobenius_norm(prev_P-P);
+      double diff_w=frobenius_norm(prev_Q-Q);
+      double diff_w0=squared_norm(prev_w0 - w0);
+      double diff=diff_u+diff_p+diff_q+diff_a;
+
+      double diff = diff_v + diff_w + diff_w0;
+      if(diff<DIFF && step >= 50){
+        break;
+      }
+      if (step == steps - 1) {
+                std::cout << "step = " << step << ", error = " << error << ", K: " << K_percent << "%, beta = " << beta << ", alpha = " << alpha
+                          << std::endl;
+                // ParameterNaN = true;
+            }
+    }
+for(int c=0;c<C;c++){
+    for (int l = 0; l < data_num; ++l) {
+        error += (fm_y_hat(X[l], w0[c], w[c], v[c]) - Y[l])*(fm_y_hat(X[l], w0[c], w[c], v[c]) - Y[l]);
+        //+正則化
+        }
+}
+        if (ParameterNaN) {
+            NaNcount++;
+            // 初期値全部{NaN出た or step上限回更新して収束しなかった} =>
+            // 1を返して終了
+            if (NaNcount == trialLimit) {
+                return 1;
+            }
+        } else if (best_error > error) {
+            best_error = error;
+    
+    SparseMatrix pre_X(Missing,n);
+    for (int i=0; i < Missing; i++){
+    SparseVector tmp_xv(data_num,2);
+    pre_X[i]=tmp_xv;
+     } 
+  for(int index = 0; index < Missing; index++){
+    pre_X[index].elementIndex(0)=1;
+    pre_X[index].indexIndex(0)=KessonIndex[index][0];
+    pre_X[index].elementIndex(1)=1;
+    pre_X[index].indexIndex(1)=KessonIndex[index][1]+return_user_number();
+    for(int c=0;c<C;c++){
+    Prediction[index]+=fm_y_hat(pre_X[index], w0[c], w[c], v[c]);
+    }
+    std::cout <<"Prediction:"<<Prediction[index];
+    std::cout<< " SparseCorrectData:" << SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1]);
+    //std::cout<< Prediction[index]- SparseCorrectData[KessonIndex[index][0]].elementIndex(KessonIndex[index][1]) 
+    std::cout<<std::endl;
+  } 
+    }   
+  }
+  return 0;
+} 
 
 void Recom::Ubukata(int clusters_number)
 {

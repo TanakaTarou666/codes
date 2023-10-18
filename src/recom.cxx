@@ -4790,9 +4790,9 @@ int Recom::fm_pred(std::string dir, double K_percent, double beta, double alpha,
     } else {
         K = std::round(return_user_number() * K_percent / 10);
     }
-#if defined ARTIFICIALITY
-    K = K_percent;
-#endif
+    #if defined ARTIFICIALITY
+        K = K_percent;
+    #endif
     if (steps < 50) {
         std::cerr << "MF: \"step\" should be 50 or more.";
         return 1;

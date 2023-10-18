@@ -2568,9 +2568,9 @@ int Recom::nmf_pred(std::string dir, double K_percent,
         std::cerr << "MF: \"step\" should be 50 or more.";
         return 1;
     }
-#if defined ARTIFICIALITY
-    K = K_percent;  // 人工用
-#endif
+    #if defined ARTIFICIALITY
+        K = K_percent;  // 人工用
+    #endif
 
     Matrix IncompleteData(return_user_number(), return_item_number(), 0.0);
 
@@ -2717,9 +2717,9 @@ int Recom::wnmf_pred(std::string dir, double K_percent, int steps) {
         std::cerr << "WNMF: \"step\" should be 50 or more.";
         return 1;
     }
-#if defined ARTIFICIALITY
-    K = K_percent;  // 人工用
-#endif
+    #if defined ARTIFICIALITY
+        K = K_percent;  // 人工用
+    #endif
     Matrix Sij(return_user_number(), return_item_number(), 0.0);
 
     // 欠損場所をSijに与える
@@ -3277,9 +3277,9 @@ int Recom::qfcnmf_pred(std::string dir, double K_percent, int steps, int C, doub
         return 1;
     }
 
-#if defined ARTIFICIALITY
-    K = K_percent;  // 人工用
-#endif
+    #if defined ARTIFICIALITY
+        K = K_percent;  // 人工用
+    #endif
 
     Matrix IncompleteData(return_user_number(), return_item_number(), 0.0);
 
@@ -3619,9 +3619,9 @@ int Recom::qfcwnmf_pred(std::string dir, double K_percent, int steps, int C, dou
         std::cerr << "QFCWNMF: \"step\" should be 50 or more.";
         return 1;
     }
-#if defined ARTIFICIALITY
-    K = K_percent;
-#endif
+    #if defined ARTIFICIALITY
+        K = K_percent;
+    #endif
 
     Matrix Sij(return_user_number(), return_item_number(), 0.0);
     // 欠損場所をSijに与える
@@ -3893,9 +3893,9 @@ int Recom::tfcnmf_pred(std::string dir, double K_percent, int steps, int C, doub
         std::cerr << "QFCNMF: \"step\" should be 50 or more.";
         return 1;
     }
-#if defined ARTIFICIALITY
-    K = K_percent;  // 人工用
-#endif
+    #if defined ARTIFICIALITY
+        K = K_percent;  // 人工用
+    #endif
 
     Matrix IncompleteData(return_user_number(), return_item_number(), 0.0);
 
@@ -4167,7 +4167,7 @@ int Recom::tfcnmf_pred(std::string dir, double K_percent, int steps, int C, doub
     return 0;
 }
 
-int Recom::tfcwnmf_pred(std::string dir, double K_percent, int steps, int C, double Lambda, double FuzzifierEm) {  // はクラスタ数
+int Recom::tfcwnmf_pred(std::string dir, double K_percent, int steps, int C, double Lambda, double FuzzifierEm) {  // はクラスタ数  s
 
     int K;
 
@@ -4183,9 +4183,9 @@ int Recom::tfcwnmf_pred(std::string dir, double K_percent, int steps, int C, dou
         std::cerr << "QFCWNMF: \"step\" should be 50 or more.";
         return 1;
     }
-#if defined ARTIFICIALITY
-    K = K_percent;
-#endif
+    #if defined ARTIFICIALITY
+        K = K_percent;
+    #endif
 
     Matrix Sij(return_user_number(), return_item_number(), 0.0);
     // 欠損場所をSijに与える

@@ -5512,7 +5512,7 @@ int Recom::tfcfm_als_pred(std::string dir, double K_percent, double beta, double
             for (int c = 0; c < C; c++) {
                 double sum_e = 0;
                 for (int i = 0; i < data_num; i++) sum_e += e[c][i];
-                double w0a = -(sum_e - data_num * w0[c]) / data_num;
+                double w0a = - pow(Membership[c][i],FuzzifierEm)*(sum_e - data_num * w0[c]) / (data_num*C);
 
                 for (int l = 0; l < data_num; ++l) e[c][l] += (w0a - w0[c]);
                 w0[c] = w0a;

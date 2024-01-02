@@ -420,6 +420,9 @@ mf_qfcs.out : $(qfcs) src/recom.cxx main_recom/mf_qfcs.cxx
 mf_qrfcm.out : $(qrfcm) src/recom.cxx main_recom/mf_qrfcm.cxx
 	$(CXX) $(CXXFLAGS) $^ \
 	$(DATASET) $(FS) -o $@
+.out/wnmf_qrfcm.out : $(qrfcm) src/recom.cxx main_recom/wnmf_qrfcm.cxx
+	$(CXX) $(CXXFLAGS) $^ \
+	$(DATASET) $(FS) -o $@
 qfcm.out : $(qfcm) src/recom.cxx main_recom/qfcm.cxx
 	$(CXX) $(CXXFLAGS) $^ \
 	$(DATASET)$(MACRO)$(FS) -o $@

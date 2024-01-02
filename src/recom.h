@@ -4,24 +4,25 @@
 //#include <numbers>
 #include<map>
 #include<filesystem>
-#define DIFF 0.011
+#define DIFF 1.0e-4
 //欠損のさせ方を何通りにするか
  //#define MISSINGTRIALS 4
 //クラスタリングの初期値を何通りにするか
-#define CLUSTERINGTRIALS 1//4//1
+#define CLUSTERINGTRIALS 4//4//1
 //#define CLUSTERINGTRIALS 1
 //pearson, eicf, co-clustering
 #define METHOD_NUMBER 2
 //BookCrossingは10240欠損させる
 //他は20480欠損させる
 //BEGINは最初の欠損数，ENDは最大の欠損数
+#define  SUSHI
 #ifdef BOOK
 #define KESSON 20000
 #define KESSON_BEGIN 20000
 #define KIZAMI 5000
 #elif defined SUSHI
-#define KESSON 40000
-#define KESSON_BEGIN 40000
+#define KESSON 20000
+#define KESSON_BEGIN 20000
 #define KIZAMI 50000
 #elif defined SUSHI_NINE
 #define KESSON 25000
@@ -34,7 +35,7 @@
 #elif defined ARTIFICIALITY // uekara 7500 500 500
 // #define KESSON 0
 // #define KESSON_BEGIN 0
-#define KESSON 5000//500//2
+#define KESSON 7000//500//2
 #define KESSON_BEGIN 5000//52
 #define KIZAMI 500
 #elif defined JESTER

@@ -138,7 +138,7 @@ int main(int argc, char *argv[]){
 	    //データを欠損前に戻して類似度初期化
 	    recom.reset();
 	    //データを欠損
-	    recom.revise_missing_values();
+	    recom.revise_missing_values_new();
 	    //相関係数計算
 	    recom.pearsonsim();                       //←(ここでは類似度のみが得られる)
 	    //データ(相関係数)をtestに渡す           

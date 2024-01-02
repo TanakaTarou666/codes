@@ -121,7 +121,7 @@ int main(int argc, char *argv[]){
     //動作確認用
     //std::cout << "Initial Similarities:\n" << recom.similarity() << std::endl;
     //MF: 潜在次元, 正則化, 学習率, 更新回数上限(指定無いと2000)
-    if(recom.fm_test_pred(dirs[0], mf_k, mf_beta, mf_alpha, 100000) == 1){
+    if(recom.fm_als_pred(dirs[0], mf_k, mf_beta, mf_alpha, 100000) == 1){
     //if(recom.fm_test_pred(dirs[0], 3, 0.00, 0.007, 7000) == 1){
       mf_nan = true;
       recom.SeedSet2();

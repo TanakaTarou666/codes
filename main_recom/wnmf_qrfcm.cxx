@@ -16,11 +16,11 @@ const std::string InputDataName="data/sparse_"+data_name
   +"_"+std::to_string(user_number)
   +"_"+std::to_string(item_number)+".txt";
 //クラスタリング手法名
-const std::string METHOD_NAME="QRFCM_MF";
+const std::string METHOD_NAME="QRFCM_WNMF";
 
 int main(int argc, char *argv[]){
-	double mf_K_distance = 2.0; //刻み(+)
-	double mf_beta_range[3] = {0.01, 0.13, 0.03}; //開始，終了，刻み(+)
+	double mf_K_distance = 1.0; //刻み(+)
+	double mf_beta_range[3] = {0.01, 0.13, 0.04}; //開始，終了，刻み(+)
 	double mf_alpha_range[3] = {0.001, 0.001, 10}; //開始，終了，刻み(*)
 	auto start2=std::chrono::system_clock::now();
 
@@ -118,9 +118,9 @@ int main(int argc, char *argv[]){
 		clusters_number, clusters_number, kesson, cin[0], cin[1]);
     recom.method_name()=METHOD_NAME;
 	recom.FIRST_KESSON_SEED() = firstKESSONSeed_main;
-    for(double m = din[4]; m <= din[5] + 0.0001; m += 0.0003){
-      for(double lambda = din[2]; lambda <= din[3]; lambda*=10){
 
+	for (double m : {1.001, 1.1, 1.5, 2.3}) {
+		for (double lambda : {1000}) {
 		//時間計測
 		auto start=std::chrono::system_clock::now();
 		//ユーザ数×ユーザ数
@@ -262,14 +262,14 @@ int main(int argc, char *argv[]){
 			
 			//MFのパラメータでループ
 			for(double mf_K = din[0] ; mf_K < din[1] + mf_K_distance; mf_K += mf_K_distance){
-			for(double mf_beta = mf_beta_range[0]; mf_beta < mf_beta_range[1] + mf_beta_range[2]; mf_beta += mf_beta_range[2]){
-			for(double mf_alpha = mf_alpha_range[0]; mf_alpha <= mf_alpha_range[1]; mf_alpha *= mf_alpha_range[2]){
+				double mf_beta=0;
+				double mf_alpha=0;
 				mf_nan[K_index][beta_index] = false;
 				mf_para = {mf_K, mf_beta, mf_alpha};
 				dir[0] = MkdirMF_afterClustering(dir, mf_para); //ディレクトリ移動
 				recom.reset2();
 				//MF: 潜在次元, 正則化, 学習率, 更新回数上限(指定無いと2000)
-				if(recom.mf_pred_after_clustering(dir[0], mf_K, mf_beta, mf_alpha, 2000) == 1){
+				if(recom.wnmf_pred_after_clustering(dir[0], mf_K, 2000) == 1){
 					mf_nan[K_index][beta_index] = true;
 					std::cout << "MF: NaN detected. (K: " << mf_K << "%, beta = " << mf_beta << ", alpha = " << mf_alpha << ")" << std::endl;
 		  			dir = Mkdir(parameter, clusters_number, dirs); //ディレクトリ移動
@@ -284,27 +284,23 @@ int main(int argc, char *argv[]){
 				InitCentLoopis10=0;
 				dir = Mkdir(parameter, clusters_number, dirs); //ディレクトリ移動
 				// std::cout << "KESSON_pt: " << recom.current() + 1 << ", K: " << mf_K << "%, beta = " << mf_beta << ", alpha = " << mf_alpha << " end." << std::endl;
-			} //alpha
 			beta_index++;
-			} //beta
 			beta_index = 0;
 			K_index++;
 			} //K
 		K_index = 0;
 		recom.current() = tmp_current;
 		//MFのパラメータでループ
+		double mf_alpha=0;
+		double mf_beta =0;
 		for(double mf_K = din[0] ; mf_K < din[1] + mf_K_distance; mf_K += mf_K_distance){
-		for(double mf_beta = mf_beta_range[0]; mf_beta < mf_beta_range[1] + mf_beta_range[2]; mf_beta += mf_beta_range[2]){
-		for(double mf_alpha = mf_alpha_range[0]; mf_alpha <= mf_alpha_range[1]; mf_alpha *= mf_alpha_range[2]){
 			mf_para = {mf_K, mf_beta, mf_alpha};
 			dir[0] = MkdirMF_afterClustering(dir, mf_para); //ディレクトリ移動
 			if(!mf_nan[K_index][beta_index]){
 				recom.choice_mae_f(dir, 2);
 			}
 			dir = Mkdir(parameter, clusters_number, dirs); //ディレクトリ移動
-		} //alpha
 		beta_index++;
-		} //beta
 	    beta_index = 0;
 		K_index++;
 		} //K
@@ -313,9 +309,9 @@ int main(int argc, char *argv[]){
 		min_object_clustering = DBL_MAX;
 		} //欠損パターン
 		//MFのパラメータでループ
+		double mf_alpha=0;
+		double mf_beta =0;
 		for(double mf_K = din[0] ; mf_K < din[1] + mf_K_distance; mf_K += mf_K_distance){
-		for(double mf_beta = mf_beta_range[0]; mf_beta < mf_beta_range[1] + mf_beta_range[2]; mf_beta += mf_beta_range[2]){
-		for(double mf_alpha = mf_alpha_range[0]; mf_alpha <= mf_alpha_range[1]; mf_alpha *= mf_alpha_range[2]){
 			mf_para = {mf_K, mf_beta, mf_alpha};
 			dir[0] = MkdirMF_afterClustering(dir, mf_para); //ディレクトリ移動
 			//前回のSeedと精度の平均値読み込み
@@ -344,9 +340,7 @@ int main(int argc, char *argv[]){
 			}
 			recom.saveSEEDandAverage(dir[0], "", mf_nan[K_index][beta_index]);
 			dir = Mkdir(parameter, clusters_number, dirs); //ディレクトリ移動
-		} //alpha
 		beta_index++;
-		} //beta
 	  	beta_index = 0;
 		K_index++;
 		} //K

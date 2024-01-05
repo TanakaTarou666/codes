@@ -15,7 +15,7 @@
 //BookCrossingは10240欠損させる
 //他は20480欠損させる
 //BEGINは最初の欠損数，ENDは最大の欠損数
-#define  SUSHI
+#define  JESTER
 #ifdef BOOK
 #define KESSON 20000
 #define KESSON_BEGIN 20000
@@ -39,8 +39,8 @@
 #define KESSON_BEGIN 5000//52
 #define KIZAMI 500
 #elif defined JESTER
-#define KESSON 100000
-#define KESSON_BEGIN 100000
+#define KESSON 20000
+#define KESSON_BEGIN 20000
 #define KIZAMI 80000
 #elif defined EPINIONS_TWENTY
 #define KESSON 70000
@@ -63,8 +63,8 @@
 #define KESSON_BEGIN 50000
 #define KIZAMI 10000
 #elif defined MOVIE100K
-#define KESSON 40000
-#define KESSON_BEGIN 40000
+#define KESSON 20000
+#define KESSON_BEGIN 20000
 #define KIZAMI 30000
 #elif defined SAMPLE
 #define KESSON 1

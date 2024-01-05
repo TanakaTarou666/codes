@@ -6509,6 +6509,8 @@ double Recom::user_average(int index) {
     return result / hyokazu;
 }
 
+
+
 SparseMatrix Recom::sparsecorrectdata(void) const { return SparseCorrectData; }
 
 SparseVector &Recom::sparsecorrectdata(int index) { return SparseCorrectData[index]; }
@@ -6608,6 +6610,7 @@ void Recom::choiceMAE_h(void) {
     Averages[0] = MAEsum / denominator;
     return;
 }
+
 
 void Recom::setAUC_h(void) {
     aveAUC_h = DBL_MIN;

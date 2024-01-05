@@ -118,8 +118,9 @@ int main(int argc, char *argv[]){
 		clusters_number, clusters_number, kesson, cin[0], cin[1]);
     recom.method_name()=METHOD_NAME;
 	recom.FIRST_KESSON_SEED() = firstKESSONSeed_main;
-    for(double m = din[4]; m <= din[5] + 0.0001; m += 0.0003){
-      for(double lambda = din[2]; lambda <= din[3]; lambda*=10){
+	for (double m : {1.001, 1.1}) {
+		//for (double m : {1.001, 1.1, 1.5, 2.3}) {
+		for (double lambda : {1000}) {
 
 		//時間計測
 		auto start=std::chrono::system_clock::now();
